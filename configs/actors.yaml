@@ -1,9 +1,11 @@
 # Actor set (spec §2.3). check_leakage.py requires >= 2 prior docs for every core actor,
 # and for a stretch actor once it has any manifest rows.
 # attack_group: ATT&CK intrusion-set ID, used only for the ATTK baseline prior (spec §3).
+# 2026-10-24 (Jack): Sandworm promoted to core (CTID plan, Windows steps only); DPRK is a
+# stretch actor via the report-split fallback (the ER6 DPRK plan is macOS-targeted).
 actors:
   APT29:    {nation: Russia, core: true,  attack_group: G0016}
   menuPass: {nation: China,  core: true,  attack_group: G0045}
   OilRig:   {nation: Iran,   core: true,  attack_group: G0049}
-  DPRK:     {nation: DPRK,   core: true,  attack_group: G0032}   # Lazarus Group; final actor set at the DPRK decision
-  Sandworm: {nation: Russia, core: false, attack_group: G0034}   # stretch
+  Sandworm: {nation: Russia, core: true,  attack_group: G0034}
+  DPRK:     {nation: DPRK,   core: false, attack_group: G0032}   # Lazarus Group; stretch, report-split

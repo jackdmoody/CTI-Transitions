@@ -55,3 +55,9 @@ def test_projection_and_jsd():
     np.testing.assert_array_equal(C, [[0, 1], [0, 1]])
     r = actor_jsd.pairwise({"A": seqs, "B": seqs, "C": [["Execution", "Execution"]]}, ["Execution", "Discovery", "Collection"], 0.0)
     assert r["jsd"]["A|B"] == 0.0 and r["jsd"]["A|C"] > 0
+
+
+def test_substitute_uses_input_argument_defaults():
+    cmd = 'net user #{user} /domain; ping #{server}'
+    out = plans.substitute(cmd, {"user": {"default": "pam"}, "server": {"description": "no default"}})
+    assert out == "net user pam /domain; ping server"

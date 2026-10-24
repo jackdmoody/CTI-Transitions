@@ -7,4 +7,6 @@ oilrig-01,OilRig,Iran,ExampleOrg,https://example.org/fixture/oilrig-01,2024-01-1
 oilrig-02,OilRig,Iran,ExampleOrg,https://example.org/fixture/oilrig-02,2024-01-15,4b53c27326ec5db466797a452849ac07b4e44c4d8fd5fbcf48c79a82197f7800,prior,n
 dprk-01,DPRK,DPRK,ExampleOrg,https://example.org/fixture/dprk-01,2024-01-15,e84e3e78581a4c4b4a2ac53cbdbfde0b17f6bf1b59e5e0f7ca5272e117df8d58,prior,n
 dprk-02,DPRK,DPRK,ExampleOrg,https://example.org/fixture/dprk-02,2024-01-15,785d0dd7d19e4a1ca1e4f8d34e77710b5c43836ad26879e1957767c950b4807d,prior,n
+sandworm-01,Sandworm,Russia,ExampleOrg,https://example.org/fixture/sandworm-01,2024-01-15,d6848741f00009463bb90cd246fc0c31143ac3e0702b564f089ea11b8825ecf8,prior,n
+sandworm-02,Sandworm,Russia,ExampleOrg,https://example.org/fixture/sandworm-02,2024-01-15,640840ca11892800fa461b90b480ef578c01bb8ff37df4c6a3fc77b5af048f12,prior,n
 dprk-09,DPRK,DPRK,ExampleOrg,https://example.org/fixture/dprk-09,2024-01-15,7fad1547097a34bda52f695b136a209ff3b14554c060508132c6c9e0c7d04d6a,eval,n

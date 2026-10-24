@@ -33,7 +33,7 @@ def test_empty_manifest_fails_on_missing_priors(tmp_path):
     manifest.write_empty(path)
     header, rows = manifest.load(path)
     errors = manifest.check(header, rows, manifest.load_actors())
-    assert {e.split(":")[0] for e in errors} == {"actor APT29", "actor menuPass", "actor OilRig", "actor DPRK"}
+    assert {e.split(":")[0] for e in errors} == {"actor APT29", "actor menuPass", "actor OilRig", "actor Sandworm"}
 
 
 def test_wrong_header_fails(tmp_path):
@@ -53,3 +53,18 @@ def test_text_hash_verified(tmp_path):
 def test_cli_exit_codes(capsys):
     assert check_leakage.main(["--manifest", str(FIXTURES / "good.csv"), "--no-verify-text"]) == 0
     assert check_leakage.main(["--manifest", str(FIXTURES / "bad_cited_prior.csv"), "--no-verify-text"]) == 1
+
+
+def test_cited_url_must_be_marked_y():
+    header, rows = manifest.load(FIXTURES / "good.csv")
+    actors = manifest.load_actors()
+    url = rows[0]["url"]  # an APT29 prior, marked cited_by_emulation_plan=n
+    cited = {"APT29": {manifest.normalize_url(url.replace("https://", "https://www."))}}
+    errors = manifest.check(header, rows, actors, cited=cited)
+    assert any("cited by the APT29 emulation plan" in e for e in errors)
+    assert manifest.check(header, rows, actors, cited={"APT29": set()}) == []
+
+
+def test_normalize_url():
+    assert manifest.normalize_url("https://www.Example.org/a/b/|") == "example.org/a/b"
+    assert manifest.normalize_url("http://example.org/a/<br>") == "example.org/a"

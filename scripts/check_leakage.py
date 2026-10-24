@@ -24,9 +24,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"FAIL: manifest not found: {args.manifest}")
         return 1
     header, rows = manifest.load(args.manifest)
+    actors = manifest.load_actors(args.actors)
     errors = manifest.check(
-        header, rows, manifest.load_actors(args.actors),
+        header, rows, actors,
         text_dir=None if args.no_verify_text else manifest.TEXT_DIR,
+        cited=manifest.load_cited(actors),
     )
     if errors:
         print(f"FAIL: {len(errors)} problem(s) in {args.manifest}")

@@ -16,6 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "data" / "cti" / "manifest.csv"
 TEXT_DIR = REPO_ROOT / "data" / "cti" / "text"  # saved report text: <doc_id>.txt
 ACTORS_PATH = REPO_ROOT / "configs" / "actors.yaml"
+CITED_DIR = REPO_ROOT / "data" / "eval" / "plans"  # <actor>_cited_sources.txt (written by WP5)
 
 COLUMNS = [
     "doc_id", "actor", "nation", "source_org", "url", "pub_date", "sha256",
@@ -28,6 +29,26 @@ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # Eval sequences must never come from ATT&CK group mappings (those are the ATTK baseline).
 ATTACK_GROUP_URL_RE = re.compile(r"attack\.mitre\.org/groups/", re.IGNORECASE)
+
+
+def normalize_url(url: str) -> str:
+    """Comparable form: lowercase scheme/host, no www., no fragment/query noise or trailing junk."""
+    u = url.strip().rstrip("|.,;").split("#")[0]
+    u = re.sub(r"<br.*$", "", u)
+    m = re.match(r"^(https?)://([^/]+)(.*)$", u, re.IGNORECASE)
+    if not m:
+        return u.lower()
+    host = m.group(2).lower().removeprefix("www.")
+    return f"{host}{m.group(3)}".rstrip("/")
+
+
+def load_cited(actors: dict[str, dict], cited_dir: Path = CITED_DIR) -> dict[str, set[str]]:
+    out = {}
+    for actor in actors:
+        path = cited_dir / f"{actor}_cited_sources.txt"
+        if path.exists():
+            out[actor] = {line.strip() for line in path.read_text().splitlines() if line.strip()}
+    return out
 
 
 def write_empty(path: Path = MANIFEST_PATH) -> None:
@@ -52,6 +73,7 @@ def check(
     actors: dict[str, dict],
     *,
     text_dir: Path | None = None,
+    cited: dict[str, set[str]] | None = None,
 ) -> list[str]:
     """Return every violation; empty means the manifest passes."""
     if header != COLUMNS:
@@ -86,6 +108,11 @@ def check(
             errors.append(f"{where}: LEAKAGE: prior doc is cited by the emulation plan")
         if r["used_for"] == "eval" and ATTACK_GROUP_URL_RE.search(r["url"]):
             errors.append(f"{where}: LEAKAGE: eval doc is an ATT&CK group mapping")
+        # cited_by_emulation_plan must agree with the reports the plan actually cites.
+        if cited and r["actor"] in cited and normalize_url(r["url"]) in cited[r["actor"]] \
+                and r["cited_by_emulation_plan"] != "y":
+            errors.append(f"{where}: LEAKAGE: url is cited by the {r['actor']} emulation plan "
+                          f"(data/eval/plans/{r['actor']}_cited_sources.txt) but marked n")
 
         if text_dir is not None and SHA256_RE.match(r["sha256"]):
             text = text_dir / f"{r['doc_id']}.txt"

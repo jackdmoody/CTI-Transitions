@@ -17,7 +17,7 @@
 | H1 | CTI conditioning improves hunting | Conditioned vs. unconditioned DRIFT on injected sequences | Higher AUPRC / detection@FPR and earlier detection, CIs over seeds non-overlapping or paired test p<0.05 |
 | H2 | The report content matters, not just model memory | Report-conditioned prior vs. no-report (parametric-memory) prior | Report > no-report on transition recovery and hunting |
 | H3 | Small open-weight models are sufficient (special theme) | Open-weight vs. frontier extraction | Open-weight recovers ≥80% of frontier edge-F1 and ≥80% of its hunting lift |
-| H4 | The benefit is adversary-specific | 4×4 prior-actor × eval-actor matrix across Russia, China, Iran, DPRK | Diagonal (same-actor) > off-diagonal in every row; off-diagonal ≥ unconditioned is acceptable (generic attack structure) |
+| H4 | The benefit is adversary-specific | 4×4 prior-actor × eval-actor matrix across the core actors APT29 (Russia), menuPass (China), OilRig (Iran), Sandworm (Russia); DPRK added as a 5th row/column if the stretch lands | Diagonal (same-actor) > off-diagonal in every row; off-diagonal ≥ unconditioned is acceptable (generic attack structure) |
 | H2b | The report matters most where memory is thinnest | Report-minus-no-report gap vs. actor public-coverage rank | Gap increases as coverage decreases (APT29 smallest gap; OilRig/DPRK largest). Secondary, reported descriptively with n=4 |
 
 Report negative results honestly. If H2 fails, that is a finding about memorization and still goes in the paper.
@@ -32,7 +32,8 @@ The CTI used to **build priors** and the material used to **build injected evalu
 - **Report-split fallback (DPRK, and any actor without a usable Windows plan):** partition that actor's reports into an *eval set* (2–3 reports, e.g., CISA advisories, hand-converted into an ordered technique sequence and reviewed by Jack) and a *prior set* (all remaining reports). Never build eval sequences from ATT&CK group mappings, since those are the ATTK baseline.
 - **Prior sources (extraction inputs):** vendor and government reports on the actor that are **not** the emulation plan, **not** cited by the emulation plan, and **not** in the eval set. Target 5–8 per actor; accept a minimum of 2 for thinly covered actors and report the count per actor in T1. Record URL, date, SHA-256 of the saved text.
 - Maintain `data/cti/manifest.csv` with columns: `doc_id, actor, nation, source_org, url, pub_date, sha256, used_for {prior|eval}, cited_by_emulation_plan {y|n}`.
-- **Acceptance check:** script `scripts/check_leakage.py` fails the build if any doc is `used_for=prior` and `cited_by_emulation_plan=y`, appears in both roles, or if any actor has fewer than 2 prior docs.
+- **Cited reports:** a plan's citations are every step's `cti_source` plus every report URL in the plan's markdown docs (README, Intelligence Summary, Operations Flow, scenario READMEs). They are extracted to `data/eval/plans/<actor>_cited_sources.txt` (WP5). The OilRig plan YAML has no `cti_source` fields, but its Intelligence Summary and Operations Flow cite ~25 vendor reports, so OilRig uses the same citation rule as the other actors (no temporal fallback needed).
+- **Acceptance check:** script `scripts/check_leakage.py` fails the build if any doc is `used_for=prior` and `cited_by_emulation_plan=y`, appears in both roles, is cited by its actor's plan but marked `cited_by_emulation_plan=n`, or if any core actor has fewer than 2 prior docs.
 
 Note for the paper: because frontier models were trained on public APT29 material, the no-report baseline (§3, condition B) is what bounds memorization. Leakage control on the report side doesn't remove that, so state it as a limitation.
 
@@ -92,8 +93,8 @@ Note for the paper: because frontier models were trained on public APT29 materia
 | Russia | APT29 | ATT&CK Evals Round 2 plan (scenarios 1–2) | Ready |
 | China | menuPass (APT10) | CTID Adversary Emulation Library plan | Ready |
 | Iran | OilRig (APT34) | CTID Adversary Emulation Library plan | Ready |
-| DPRK | Lazarus-family actor | ATT&CK Evals 2024 DPRK plan **if Windows-applicable**; else report-split fallback (§1) | **Verify by 22 Oct** |
-| Russia (stretch) | Sandworm | CTID plan | Stretch: within-nation comparison + ICS relevance |
+| Russia | Sandworm | CTID plan (Windows steps 16–19 only) | **Core since 24 Oct** (Jack): within-nation comparison with APT29 + ICS relevance |
+| DPRK (stretch) | Lazarus-family actor | Report-split fallback (§1). The ATT&CK Evals ER6 DPRK plan is macOS-targeted | **Stretch since 24 Oct** (Jack); decision after the WP5 rerun |
 
 - Every actor gets the same pipeline: same injection procedure, same variants, same seeds, same extraction prompts.
 - DPRK check: open the 2024 DPRK plan in github.com/attackevals/ael. If its steps are macOS/Linux-only, use the report-split fallback and say so in the paper. Don't map macOS steps onto Windows hosts.
@@ -261,7 +262,7 @@ results/<run_id>/{config.yaml, metrics.json, calls.jsonl}
 | 16–18 Nov | Revision, AAAI-27 formatting, page check (target ~7 pp + refs) | Compiles clean |
 | 19 Nov | Submit | — |
 
-**Cut order if behind (drop first → last):** Sandworm stretch → appendix sweeps → secondary Security/PowerShell telemetry run → benign ICS-protocol baseline → Zeek vantage ablation T8 (main results stay Sysmon-only) → noisy variant → ~4B size-curve model → ATLASv2 → OTRF validation → DPRK (fall back to a 3×3 matrix and say so). Never cut: leakage control, visibility filter, no-report baseline, open-weight run, ATTK baseline, the Russia/China/Iran matrix.
+**Cut order if behind (drop first → last):** DPRK stretch → appendix sweeps → secondary Security/PowerShell telemetry run → benign ICS-protocol baseline → Zeek vantage ablation T8 (main results stay Sysmon-only) → noisy variant → ~4B size-curve model → ATLASv2 → OTRF validation → Sandworm (fall back to a 3×3 matrix and say so). Never cut: leakage control, visibility filter, no-report baseline, open-weight run, ATTK baseline, the Russia/China/Iran matrix.
 
 ---
 

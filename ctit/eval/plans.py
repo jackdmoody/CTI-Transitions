@@ -23,6 +23,7 @@ LABEL_ALIASES = {"defensive-evasion": "defense-evasion"}
 # Where a plan's scenarios break (no transition across the boundary): first step number of
 # each later scenario.
 SCENARIO_STARTS = {"APT29": [11]}  # Round 2: steps 1-10 scenario 1, 11-20 scenario 2
+# (Sandworm's Windows steps are all in its one detection scenario, steps 16-19.)
 
 
 @dataclass
@@ -59,6 +60,20 @@ def _scenario(actor: str, step_id: str) -> int:
     return 1 + sum(n >= s for s in SCENARIO_STARTS.get(actor, []))
 
 
+_PLACEHOLDER = re.compile(r"#\{([^}]+)\}")
+
+
+def substitute(command: str, input_arguments: dict) -> str:
+    """Fill CALDERA #{name} placeholders with the ability's own input_arguments defaults
+    (part of the plan); placeholders without a default become their bare name."""
+    def repl(m):
+        arg = input_arguments.get(m.group(1))
+        if isinstance(arg, dict) and arg.get("default") not in (None, ""):
+            return str(arg["default"])
+        return m.group(1).split(".")[-1]
+    return _PLACEHOLDER.sub(repl, command)
+
+
 def load_plan(actor: str, path: Path | None = None) -> list[Step]:
     doc = yaml.safe_load((path or PLANS / f"{actor}.yaml").read_text())
     steps = []
@@ -69,7 +84,7 @@ def load_plan(actor: str, path: Path | None = None) -> list[Step]:
         if "windows" not in platforms:
             continue
         executor, command = next(iter(platforms["windows"].items()))
-        command = (command or {}).get("command") or ""
+        command = substitute((command or {}).get("command") or "", ab.get("input_arguments") or {})
         technique = str(ab["technique"]["attack_id"]).upper()
         tactic, source = _tactic(str(ab["tactic"]), technique)
         step_id = str(ab.get("procedure_step", ""))
@@ -82,9 +97,25 @@ def load_plan(actor: str, path: Path | None = None) -> list[Step]:
     return steps
 
 
+DOCS = PLANS / "docs"  # <actor>/*.md: the plan's README, Intelligence Summary, Operations Flow, ...
+_URL = re.compile(r"https?://[^\s)>\]\"'|<`]+")
+# Links in plan docs that are not reports: ATT&CK pages, lab IPs, badges, licenses, socials.
+_NOT_A_REPORT = re.compile(
+    r"^https?://(attack\.mitre\.org|(10|192\.168|172\.(1[6-9]|2\d|3[01]))\.|127\.|localhost|"
+    r"img\.shields\.io|opensource\.org|www\.apache\.org|creativecommons\.org|"
+    r"(www\.)?(twitter|x|linkedin)\.com)", re.IGNORECASE)
+
+
 def cited_sources(actor: str) -> list[str]:
-    """URLs the plan cites (cti_source): these may never be prior sources (spec §1)."""
-    return sorted({s.cti_source for s in load_plan(actor) if s.cti_source})
+    """Reports the plan cites, which may never be prior sources (spec §1): every step's
+    cti_source plus every report URL in the plan's markdown docs. Normalized with
+    ctit.cti.manifest.normalize_url. Over-inclusive on purpose."""
+    from ctit.cti.manifest import normalize_url
+
+    urls = {s.cti_source for s in load_plan(actor) if s.cti_source}
+    for md in sorted((DOCS / actor).glob("*.md")):
+        urls.update(_URL.findall(md.read_text(errors="replace")))
+    return sorted({n for u in urls if not _NOT_A_REPORT.match(u) and (n := normalize_url(u)) and "/" in n})
 
 
 def sequences(steps: list[Step], tactic_of=lambda s: s.tactic) -> list[list[str]]:
