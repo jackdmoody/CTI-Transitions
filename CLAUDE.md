@@ -8,8 +8,9 @@ The authoritative plan is `docs/W2_EXPERIMENT_SPEC.md`. Read it before any task.
 DRIFT (github.com/jackdmoody/DRIFT, SBP-BRiMS 2026) is a **pinned, read-only dependency**, not this repo.
 - DRIFT is the git submodule `third_party/DRIFT`, checked out at tag `brims-2026` (commit `3517424e71a5ffb6f1d9be074f6a82b9e45e3f45`). It is not a pip dependency. Never vendor or copy DRIFT source into this repo's tracked files, and never move the submodule pointer without asking Jack.
 - All DRIFT imports go through `ctit/adapters/drift.py`, which puts DRIFT's `sysmon_pipeline` and `observational` packages on `sys.path` (extracting `observational.tar.gz` to the gitignored `.cache/drift/`) and raises `DriftPinError` unless the submodule HEAD is the pinned commit and its working tree is clean. No other module imports `sysmon_pipeline`, `observational`, or anything under `third_party/` directly.
-- Never edit DRIFT: not the submodule, not the GitHub repo, not `~/Desktop/DRIFT`. If DRIFT behavior needs to change, wrap or subclass it in the adapter and log why in `docs/SPEC_ISSUES.md`.
+- Never edit DRIFT: not the submodule, not the GitHub repo, not a local DRIFT clone. If DRIFT behavior needs to change, wrap or subclass it in the adapter and log why in `docs/SPEC_ISSUES.md`.
 - `tests/test_drift_parity.py` must keep reproducing the BRiMS baseline number through the adapter.
+- **Two tactic mappers (spec §2.5).** DRIFT's `build_tokens` is the "BRiMS mapper", used only for the parity test and as the T1/T4 reference. Every W2 condition, U included, uses the extended mapper in `ctit/map/`: SigmaHQ Windows rules pinned to one commit, gaps filled only from ATT&CK data-component mappings, and no hand-written rules derived from emulation plans or eval data. The extended mapper is frozen (committed) before any injection or scoring. Changing it after that is a spec issue.
 
 ## Hard rules
 1. **The spec is fixed.** Do not change hypotheses (H1–H4, H2b), conditions, metrics, or table definitions. If something in the spec is wrong or infeasible, stop and write the issue to `docs/SPEC_ISSUES.md` with a proposed fix. Don't work around it silently.
@@ -25,11 +26,12 @@ DRIFT (github.com/jackdmoody/DRIFT, SBP-BRiMS 2026) is a **pinned, read-only dep
 - DPRK eval-sequence path (plan vs. report-split) — decision by 22 Oct
 - Hand-converted report-split eval sequences (if used)
 - Any change to `prompts/*.txt` after the first full extraction run
+- H4 viability at the reachable tactic set K (WP5): K, projected actor sequences and pairwise actor JSD under both mappers, before other actors are ported
 
 When you hit a gate, write what you need reviewed and why to `docs/REVIEW_QUEUE.md`, then stop.
 
 ## How to work
-- Work one work package (WP) per session. At the start, restate which spec section you're implementing and the acceptance check.
+- The WP list and order are in `docs/WORKPLAN.md`. Work one work package (WP) per session. At the start, restate which spec section you're implementing and the acceptance check.
 - Before writing code, read the DRIFT source you'll call (installed package) and reuse it through the adapter, especially preprocessing, the tactic mapper, and role baselines. Don't reimplement working BRiMS code.
 - Write tests for each new module under `tests/`. A WP isn't done until its acceptance check passes and the tests pass.
 - Commit at the end of each WP on `main` (or a WP branch), with message `W2/<WP>: <what>`. Small, reviewable commits. Never commit to the DRIFT repo.
@@ -41,7 +43,7 @@ When you hit a gate, write what you need reviewed and why to `docs/REVIEW_QUEUE.
 - Python version, package manager, and install command: Python 3.12 (DRIFT is tested on 3.10–3.12; its pandas 3 pin needs ≥3.11), conda env `w2`. Setup: `git submodule update --init`, `conda create -n w2 python=3.12`, `conda activate w2`, `pip install -r third_party/DRIFT/requirements.txt`, `pip install -e ".[dev]"`. Don't run DRIFT's `setup_env.py` in `w2`: it copies packages into site-packages, and the adapter refuses copies that aren't the submodule's. Always run inside `w2`.
 - Frontier model API key: env var `ANTHROPIC_API_KEY`, loaded from the gitignored `.env` at the repo root via python-dotenv (`ctit/env.py`). `.env.example` is the committed template, with no value. Pin the model version string in `configs/`.
 - Open-weight model: served locally via Ollama (Apple Silicon M5 Pro, 24 GB; Metal backend). Record the weights hash (the model's sha256 digest from `ollama show` / `ollama list`).
-- Local DRIFT clone: `/Users/jackmoody/Desktop/DRIFT`, a separate read-only reference for browsing source. Code never imports from it; it uses `third_party/DRIFT`.
+- Local DRIFT clone: `../DRIFT` (a sibling of this repo), a separate read-only reference for browsing source. Code never imports from it; it uses `third_party/DRIFT`.
 - Data roots: `data/range/` (Sysmon), `data/zeek/`, `data/otrf/`, `data/atlasv2/`, `data/cti/`. All gitignored.
 
 ## Commands

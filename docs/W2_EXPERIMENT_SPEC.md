@@ -45,7 +45,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 - Reuse the DRIFT preprocessing → per-host tactic sequences with host-role labels.
 - Record which hosts/segments are IT vs. OT/ICS-adjacent (`data/range/host_roles.csv`, column `segment {it|boundary|ot}`).
 - Split: benign baseline fit window / held-out test window, by time. No test-window data in baseline fitting.
-- **Telemetry:** Sysmon is the primary source (matches BRiMS and ATLASv2). If the range also collected Windows Security logs (4624/4625 logons, 4688, 4769 Kerberos) or PowerShell script-block logging (4104), ingest them through the same tactic mapper as a secondary run. Report which sources were present in T1. Do not collect new data. If those sources are absent, it's a stated limitation.
+- **Telemetry:** Sysmon is the primary source (matches BRiMS and ATLASv2). If the range also collected Windows Security logs (4624/4625 logons, 4688, 4769 Kerberos) or PowerShell script-block logging (4104), ingest them through the same tactic mapper (the extended mapper, §2.5) as a secondary run. Report which sources were present in T1. Do not collect new data. If those sources are absent, it's a stated limitation.
 - **Zeek (network vantage, secondary source).** Jack is pulling the exercise-network Zeek logs. Use them as a second vantage point for visibility and tactic events. Do not build full host-network fusion for this paper.
   - **Pre-flight checks (block Zeek work until both pass):** (a) Zeek sensors and Sysmon hosts time-synced: estimate clock offset from matched events (Sysmon event 3 vs. conn.log on the same 5-tuple) and require median |offset| ≤ 2 s, else correct per host or drop Zeek; (b) Zeek capture windows cover the Sysmon fit and test windows. Report both in T1.
   - **Logs and fields to ingest** (`ctit/ingest/zeek.py`):
@@ -74,7 +74,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 
 ### 2.2 Injected adversary sequences
 - Convert each emulation-plan step to (technique → tactic) and an ordered tactic sequence. Keep technique-level too.
-- **Visibility filter (required before injection).** For each step, record in `data/eval/visibility_<actor>.csv`: `step_id, technique, expected_sysmon_events (e.g., 1|10|13), visible_sysmon {y|partial|n}, expected_zeek_logs (e.g., kerberos|dce_rpc), visible_zeek {y|partial|n}, rationale`. A step's visibility under a configuration is the best of its sources in that configuration (Sysmon-only uses `visible_sysmon`; Sysmon+Zeek uses the max of the two). Zeek-visible steps are injected as network-derived tactic events on the attributed host. Base this on the step's procedure (what process, file, registry, network, or LSASS access it causes), not on the technique name alone. Rules:
+- **Visibility filter (required before injection).** For each step, record in `data/eval/visibility_<actor>.csv`: `step_id, technique, expected_sysmon_events (e.g., 1|10|13), visible_sysmon {y|partial|n}, expected_zeek_logs (e.g., kerberos|dce_rpc), visible_zeek {y|partial|n}, drift_tactic, rationale`. `drift_tactic` is the tactic the extended mapper (§2.5) produces from the step's concrete artifact, or `—` if it produces none. The injected tactic is `drift_tactic`, not the plan's tactic. Steps with `—` count toward recovery metrics only, like `visible=n`. A step's visibility under a configuration is the best of its sources in that configuration (Sysmon-only uses `visible_sysmon`; Sysmon+Zeek uses the max of the two). Zeek-visible steps are injected as network-derived tactic events on the attributed host. Base this on the step's procedure (what process, file, registry, network, or LSASS access it causes), not on the technique name alone. Rules:
   - `visible=y` → injected as a tactic event with the mapped tactic.
   - `visible=partial` → injected, but carries only the tactic the visible artifact supports (e.g., a PowerShell step visible only as event 1 maps to Execution, not to whatever the script did).
   - `visible=n` → not injected (e.g., Kerberos ticket forgery with no Sysmon artifact). The step still counts in the ground-truth transition set for §6 recovery metrics, but not in the hunting ground truth.
@@ -105,7 +105,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 - Purpose: show that synthetic injection gives scores comparable to a real emulated attack. This answers the "your attacks are synthetic" reviewer objection.
 - Source: OTRF Security-Datasets recordings of the ATT&CK Evaluations APT29 emulation (day 1 and day 2), with Sysmon, Security, and PowerShell logs. **First task: confirm the dataset is still hosted and downloadable, by 23 Oct.** If it's gone, drop this section and add the limitation.
 - Procedure:
-  1. Run the DRIFT tactic mapper on the OTRF Sysmon logs only, to match the range corpus. Extract the attack hosts' tactic sequences using the dataset's attack timestamps.
+  1. Run the extended tactic mapper (§2.5) on the OTRF Sysmon logs only, to match the range corpus. Extract the attack hosts' tactic sequences using the dataset's attack timestamps.
   2. Compare against the synthetic visibility-filtered APT29 chain: tactic-sequence edit distance, and the fraction of plan steps that actually appear in the real Sysmon logs vs. the fraction your visibility CSV predicted (this checks the visibility filter itself).
   3. Score the real sequences with U, R-F, R-S (role baseline fit on the OTRF benign hosts if enough benign data exists; otherwise on the range baseline, stated as cross-environment).
   4. Score the synthetic chain identically. Report the score distributions side by side.
@@ -115,7 +115,14 @@ Note for the paper: because frontier models were trained on public APT29 materia
 ### 2.4 ATLASv2 (external benchmark)
 - bitbucket.org/sts-lab/atlasv2. Windows hosts, Sysmon + Carbon Black Cloud, ~4 days of benign activity from real users, 10 attack scenarios (s1–s4 single-host, m1–m6 multi-host), ground-truth labels under `data/attack/h*/msft-security/groundtruth/`.
 - Caveat: ATLASv2 scenarios are exploit-driven and share a common set of attack steps. They are **not** actor-attributed, so ATLASv2 can't test H4. Use it for H1 and H3 only, generating priors from the scenario descriptions in the ATLAS paper treated as "CTI-like" text. Label this clearly.
-- Map Sysmon/CB events → ATT&CK tactics with the same mapper DRIFT uses, and report mapper coverage.
+- Map Sysmon events → ATT&CK tactics with the extended mapper (§2.5), and report mapper coverage.
+
+### 2.5 Tactic mappers
+- **BRiMS mapper:** DRIFT's `sysmon_pipeline.mapping.build_tokens`, untouched. Used for the parity test and as the reference mapper in T1 and T4.
+- **Extended mapper** (`ctit/map/`, W2-side): SigmaHQ Windows rules (Sysmon and Security) pinned to one commit, with tactic taken from each rule's ATT&CK tags. Gaps are filled only from ATT&CK data-component mappings. No hand-written rules derived from emulation plans or eval data. A deterministic primary-tactic policy for multi-tactic techniques is documented in `docs/MAPPER_POLICY.md`.
+- The extended mapper is frozen (committed) before any injection or scoring. Its report gives: the reachable tactic set K; the per-tactic benign tag rate on public data; and recall against OTRF APT29 ground truth.
+- All W2 conditions, U included, use the extended mapper.
+- **K:** the set of tactics a mapper can emit from the available sources (Sysmon, Security if present, Zeek once ingested). Priors and ground-truth sequences are projected onto K (§5).
 
 ---
 
@@ -123,7 +130,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 
 **Extraction models**
 - F = frontier model (one; pin version string and date)
-- S = open-weight small model (one primary, ≤8–14B, run locally; optionally a second for robustness). Pin weights hash.
+- S = open-weight small model, run locally under Ollama. Primary: `qwen3:14b` (thinking off, `num_ctx` ≥ 8192). A second, ~4B model in the same family gives a size curve. Pin the weights digest.
 - Temperature 0 where supported; else 5 samples and report mean ± sd.
 
 **Prior conditions**
@@ -149,7 +156,7 @@ Compute note: priors are extracted once per actor per model (8 extractions + 8 n
 1. Chunk the report (~2k tokens, overlap 200).
 2. Prompt (fixed, versioned in `prompts/extract_v1.txt`): return JSON list of `{from_tactic, to_tactic, technique_from?, technique_to?, evidence_span, confidence}`. Tactics restricted to the 14 Enterprise ATT&CK tactics; reject other labels.
 3. Validate the JSON schema. Retry once on failure, then log and skip.
-4. Aggregate across chunks and reports → count matrix C[i,j]. Prior P = row-normalized (C + α), α = 0.5 (sweep {0.1, 0.5, 1} in the appendix).
+4. Aggregate across chunks and reports → count matrix C[i,j] over the 14 tactics. Prior P = row-normalized (C + α), α = 0.5 (sweep {0.1, 0.5, 1} in the appendix). For scoring, P is projected onto the mapper-reachable set K (§2.5, §5). Transition-recovery metrics (§6) are reported both on the 14 tactics and on K.
 5. Evidence check: `evidence_span` must be a substring of the source text. Report the hallucinated-span rate per model. Cheap, and it gives you a citable faithfulness metric.
 6. No-report condition uses `prompts/memory_v1.txt` with the same output schema.
 
@@ -159,15 +166,19 @@ Log all calls (model, prompt hash, tokens, latency, cost). Cost and latency tabl
 
 ## 5. Conditioning mechanism
 
-Default: **likelihood-ratio scoring.** For a host window with tactic sequence s:
+Default: **likelihood-ratio scoring.** For a host window with tactic sequence s = (s_1, …, s_n) over K:
 
-score(s) = log P_adv(s) − log P_role(s)
+score(s) = (1/(n−1)) Σ_{t=2..n} [ log P_adv(s_t | s_{t−1}) − log P_role(s_t | s_{t−1}) ]
 
-where P_role is DRIFT's role-indexed benign transition model and P_adv is a first-order Markov model with the CTI prior as transition matrix (with smoothing; optionally a mixture with P_role, λ∈{0.1,0.3,0.5}, chosen on a validation split, never test).
+that is, the mean log-LR per transition. The summed (unnormalized) version is reported in the appendix only.
 
-Alternative (ablation): DRIFT deviation score reweighted by P_adv on transitions with deviation above threshold. Keep whichever wins on validation. Report the other in the appendix.
+- **P_role** is built from DRIFT's role baseline. For each role r, sum the fit-window tactic-transition counts over role-r hosts (DRIFT ingest semantics, unmapped events skipped). Add α = 0.5 over a fixed K×K list of edges and normalize each row. Without row-normalization this equals DRIFT's role-mean edge vector.
+- **P_adv** is a first-order Markov model whose transition matrix is the CTI prior projected onto K. Unreachable tactics are skipped as DRIFT skips unmapped events: T_obs = T_KK + T_KU (I − T_UU)⁻¹ T_UK. It is optionally mixed with P_role, λ ∈ {0.1, 0.3, 0.5}, chosen on a validation split, never test.
+- **Window** = a DRIFT session (`sessionize_host`, τ fitted per host on the fit window only). Windows with fewer than 2 tagged events are skipped and counted. The appendix sweeps fixed windows of 8, 16 and 32 tagged events.
+- **U** stays DRIFT's scorer: the JSD between a window's smoothed edge distribution and the role-r fit-window mean, over the same fixed edge list.
+- **Uni** (likelihood ratio with a uniform P_adv) separates the scorer from the prior: R − Uni is reported as the CTI effect, Uni − U as the scorer effect.
 
-Scoring is per sliding window (window length = DRIFT default; sweep in the appendix).
+Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the projected P_adv on transitions with deviation above threshold. Keep whichever wins on validation. Report the other in the appendix.
 
 ---
 
@@ -193,12 +204,12 @@ Scoring is per sliding window (window length = DRIFT default; sweep in the appen
 
 ## 7. Paper tables and figures (the agents produce exactly these)
 
-- **T1** Data summary: corpus hosts/roles/segments, events, telemetry sources present, injected chains per actor, eval-sequence source per actor (plan vs. report-split), steps visible/partial/dropped per actor, prior-doc count per actor, ATLASv2 splits, mapper coverage
+- **T1** Data summary: corpus hosts/roles/segments, events, telemetry sources present, injected chains per actor, eval-sequence source per actor (plan vs. report-split), steps visible/partial/dropped per actor, prior-doc count per actor, ATLASv2 splits, mapper coverage and reachable tactic set K under both the BRiMS and the extended mapper
 - **T7** Synthetic vs. real APT29 (OTRF) validation, see §2.3b
 - **T8** Vantage ablation (Sysmon-only vs. Sysmon+Zeek), per actor: plan steps visible (count and %), AUPRC and TTD under U and R-S, with paired test. Headline sentence: "network vantage recovers X% of steps endpoint telemetry misses and changes CTI-conditioned AUPRC by Y."
 - **T2** Transition recovery: rows {B-F, B-S, R-F, R-S, ATTK}, cols {edge P, R, F1, JSD, hallucination rate}, one block per actor
 - **T3** Hunting (main): rows {U, Uni, ATTK, B-F, B-S, R-F, R-S}, cols {AUPRC, AUROC, Det@1%FPR, P@10, TTD}, full chain, macro-averaged over the 4 actors with per-actor values in the appendix
-- **T4** Specificity (H4): 4×4 heatmap, prior actor (rows) × eval actor (cols), cell = AUPRC lift over U, R-S (R-F in appendix). This is the paper's headline figure-table
+- **T4** Specificity (H4): 4×4 heatmap, prior actor (rows) × eval actor (cols), cell = AUPRC lift over U, R-S (R-F in appendix). Reported under both the extended mapper (main) and the BRiMS mapper. This is the paper's headline figure-table
 - **F4** H2b: report-minus-no-report AUPRC gap vs. actor public-coverage proxy (4 points, labeled; descriptive only)
 - **T5** Small-model sufficiency + cost: F vs. S on edge-F1, hunting lift over U, $/report, latency
 - **T6** ATLASv2: {U, Uni, R-F, R-S}
@@ -221,6 +232,7 @@ Scoring is per sliding window (window length = DRIFT default; sweep in the appen
 ```
 third_party/DRIFT/        (git submodule @ brims-2026, read-only)
 ctit/adapters/drift.py   tests/test_drift_parity.py
+ctit/map/                (extended Sigma-based tactic mapper)  docs/MAPPER_POLICY.md
 ctit/cti/extract.py      ctit/cti/prior.py       ctit/score/lr.py
 ctit/inject/emulation.py ctit/inject/splice.py   ctit/eval/metrics.py
 prompts/extract_v1.txt    prompts/memory_v1.txt
@@ -248,7 +260,7 @@ results/<run_id>/{config.yaml, metrics.json, calls.jsonl}
 | 16–18 Nov | Revision, AAAI-27 formatting, page check (target ~7 pp + refs) | Compiles clean |
 | 19 Nov | Submit | — |
 
-**Cut order if behind (drop first → last):** Sandworm stretch → appendix sweeps → secondary Security/PowerShell telemetry run → benign ICS-protocol baseline → Zeek vantage ablation T8 (main results stay Sysmon-only) → noisy variant → second open-weight model → ATLASv2 → OTRF validation → DPRK (fall back to a 3×3 matrix and say so). Never cut: leakage control, visibility filter, no-report baseline, open-weight run, ATTK baseline, the Russia/China/Iran matrix.
+**Cut order if behind (drop first → last):** Sandworm stretch → appendix sweeps → secondary Security/PowerShell telemetry run → benign ICS-protocol baseline → Zeek vantage ablation T8 (main results stay Sysmon-only) → noisy variant → ~4B size-curve model → ATLASv2 → OTRF validation → DPRK (fall back to a 3×3 matrix and say so). Never cut: leakage control, visibility filter, no-report baseline, open-weight run, ATTK baseline, the Russia/China/Iran matrix.
 
 ---
 
