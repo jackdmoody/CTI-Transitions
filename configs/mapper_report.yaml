@@ -1,0 +1,4 @@
+# WP4b: frozen extended mapper vs. BRiMS mapper on public data (OTRF APT29, ATLASv2,
+# Splunk Attack Data atomic samples). No LLM calls.
+experiment: mapper_report
+workers: 4
