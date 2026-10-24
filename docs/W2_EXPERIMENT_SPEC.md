@@ -213,12 +213,13 @@ Scoring is per sliding window (window length = DRIFT default; sweep in the appen
 
 **Relationship to DRIFT**
 - W2 lives in its own repo. No W2 code is committed to DRIFT.
-- Tag the exact DRIFT commit used for BRiMS (e.g., `brims-2026`) and depend on it as a pinned dependency: `drift @ git+https://github.com/jackdmoody/DRIFT@brims-2026` in `pyproject.toml`. If DRIFT isn't pip-installable yet, the one allowed DRIFT change is adding a minimal `pyproject.toml` on a separate commit, then re-tag.
-- Import from DRIFT only what W2 needs: preprocessing, the Sysmon tactic mapper, and role-baseline fitting/scoring. Wrap these in `ctit/adapters/drift.py` so the rest of W2 never imports DRIFT directly. If DRIFT changes later, only the adapter moves.
+- The exact DRIFT commit used for BRiMS is tagged `brims-2026` (`3517424e71a5ffb6f1d9be074f6a82b9e45e3f45`). W2 pins it as the git submodule `third_party/DRIFT`, not as a pip dependency. DRIFT has no package metadata and is never modified, not even to add packaging. `ctit/adapters/drift.py` puts DRIFT's packages on `sys.path` and refuses to load unless the submodule HEAD is that commit and its working tree is clean. DRIFT's `requirements.txt` defines the shared dependency pins.
+- Import from DRIFT only what W2 needs: preprocessing, the Sysmon tactic mapper, and role-baseline fitting/scoring. Wrap these in `ctit/adapters/drift.py` so the rest of W2 never imports DRIFT directly. If the DRIFT pin changes later, only the submodule pointer and the adapter's pinned hash move.
 - Do not modify DRIFT internals from W2. If a DRIFT function needs different behavior, subclass or wrap it in the adapter, and log the reason in `docs/SPEC_ISSUES.md`.
 - Regression check: `tests/test_drift_parity.py` reproduces one BRiMS baseline number through the adapter, so the U condition is provably the published method.
 
 ```
+third_party/DRIFT/        (git submodule @ brims-2026, read-only)
 ctit/adapters/drift.py   tests/test_drift_parity.py
 ctit/cti/extract.py      ctit/cti/prior.py       ctit/score/lr.py
 ctit/inject/emulation.py ctit/inject/splice.py   ctit/eval/metrics.py

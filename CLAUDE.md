@@ -6,9 +6,9 @@ reports into ATT&CK tactic-transition priors, which condition DRIFT-style huntin
 The authoritative plan is `docs/W2_EXPERIMENT_SPEC.md`. Read it before any task.
 
 DRIFT (github.com/jackdmoody/DRIFT, SBP-BRiMS 2026) is a **pinned, read-only dependency**, not this repo.
-- Depend on the tagged BRiMS commit via `pyproject.toml`. Never vendor or copy DRIFT source into this repo.
-- All DRIFT imports go through `ctit/adapters/drift.py`. No other module imports `drift` directly.
-- Never edit DRIFT. If DRIFT behavior needs to change, wrap or subclass it in the adapter and log why in `docs/SPEC_ISSUES.md`.
+- DRIFT is the git submodule `third_party/DRIFT`, checked out at tag `brims-2026` (commit `3517424e71a5ffb6f1d9be074f6a82b9e45e3f45`). It is not a pip dependency. Never vendor or copy DRIFT source into this repo's tracked files, and never move the submodule pointer without asking Jack.
+- All DRIFT imports go through `ctit/adapters/drift.py`, which puts DRIFT's `sysmon_pipeline` and `observational` packages on `sys.path` (extracting `observational.tar.gz` to the gitignored `.cache/drift/`) and raises `DriftPinError` unless the submodule HEAD is the pinned commit and its working tree is clean. No other module imports `sysmon_pipeline`, `observational`, or anything under `third_party/` directly.
+- Never edit DRIFT: not the submodule, not the GitHub repo, not `~/Desktop/DRIFT`. If DRIFT behavior needs to change, wrap or subclass it in the adapter and log why in `docs/SPEC_ISSUES.md`.
 - `tests/test_drift_parity.py` must keep reproducing the BRiMS baseline number through the adapter.
 
 ## Hard rules
@@ -38,13 +38,14 @@ When you hit a gate, write what you need reviewed and why to `docs/REVIEW_QUEUE.
 - Update `docs/PROGRESS.md` at the end of each session: what was done, what passed, what's next, any open issues. Keep it short.
 
 ## Environment
-- Python version, package manager, and install command: <fill in>
-- Frontier model API key: env var <fill in>. Pin the model version string in `configs/`.
-- Open-weight model: served locally via <Ollama | vLLM | llama.cpp — fill in>. Record the weights hash.
+- Python version, package manager, and install command: Python 3.12 (DRIFT is tested on 3.10–3.12; its pandas 3 pin needs ≥3.11), conda env `w2`. Setup: `git submodule update --init`, `conda create -n w2 python=3.12`, `conda activate w2`, `pip install -r third_party/DRIFT/requirements.txt`, `pip install -e ".[dev]"`. Don't run DRIFT's `setup_env.py` in `w2`: it copies packages into site-packages, and the adapter refuses copies that aren't the submodule's. Always run inside `w2`.
+- Frontier model API key: env var `ANTHROPIC_API_KEY`, loaded from the gitignored `.env` at the repo root via python-dotenv (`ctit/env.py`). `.env.example` is the committed template, with no value. Pin the model version string in `configs/`.
+- Open-weight model: served locally via Ollama (Apple Silicon M5 Pro, 24 GB; Metal backend). Record the weights hash (the model's sha256 digest from `ollama show` / `ollama list`).
+- Local DRIFT clone: `/Users/jackmoody/Desktop/DRIFT`, a separate read-only reference for browsing source. Code never imports from it; it uses `third_party/DRIFT`.
 - Data roots: `data/range/` (Sysmon), `data/zeek/`, `data/otrf/`, `data/atlasv2/`, `data/cti/`. All gitignored.
 
 ## Commands
-- Tests: <fill in, e.g. `pytest -q`>
+- Tests: `pytest -q`
 - Leakage check: `python scripts/check_leakage.py`
 - DRIFT parity: `pytest tests/test_drift_parity.py`
 - Public-data run: `python -m ctit.run --config configs/w2_public.yaml`

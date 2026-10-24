@@ -5,3 +5,6 @@ results/
 .env
 __pycache__/
 .venv/
+.DS_Store
+.cache/
+*.egg-info/
