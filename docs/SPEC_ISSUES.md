@@ -56,3 +56,15 @@ Spec §2, §4, §7 and §8 and CLAUDE.md are updated.
 
 - S primary: `qwen3:14b` under Ollama, thinking off, `num_ctx` ≥ 8192, digest pinned.
 - The second slot changes from "robustness" to a size curve (approved). Proposed model: `qwen3:4b`, same family, so size is the only variable (pending Jack).
+
+## 2026-10-24: ATT&CK v19 tactic split (§2.5, §4), proposed, pending Jack
+
+**Issue.** ATT&CK v19.0 (2026-04-28) replaced Defense Evasion with Stealth and Defense Impairment, giving 15 tactics. SigmaHQ `r2026-07-01` uses the new tags (800 Stealth, 302 Defense Impairment). The spec (§4, "14 Enterprise ATT&CK tactics"), DRIFT and the 2020 emulation plans use 14.
+
+**Proposed fix.** The extended mapper collapses both to Defense Evasion (`ctit/map/attack.py`, `docs/MAPPER_POLICY.md`). Technique→tactic lookups use ATT&CK v18.1, the last 14-tactic release. Extraction prompts keep 14 tactics. This is reversible: one lookup table.
+
+## 2026-10-24: Sigma process_creation rules vs. Security 4688 (§2.5), proposed, pending Jack
+
+**Issue.** The frozen mapper applies process_creation rules to Sysmon EID 1 only. Security 4688 events (ATLASv2, and any range host without full Sysmon) get no process-based tactics.
+
+**Proposed fix.** Before final sign-off, also evaluate process_creation rules on 4688 via a field mapping (NewProcessName→Image, ParentProcessName→ParentImage, CommandLine). Re-freeze and re-run the report.
