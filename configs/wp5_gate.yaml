@@ -1,0 +1,7 @@
+# WP5: APT29 visibility draft + H4-viability gate (spec §2.2, §2.5). Public data, no LLM calls.
+# DPRK is excluded until Jack's DPRK path decision (plan vs. report-split).
+experiment: wp5_gate
+mapper_report: results/20261024T153421Z-mapper_report-7d36465/metrics.json  # mapper v2
+actors: [APT29, menuPass, OilRig]
+k_scope: public_all  # K = tactics the mapper emitted anywhere in OTRF + ATLASv2
+alphas: [0.5, 0.0]
