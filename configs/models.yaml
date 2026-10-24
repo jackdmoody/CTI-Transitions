@@ -1,8 +1,12 @@
-# Pinned extraction models (spec §3). Weights digests are the sha256 of the GGUF model layer
-# in the Ollama manifest (~/.ollama/models/manifests/registry.ollama.ai/library/qwen3/<tag>);
+# Pinned extraction models (spec §3). Open-weight digests are the sha256 of the GGUF model
+# layer in the Ollama manifest (~/.ollama/models/manifests/registry.ollama.ai/library/qwen3/<tag>);
 # ollama_id is what `ollama list` shows. Pulled 2026-10-24 with Ollama 0.40.10.
 # No extraction has been run with any of these yet.
 ollama_version: "0.40.10"
+frontier:
+  F:
+    model: claude-opus-5-5
+    options: {temperature: 0}
 open_weight:
   S:  # primary
     tag: qwen3:14b
@@ -12,19 +16,11 @@ open_weight:
     quantization: Q4_K_M
     context_length: 40960
     options: {temperature: 0, num_ctx: 8192, think: false}
-  S_size_curve_candidates:  # ~4B slot; Jack picks one
-    qwen3:4b-instruct:  # Qwen3-4B-Instruct-2507: non-thinking, matches the thinking-off policy
-      ollama_id: 0edcdef34593
-      weights_sha256: 85e4a5b7b8ef0e48af0e8658f5aaab9c2324c76c1641493f4d1e25fce54b18b9
-      parameters: 4.0B
-      quantization: Q4_K_M
-      context_length: 262144
-      options: {temperature: 0, num_ctx: 8192}
-    qwen3:4b:  # Qwen3-4B-Thinking-2507: thinking cannot be turned off (Ollama reports level "true" only)
-      ollama_id: 359d7dd4bcda
-      weights_sha256: 3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f
-      parameters: 4.0B
-      quantization: Q4_K_M
-      context_length: 262144
-frontier:
-  F: null  # Jack to pick and pin the exact model version string before WP6
+  S_4B:  # size curve: Qwen3-4B-Instruct-2507, non-thinking
+    tag: qwen3:4b-instruct
+    ollama_id: 0edcdef34593
+    weights_sha256: 85e4a5b7b8ef0e48af0e8658f5aaab9c2324c76c1641493f4d1e25fce54b18b9
+    parameters: 4.0B
+    quantization: Q4_K_M
+    context_length: 262144
+    options: {temperature: 0, num_ctx: 8192}

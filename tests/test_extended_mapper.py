@@ -73,3 +73,21 @@ def test_step_recall():
     pooled = {"day1": {"h": ({"T1059"}, {"Execution", "Discovery"})}}
     r = validate.step_recall(steps, pooled)
     assert r["technique_recall"] == 0.5 and r["tactic_recall"] == 0.5
+
+
+def test_v2_process_creation_runs_on_4688():
+    frozen = sigma_rules.load_compiled()
+    assert {r["variant"] for r in frozen} == {"sysmon", "security_4688"}
+    v4688 = [r for r in frozen if r["variant"] == "security_4688"]
+    assert all("EventID=4688" in r["where"] and "Channel='Security'" in r["where"] for r in v4688)
+    whoami = [r for r in v4688 if "whoami.exe" in r["where"].lower() and "NewProcessName" in r["where"]]
+    assert whoami
+    ev = pd.DataFrame({
+        "_timestamp": pd.to_datetime(["2024-01-01T00:00:00Z"] * 2), "Hostname": ["h", "h"],
+        "source": ["security", "sysmon"], "EventID": [4688, 4688], "Channel": ["Security", "x"],
+        "NewProcessName": ["C:\\Windows\\System32\\whoami.exe"] * 2,
+        "CommandLine": ["whoami /all"] * 2,
+    })
+    out = extended.tag(ev, whoami)
+    assert out.loc[0, "tactic"] != ""  # Security 4688 matches
+    assert out.loc[1, "tactic"] == ""  # same fields on a non-Security channel do not

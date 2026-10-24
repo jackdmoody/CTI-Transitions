@@ -112,14 +112,15 @@ Note for the paper: because frontier models were trained on public APT29 materia
 - Output: **T7** synthetic vs. real APT29: visibility agreement (predicted vs. observed visible steps), sequence edit distance, AUPRC/TTD under U, R-F, R-S. Fits in the main paper as a small table if space allows, otherwise in the appendix with one sentence in the main text.
 - Leakage note: OTRF data is an eval artifact only. It must not feed priors.
 
-### 2.4 ATLASv2 (external benchmark)
-- bitbucket.org/sts-lab/atlasv2. Windows hosts, Sysmon + Carbon Black Cloud, ~4 days of benign activity from real users, 10 attack scenarios (s1–s4 single-host, m1–m6 multi-host), ground-truth labels under `data/attack/h*/msft-security/groundtruth/`.
+### 2.4 ATLASv2 (limited robustness check)
+- **OTRF APT29 (§2.3b) is the primary public real-execution benchmark.** ATLASv2 is a limited robustness check only, reported in T6 with its limits stated: its Sysmon has only event IDs 1 and 5 (process create and terminate), and its ground truth labels Security events in a provenance style (97% are 4663 object access), so it is not tactic ground truth.
+- bitbucket.org/sts-lab/atlasv2 (data on Box: one 12.2 GB tarball). Windows hosts, Sysmon + Carbon Black Cloud, ~4 days of benign activity from real users, 10 attack scenarios (s1–s4 single-host, m1–m6 multi-host), ground-truth labels under `data/attack/h*/msft-security/groundtruth/`.
 - Caveat: ATLASv2 scenarios are exploit-driven and share a common set of attack steps. They are **not** actor-attributed, so ATLASv2 can't test H4. Use it for H1 and H3 only, generating priors from the scenario descriptions in the ATLAS paper treated as "CTI-like" text. Label this clearly.
 - Map Sysmon events → ATT&CK tactics with the extended mapper (§2.5), and report mapper coverage.
 
 ### 2.5 Tactic mappers
 - **BRiMS mapper:** DRIFT's `sysmon_pipeline.mapping.build_tokens`, untouched. Used for the parity test and as the reference mapper in T1 and T4.
-- **Extended mapper** (`ctit/map/`, W2-side): SigmaHQ Windows rules (Sysmon and Security) pinned to one commit, with tactic taken from each rule's ATT&CK tags. Gaps are filled only from ATT&CK data-component mappings. No hand-written rules derived from emulation plans or eval data. A deterministic primary-tactic policy for multi-tactic techniques is documented in `docs/MAPPER_POLICY.md`.
+- **Extended mapper** (`ctit/map/`, W2-side): SigmaHQ Windows rules (Sysmon and Security) pinned to one commit, with tactic taken from each rule's ATT&CK tags. No other gap-filling. No hand-written rules derived from emulation plans or eval data. Rules tagged with an ATT&CK group or software ID are excluded (leakage). Process-creation rules run on Sysmon EID 1 and Security 4688. Stealth and Defense Impairment (ATT&CK v19) fold into Defense Evasion. A deterministic primary-tactic policy for multi-tactic techniques is documented in `docs/MAPPER_POLICY.md`.
 - The extended mapper is frozen (committed) before any injection or scoring. Its report gives: the reachable tactic set K; the per-tactic benign tag rate on public data; and recall against OTRF APT29 ground truth.
 - All W2 conditions, U included, use the extended mapper.
 - **K:** the set of tactics a mapper can emit from the available sources (Sysmon, Security if present, Zeek once ingested). Priors and ground-truth sequences are projected onto K (§5).
@@ -205,14 +206,14 @@ Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the proj
 ## 7. Paper tables and figures (the agents produce exactly these)
 
 - **T1** Data summary: corpus hosts/roles/segments, events, telemetry sources present, injected chains per actor, eval-sequence source per actor (plan vs. report-split), steps visible/partial/dropped per actor, prior-doc count per actor, ATLASv2 splits, mapper coverage and reachable tactic set K under both the BRiMS and the extended mapper
-- **T7** Synthetic vs. real APT29 (OTRF) validation, see §2.3b
+- **T7** Synthetic vs. real APT29 (OTRF) validation, see §2.3b. OTRF is the primary public real-execution benchmark
 - **T8** Vantage ablation (Sysmon-only vs. Sysmon+Zeek), per actor: plan steps visible (count and %), AUPRC and TTD under U and R-S, with paired test. Headline sentence: "network vantage recovers X% of steps endpoint telemetry misses and changes CTI-conditioned AUPRC by Y."
 - **T2** Transition recovery: rows {B-F, B-S, R-F, R-S, ATTK}, cols {edge P, R, F1, JSD, hallucination rate}, one block per actor
 - **T3** Hunting (main): rows {U, Uni, ATTK, B-F, B-S, R-F, R-S}, cols {AUPRC, AUROC, Det@1%FPR, P@10, TTD}, full chain, macro-averaged over the 4 actors with per-actor values in the appendix
 - **T4** Specificity (H4): 4×4 heatmap, prior actor (rows) × eval actor (cols), cell = AUPRC lift over U, R-S (R-F in appendix). Reported under both the extended mapper (main) and the BRiMS mapper. This is the paper's headline figure-table
 - **F4** H2b: report-minus-no-report AUPRC gap vs. actor public-coverage proxy (4 points, labeled; descriptive only)
 - **T5** Small-model sufficiency + cost: F vs. S on edge-F1, hunting lift over U, $/report, latency
-- **T6** ATLASv2: {U, Uni, R-F, R-S}
+- **T6** ATLASv2 robustness check: {U, Uni, R-F, R-S}, with its limits stated in the caption (Sysmon EIDs 1/5 only; provenance-style ground truth; not actor-attributed)
 - **F1** Method diagram (separate deliverable)
 - **F2** Score timeline on one injected host: U vs. R-S, injected steps marked
 - **F3** Extracted vs. ground-truth transition heatmaps (APT29, R-S)

@@ -16,7 +16,7 @@ from pathlib import Path
 from sigma.backends.sqlite import sqliteBackend
 from sigma.collection import SigmaCollection
 from sigma.pipelines.sysmon import sysmon_pipeline
-from sigma.pipelines.windows import windows_logsource_pipeline
+from sigma.pipelines.windows import windows_audit_pipeline, windows_logsource_pipeline
 
 from ctit.map import attack
 
@@ -26,6 +26,7 @@ SIGMA_TAG = "r2026-07-01"
 SIGMA_COMMIT = "552f3fee420ef232a8e5790c4fae591847e32347"
 RULES_DIR = SIGMA_ROOT / "rules" / "windows"  # not rules-emerging-threats / -threat-hunting / -dfir
 COMPILED = Path(__file__).with_name("compiled_rules.jsonl")
+MAPPER_VERSION = 2  # v1 (714f999): Sysmon EID 1 only; v2: process_creation also on Security 4688
 
 SYSMON_CATEGORIES = {
     "process_creation", "network_connection", "process_access", "create_remote_thread",
@@ -90,6 +91,10 @@ def select(rule) -> str | None:
 def compile_rules() -> tuple[list[dict], Counter]:
     _sigma_commit()
     backend = sqliteBackend(sysmon_pipeline() + windows_logsource_pipeline())
+    # v2: process_creation rules also run on Security 4688, with pySigma's own audit mapping
+    # (Image->NewProcessName, ParentImage->ParentProcessName). Only process_creation is routed
+    # through it; its 4657 registry items are not used.
+    audit_backend = sqliteBackend(windows_audit_pipeline() + windows_logsource_pipeline())
     compiled, skipped = [], Counter()
     for path in sorted(RULES_DIR.rglob("*.yml")):
         try:
@@ -106,26 +111,33 @@ def compile_rules() -> tuple[list[dict], Counter]:
             if reason:
                 skipped[reason] += 1
                 continue
-            try:
-                (query,) = backend.convert(SigmaCollection([rule]))
-            except Exception as e:  # noqa: BLE001
-                skipped[f"convert error: {type(e).__name__}"] += 1
-                continue
-            if not query.startswith("SELECT * FROM logs WHERE "):
-                skipped["unexpected query shape"] += 1
-                continue
-            compiled.append({
-                "id": str(rule.id),
-                "title": rule.title,
-                "path": str(path.relative_to(SIGMA_ROOT)),
-                "level": str(rule.level) if rule.level else "informational",
-                "status": str(rule.status) if rule.status else "experimental",
-                "tactics": tactics,
-                "techniques": techniques,
-                "tactic_provenance": provenance,
-                "where": query[len("SELECT * FROM logs WHERE "):],
-            })
-    compiled.sort(key=lambda r: r["id"])
+            variants = [("sysmon", backend)]
+            if rule.logsource.category == "process_creation":
+                variants.append(("security_4688", audit_backend))
+            for variant, be in variants:
+                # Each conversion needs a fresh rule object: pipelines mutate it.
+                fresh = SigmaCollection.from_yaml(path.read_text()).rules[coll.rules.index(rule)]
+                try:
+                    (query,) = be.convert(SigmaCollection([fresh]))
+                except Exception as e:  # noqa: BLE001
+                    skipped[f"convert error ({variant}): {type(e).__name__}"] += 1
+                    continue
+                if not query.startswith("SELECT * FROM logs WHERE "):
+                    skipped[f"unexpected query shape ({variant})"] += 1
+                    continue
+                compiled.append({
+                    "id": str(rule.id),
+                    "variant": variant,
+                    "title": rule.title,
+                    "path": str(path.relative_to(SIGMA_ROOT)),
+                    "level": str(rule.level) if rule.level else "informational",
+                    "status": str(rule.status) if rule.status else "experimental",
+                    "tactics": tactics,
+                    "techniques": techniques,
+                    "tactic_provenance": provenance,
+                    "where": query[len("SELECT * FROM logs WHERE "):],
+                })
+    compiled.sort(key=lambda r: (r["id"], r["variant"]))
     return compiled, skipped
 
 
@@ -138,7 +150,9 @@ def main() -> int:
     with COMPILED.open("w") as f:
         for r in compiled:
             f.write(json.dumps(r, sort_keys=True) + "\n")
-    print(f"compiled {len(compiled)} rules -> {COMPILED}")
+    print(f"mapper v{MAPPER_VERSION}: compiled {len(compiled)} queries "
+          f"({len({r['id'] for r in compiled})} rules) -> {COMPILED}")
+    print("variants:", dict(Counter(r["variant"] for r in compiled)))
     print("tactic provenance:", dict(Counter(r["tactic_provenance"] for r in compiled)))
     print("skipped:", dict(skipped.most_common()))
     return 0

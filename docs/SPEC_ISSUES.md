@@ -52,19 +52,23 @@ Injecting steps as tactics the mapper can't produce creates events benign data c
 
 Spec §2, §4, §7 and §8 and CLAUDE.md are updated.
 
-## 2026-10-24: open-weight model slots (§3; primary approved, 4B pick pending Jack)
+## 2026-10-24: open-weight model slots (§3, approved)
 
 - S primary: `qwen3:14b` under Ollama, thinking off, `num_ctx` ≥ 8192, digest pinned.
-- The second slot changes from "robustness" to a size curve (approved). Proposed model: `qwen3:4b`, same family, so size is the only variable (pending Jack).
+- The second slot changes from "robustness" to a size curve (approved). Model: `qwen3:4b-instruct` (Qwen3-4B-Instruct-2507, non-thinking). `qwen3:4b` was rejected because it can't switch thinking off. F = `claude-opus-5-5`, temperature 0.
 
-## 2026-10-24: ATT&CK v19 tactic split (§2.5, §4), proposed, pending Jack
+## 2026-10-24: ATT&CK v19 tactic split (§2.5, §4), approved by Jack
 
 **Issue.** ATT&CK v19.0 (2026-04-28) replaced Defense Evasion with Stealth and Defense Impairment, giving 15 tactics. SigmaHQ `r2026-07-01` uses the new tags (800 Stealth, 302 Defense Impairment). The spec (§4, "14 Enterprise ATT&CK tactics"), DRIFT and the 2020 emulation plans use 14.
 
 **Proposed fix.** The extended mapper collapses both to Defense Evasion (`ctit/map/attack.py`, `docs/MAPPER_POLICY.md`). Technique→tactic lookups use ATT&CK v18.1, the last 14-tactic release. Extraction prompts keep 14 tactics. This is reversible: one lookup table.
 
-## 2026-10-24: Sigma process_creation rules vs. Security 4688 (§2.5), proposed, pending Jack
+## 2026-10-24: Sigma process_creation rules vs. Security 4688 (§2.5), approved by Jack (mapper v2)
 
 **Issue.** The frozen mapper applies process_creation rules to Sysmon EID 1 only. Security 4688 events (ATLASv2, and any range host without full Sysmon) get no process-based tactics.
 
 **Proposed fix.** Before final sign-off, also evaluate process_creation rules on 4688 via a field mapping (NewProcessName→Image, ParentProcessName→ParentImage, CommandLine). Re-freeze and re-run the report.
+
+## 2026-10-24: data-component gap-fill dropped; ATLASv2 demoted (§2.4, §2.5, §7), decided by Jack
+- The extended mapper's "gap-fill from ATT&CK data-component mappings" is removed from the spec and CLAUDE.md. No kept rule lacks a tactic, and ATT&CK v18+ replaced data components.
+- ATLASv2 becomes a limited robustness check (T6, limits stated). OTRF APT29 is the primary public real-execution benchmark.
