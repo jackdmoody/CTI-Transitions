@@ -48,3 +48,78 @@ Caveats:
 3. **Security 4688 process creation.** Sigma `process_creation` rules are applied to Sysmon EID 1 only. Applying them to Security 4688 as well (field mapping NewProcessName→Image, ParentProcessName→ParentImage) would add Execution and other tactics on ATLASv2 Security and on any range host without Sysmon EID 1. Recommendation: add it before the freeze is final. It changes the rule engine, not the rule set.
 4. **"Gap-fill from ATT&CK data-component mappings"** is not implemented: no kept rule lacks a tactic. ATT&CK v18+ replaced data components with detection strategies. Is there a specific gap-fill you meant (for example, tactic for events that no rule matches)? Otherwise I propose dropping it from the spec.
 5. **H4 risk, early signal:** C2, Collection and Initial Access are rarely recovered on OTRF, and ATLASv2 Sysmon is process-only. K on the range will depend on its Sysmon config. This feeds the WP5 H4 gate.
+
+### 2026-10-24 update: mapper v2 (Jack's decisions applied; frozen at `7d36465`)
+v2 also runs Sigma process_creation rules on Security 4688 (pySigma `windows_audit_pipeline`). The Defense Evasion fold is approved, the data-component gap-fill is dropped, and the 56-rule actor/software exclusion is kept. Run: `results/20261024T153421Z-mapper_report-7d36465/metrics.json`. BRiMS mapper numbers are unchanged.
+
+| Extended mapper | v1 (`714f999`) | v2 (`7d36465`) |
+|---|---|---|
+| Compiled queries (rules) | 2017 (2017) | 3174 (2017; +1157 `security_4688`) |
+| K, OTRF Sysmon | 11 | 11 |
+| K, OTRF Security | 7 | **11** |
+| K, ATLASv2 all sources | 6 | 6 (Security gains Execution) |
+| K, all public data | 11 | 11 |
+| Benign tag rate, ATLASv2 Sysmon / Security | 2.8e-4 / ~0 | 2.8e-4 / 1.0e-6 |
+| OTRF technique recall (parent) | 0.38 | 0.38 |
+| OTRF tactic recall (not informative) | 0.84 | 0.87 |
+| Splunk technique / tactic recall (optimistic) | 0.76 / 0.87 | 0.77 / 0.89 |
+| ATLASv2 Security GT event recall (provenance labels) | 0 / 4081 | 6 / 4081 |
+
+K is the same 11 tactics in both versions: Resource Development, Execution, Persistence, Privilege Escalation, Defense Evasion, Credential Access, Discovery, Lateral Movement, Collection, Exfiltration, Impact. **No Initial Access, Command and Control or Reconnaissance** as a primary tactic anywhere on public data.
+
+## 2026-10-24: GATE: APT29 visibility CSV draft (`data/eval/visibility_apt29.csv`), needs Jack's sign-off before other actors are ported
+**What:** 79 Windows steps from the ATT&CK Evals APT29 plan (`attackevals/ael@5594518`, `Enterprise/apt29/Emulation_Plan/yaml/APT29.yaml`; scenario 1 = steps 1–10, 58 steps; scenario 2 = steps 11–20, 21 steps). `drift_tactic` comes from mapper v2. Run: `results/20261024T154022Z-wp5_gate-b7db2a4`.
+
+**How the draft is built** (`ctit/eval/visibility.py`):
+- Each step's concrete artifacts are synthesized process-creation events (Sysmon EID 1): the executor (`powershell.exe <command>` or `cmd.exe /c <command>`, with **no parent image**), plus one child EID 1 for each command line that starts with a known Windows tool.
+- `y` means an artifact is tagged with the step's own tactic.
+- `partial` means an EID 1 exists but is tagged with another tactic, or not tagged at all (`drift_tactic` is then `—`).
+- `n` means there is no Windows command.
+- Result: **14 y, 65 partial, 0 n.**
+  - `drift_tactic` = Execution for 56 steps, mostly generic PowerShell-content rules.
+  - Discovery 6, Lateral Movement 2, Collection 2, one each of Defense Evasion, Resource Development, C2 and Credential Access.
+  - `—` for 9 steps.
+- The extra `brims_tactic` column is Execution on 78 of 79 steps.
+
+**Review it for these limits:**
+1. **Only process creation is modelled.** Registry (EID 12/13), file (11), network (3), process access (10, e.g. LSASS) and image-load artifacts are not synthesized. Many `partial` steps would likely be `y` with them, for example the persistence (registry run keys) and credential-access (LSASS) steps. Should I extend the synthesis to those event types (from command semantics), or will you hand-mark them?
+2. The neutral-parent choice matters. A placeholder agent in `C:\Users\Public` made every step Execution; it was removed.
+3. Zeek columns are `pending` until WP14.
+4. One plan label is not a tactic (`stage-capabilities`, step 1 tool staging). It falls back to the ATT&CK technique's first tactic.
+
+**Also written:** `data/eval/plans/<actor>_cited_sources.txt` holds the reports each plan cites (`cti_source`): APT29 11, menuPass 7, OilRig 0. Use these to set `cited_by_emulation_plan` in the manifest. OilRig's plan cites none, so the OilRig prior/eval disjointness has to be argued differently.
+
+## 2026-10-24: GATE: H4 viability at K, decide before other actors are ported
+**Actors:** APT29 (ael plan), menuPass and OilRig (CTID library `@4467a6e`; OilRig's 15 Linux steps dropped). **DPRK excluded:** the ER6 DPRK plan in `attackevals/ael` is markdown-only and its implants (FULLHOUSE.DOORED, STRATOFEAR) look macOS-targeted. That's your DPRK path decision.
+
+**K (primary tactics the mapper emits on all public data):** extended v2 = 11 (above); BRiMS = 7 (Exec, Pers, PrivEsc, DE, CA, Disc, C2).
+
+**Plan sizes:** APT29 79 steps / 77 transitions; OilRig 29 / 28; menuPass 15 / 14. All are Discovery-heavy (30/79, 20/29, 7/15).
+
+**Pairwise JSD of joint edge distributions** (natural log, maximum ln 2 = 0.693):
+
+| Sequence | α | APT29–OilRig | APT29–menuPass | OilRig–menuPass | Transitions (APT29/OilRig/menuPass) |
+|---|---|---|---|---|---|
+| Plan tactics, 14 | 0 | 0.350 | 0.318 | 0.290 | 77 / 28 / 14 |
+| Plan tactics on K_extended | 0 | 0.330 | 0.318 | 0.268 | 77 / 25 / 14 |
+| Plan tactics on K_BRiMS | 0 | 0.265 | 0.299 | 0.203 | 61 / 27 / 10 |
+| **Visible, extended v2** (`drift_tactic`) | 0 | 0.509 | 0.496 | 0.332 | 68 / **14** / **4** |
+| **Visible, BRiMS** (`brims_tactic`) | 0 | 0.009 | 0.009 | **0.000** | 77 / 27 / 14 |
+| Plan tactics, 14 | 0.5 | 0.054 | 0.055 | 0.029 | |
+| Visible, extended v2 | 0.5 | 0.117 | 0.113 | 0.023 | |
+| Visible, BRiMS | 0.5 | 0.028 | 0.061 | 0.007 | |
+
+**Reading:**
+- At the plan level, projecting onto either K keeps actors apart. K_extended loses only OilRig's 3 C2 steps; K_BRiMS also drops Collection, Exfiltration, Lateral Movement and Impact.
+- **What the mappers can actually see is the binding constraint.**
+  - Under the BRiMS mapper, every actor's visible sequence collapses to Execution (JSD ≈ 0), so H4 cannot be tested with it. T4-under-BRiMS will be flat by construction.
+  - Under the extended mapper, actors separate (0.33–0.51), but OilRig keeps only 14 visible transitions and menuPass only 4. That is too thin for a stable 3×3, let alone a 4×4, until visibility goes beyond process creation (limit 1 above) and/or Zeek.
+- α = 0.5 over 196 cells swamps sequences this short, so α = 0 is the readable row.
+- There is no null yet for "how much JSD is enough".
+
+**Decision needed:**
+- Is H4 viable at K = 11 (extended)? Options:
+  - (a) proceed, after extending artifact synthesis beyond process creation and re-checking visible transition counts;
+  - (b) proceed, but report H4 at plan level plus visible level, with the menuPass/OilRig sparsity stated;
+  - (c) re-scope H4 (for example APT29 vs. pooled others) or add actors with richer Windows plans (Sandworm stretch: CTID plan available).
+- DPRK path (plan vs. report-split).

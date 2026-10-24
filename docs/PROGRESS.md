@@ -25,3 +25,10 @@
 - **Stopped at review point:** `docs/REVIEW_QUEUE.md` (approve freeze; v19 tactic collapse; 4688 mapping; data-component gap-fill; early H4 signal). Two SPEC_ISSUES entries are pending.
 - Tests: 32 passed, 3 skipped (BRiMS parity, waiting on range data).
 - Note: commit `f46875d` (WP4) accidentally recorded the Sigma submodule at master tip `05d1031`; `714f999` moves it to the pinned release `552f3fe`.
+
+## 2026-10-24: WP4b v2, WP7a, WP5 (stopped at WP5 gates)
+- Mapper v2 frozen at `7d36465`: process_creation rules also on Security 4688, approved Defense Evasion fold, gap-fill dropped. Report `results/20261024T153421Z-mapper_report-7d36465`; v1 and v2 numbers side by side in REVIEW_QUEUE. Spec §2.4/§2.5/§7 and CLAUDE.md updated (OTRF primary; ATLASv2 a limited robustness check). Models: F = claude-opus-5-5 (temp 0), S_4B = qwen3:4b-instruct.
+- WP7a done (`9e7339c`): `ctit/cti/prior.py` (ATTK from ATT&CK v18.1 group techniques; Uni; absorbing-chain projection onto K). Priors in `data/priors/<actor>/` (run `20261024T153535Z-baseline_priors-9e7339c`).
+- WP5 (`b7db2a4`): plans for APT29 (ael), menuPass and OilRig (CTID) pinned in `data/eval/plans/SOURCES.txt`. Draft `data/eval/visibility_apt29.csv` (14 y / 65 partial). Cited-source lists written. Gate run `20261024T154022Z-wp5_gate-b7db2a4`.
+- **Stopped at two gates in REVIEW_QUEUE:** APT29 visibility CSV sign-off; H4 viability at K. Also open: DPRK path (the ER6 DPRK plan looks macOS-targeted). Waiting on Jack's CTI manifest for WP6.
+- Tests: 42 passed, 3 skipped (BRiMS parity, waiting on range data).
