@@ -1,0 +1,8 @@
+# Actor set (spec §2.3). check_leakage.py requires >= 2 prior docs for every core actor,
+# and for a stretch actor once it has any manifest rows.
+actors:
+  APT29:    {nation: Russia, core: true}
+  menuPass: {nation: China,  core: true}
+  OilRig:   {nation: Iran,   core: true}
+  DPRK:     {nation: DPRK,   core: true}   # Lazarus-family actor; final name set at the DPRK decision
+  Sandworm: {nation: Russia, core: false}  # stretch

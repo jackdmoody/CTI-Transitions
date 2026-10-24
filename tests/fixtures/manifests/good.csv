@@ -1,0 +1,10 @@
+doc_id,actor,nation,source_org,url,pub_date,sha256,used_for,cited_by_emulation_plan
+apt29-01,APT29,Russia,ExampleOrg,https://example.org/fixture/apt29-01,2024-01-15,d44878137aaa44fc73bd82e0b7cdb059513ab11628bcae851803b008af2968d4,prior,n
+apt29-02,APT29,Russia,ExampleOrg,https://example.org/fixture/apt29-02,2024-01-15,5cf2a4861308dda4dd6fe1421c3c203c3648c5f53006aa36c9145ff0fc853723,prior,n
+menupass-01,menuPass,China,ExampleOrg,https://example.org/fixture/menupass-01,2024-01-15,7a67e26872cdc6a60a676e222fbee28b4beba159a7f35985fd83107339244eee,prior,n
+menupass-02,menuPass,China,ExampleOrg,https://example.org/fixture/menupass-02,2024-01-15,490b5be2b7517c8006b6603a21b8bf47c67e516ada6d34f588f648c9d4ec0278,prior,n
+oilrig-01,OilRig,Iran,ExampleOrg,https://example.org/fixture/oilrig-01,2024-01-15,43afe38b28f9298d1e3a1358bf826e68ffae01569ff04b349661ab41f1b62016,prior,n
+oilrig-02,OilRig,Iran,ExampleOrg,https://example.org/fixture/oilrig-02,2024-01-15,4b53c27326ec5db466797a452849ac07b4e44c4d8fd5fbcf48c79a82197f7800,prior,n
+dprk-01,DPRK,DPRK,ExampleOrg,https://example.org/fixture/dprk-01,2024-01-15,e84e3e78581a4c4b4a2ac53cbdbfde0b17f6bf1b59e5e0f7ca5272e117df8d58,prior,n
+dprk-02,DPRK,DPRK,ExampleOrg,https://example.org/fixture/dprk-02,2024-01-15,785d0dd7d19e4a1ca1e4f8d34e77710b5c43836ad26879e1957767c950b4807d,prior,n
+dprk-09,DPRK,DPRK,ExampleOrg,https://example.org/fixture/dprk-09,2024-01-15,7fad1547097a34bda52f695b136a209ff3b14554c060508132c6c9e0c7d04d6a,eval,n

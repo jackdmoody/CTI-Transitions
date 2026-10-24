@@ -20,4 +20,5 @@ include = ["ctit*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 markers = ["slow: needs local range data (BRiMS parquet); skipped when absent"]
