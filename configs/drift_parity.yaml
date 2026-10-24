@@ -1,0 +1,8 @@
+# WP1 parity: BRiMS Table 1 / Table 5 (transition encoding) through ctit.adapters.drift.
+# Range data, local only. Override the parquet path with CTIT_BRIMS_PARQUET.
+experiment: drift_parity
+brims_parquet: data/range/brims_sysmon.parquet  # BRiMS raw Sysmon parquet (6,773,063 events)
+tagged_cache: data/cache/brims_tagged.parquet
+roles_file: third_party/DRIFT/config/example_roles.json
+alpha: 0.5
+min_transitions: 30

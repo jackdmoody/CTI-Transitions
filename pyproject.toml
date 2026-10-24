@@ -10,7 +10,7 @@ description = "W2: CTI-conditioned ATT&CK transition hunting"
 # loaded by ctit/adapters/drift.py. Install its pins with
 # `pip install -r third_party/DRIFT/requirements.txt`.
 requires-python = ">=3.12,<3.13"
-dependencies = ["anthropic==2.3.0", "python-dotenv==1.2.4"]
+dependencies = ["anthropic==2.3.0", "python-dotenv==1.2.4", "PyYAML==6.0.3"]
 
 [project.optional-dependencies]
 dev = ["pytest"]
@@ -20,3 +20,4 @@ include = ["ctit*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["slow: needs local range data (BRiMS parquet); skipped when absent"]
