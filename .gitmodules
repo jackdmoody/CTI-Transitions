@@ -1,3 +1,6 @@
 [submodule "third_party/DRIFT"]
 	path = third_party/DRIFT
 	url = https://github.com/jackdmoody/DRIFT.git
+[submodule "third_party/sigma"]
+	path = third_party/sigma
+	url = https://github.com/SigmaHQ/sigma.git
