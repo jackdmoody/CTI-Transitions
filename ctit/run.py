@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 
 from ctit.calls import CallLogger
-from ctit.experiments import drift_parity, mapper_report
+from ctit.experiments import baseline_priors, drift_parity, mapper_report
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RESULTS_ROOT = REPO_ROOT / "results"
@@ -26,6 +26,7 @@ RESULTS_ROOT = REPO_ROOT / "results"
 EXPERIMENTS = {
     "drift_parity": drift_parity.run,
     "mapper_report": mapper_report.run,
+    "baseline_priors": baseline_priors.run,
 }
 
 

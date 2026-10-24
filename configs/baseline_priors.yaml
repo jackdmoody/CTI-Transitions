@@ -1,0 +1,4 @@
+# WP7 (part): ATTK and Uni priors per actor (spec §3). 14 tactics; projected onto K at scoring.
+experiment: baseline_priors
+alpha: 0.5
+attack_version: "18.1"
