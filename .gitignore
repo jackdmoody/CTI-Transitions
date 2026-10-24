@@ -1,0 +1,7 @@
+data/
+results/
+*.pcap
+*.evtx
+.env
+__pycache__/
+.venv/
