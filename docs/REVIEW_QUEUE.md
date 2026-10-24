@@ -123,3 +123,46 @@ K is the same 11 tactics in both versions: Resource Development, Execution, Pers
   - (b) proceed, but report H4 at plan level plus visible level, with the menuPass/OilRig sparsity stated;
   - (c) re-scope H4 (for example APT29 vs. pooled others) or add actors with richer Windows plans (Sandworm stretch: CTID plan available).
 - DPRK path (plan vs. report-split).
+
+### 2026-10-24 rerun: Sandworm added (core), DPRK stretch. Run `results/20261024T163912Z-wp5_gate-2b1e283`
+**Changes since the first gate run:**
+- Sandworm (CTID, 15 Windows steps, 14 transitions) is added.
+- CALDERA `#{arg}` placeholders are now filled from each ability's `input_arguments` defaults.
+- Cited-source lists now include the plan docs: APT29 78, menuPass 66, OilRig 34, Sandworm 26.
+
+**Not done: artifact synthesis beyond process creation (your option (a)).** I couldn't complete that part in this session. The visibility drafts below still use process-creation artifacts only (executor plus child tools, neutral parent).
+
+Alternatives:
+1. You hand-mark registry/file/network/LSASS visibility in the CSV.
+2. Derive per-step artifacts from real recorded telemetry: the OTRF APT29 execution for APT29, plus vendor detection write-ups the plans already ship (`Defense_Measures/*.md`). Only APT29 has a recording.
+
+**Visible transitions per actor** (process-creation artifacts only):
+
+| Actor | Steps | Draft visibility | Visible transitions, extended v2 | Visible transitions, BRiMS |
+|---|---|---|---|---|
+| APT29 | 79 | 14 y / 65 partial | 68 | 77 |
+| OilRig | 29 | 12 y / 16 partial / 1 n | 14 | 27 |
+| menuPass | 15 | 3 y / 12 partial | 7 | 14 |
+| Sandworm | 15 | 4 y / 9 partial / 2 n | 5 | 12 |
+
+**Pairwise JSD** (joint edge distributions, natural log, maximum 0.693):
+
+| Sequence | α | APT29–OilRig | APT29–Sandworm | APT29–menuPass | OilRig–Sandworm | OilRig–menuPass | Sandworm–menuPass |
+|---|---|---|---|---|---|---|---|
+| Plan, 14 tactics | 0 | 0.350 | 0.465 | 0.318 | 0.379 | 0.290 | 0.439 |
+| Plan on K_extended | 0 | 0.330 | 0.393 | 0.318 | 0.314 | 0.268 | 0.328 |
+| Plan on K_BRiMS | 0 | 0.265 | 0.407 | 0.299 | 0.345 | 0.203 | 0.347 |
+| Visible, extended v2 | 0 | 0.509 | 0.552 | 0.128 | 0.251 | 0.432 | 0.537 |
+| Visible, BRiMS | 0 | 0.009 | 0.009 | 0.009 | 0.000 | 0.000 | 0.000 |
+| Plan, 14 tactics | 0.5 | 0.054 | 0.079 | 0.055 | 0.043 | 0.029 | 0.023 |
+| Plan on K_extended | 0.5 | 0.060 | 0.083 | 0.064 | 0.055 | 0.040 | 0.024 |
+| Plan on K_BRiMS | 0.5 | 0.074 | 0.126 | 0.078 | 0.101 | 0.052 | 0.048 |
+| Visible, extended v2 | 0.5 | 0.117 | 0.116 | 0.073 | 0.018 | 0.030 | 0.016 |
+| Visible, BRiMS | 0.5 | 0.028 | 0.069 | 0.061 | 0.010 | 0.007 | 0.000 |
+
+**Reading:**
+- Sandworm is the most distinct actor at the plan level (it has C2 and Impact steps).
+- With visible sequences under the extended mapper, every pair separates at α = 0. But Sandworm (5 transitions) and menuPass (7) are very thin, and at α = 0.5 the smoothing swamps every pair except those involving APT29.
+- The BRiMS-mapper collapse (JSD ≈ 0) holds for all four actors.
+
+**Still needed from you:** an H4 decision once visibility is settled (the method choice above), and the DPRK stretch decision.

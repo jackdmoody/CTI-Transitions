@@ -32,3 +32,8 @@
 - WP5 (`b7db2a4`): plans for APT29 (ael), menuPass and OilRig (CTID) pinned in `data/eval/plans/SOURCES.txt`. Draft `data/eval/visibility_apt29.csv` (14 y / 65 partial). Cited-source lists written. Gate run `20261024T154022Z-wp5_gate-b7db2a4`.
 - **Stopped at two gates in REVIEW_QUEUE:** APT29 visibility CSV sign-off; H4 viability at K. Also open: DPRK path (the ER6 DPRK plan looks macOS-targeted). Waiting on Jack's CTI manifest for WP6.
 - Tests: 42 passed, 3 skipped (BRiMS parity, waiting on range data).
+
+## 2026-10-24: WP5 rerun
+- Sandworm promoted to core; DPRK is a stretch actor (report-split). OilRig's plan docs cite ~25 reports, so the citation rule applies and no temporal fallback is needed. `check_leakage.py` now cross-checks `cited_by_emulation_plan` against `data/eval/plans/<actor>_cited_sources.txt`. Gate rerun: `results/20261024T163912Z-wp5_gate-2b1e283`.
+- **Result for the paper:** under the BRiMS mapper, the four actors' visible tactic sequences collapse to Execution: pairwise JSD 0.000–0.009 at α = 0. The BRiMS mapper cannot express actor specificity on emulation-plan procedures. This is a reported result, not a failure, and it motivates the extended mapper.
+- **Not done:** extending visibility synthesis beyond process creation (Jack's option (a)) was not completed this session. Alternatives are listed in REVIEW_QUEUE. Visible transitions (extended v2, process creation only): APT29 68, OilRig 14, menuPass 7, Sandworm 5.
