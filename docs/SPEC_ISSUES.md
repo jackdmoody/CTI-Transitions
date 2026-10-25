@@ -76,3 +76,10 @@ Spec §2, §4, §7 and §8 and CLAUDE.md are updated.
 ## 2026-10-24: actor set and OilRig citations (§0 H4, §1, §2.3, §9), decided by Jack
 - Sandworm is promoted to core (CTID plan, Windows steps 16–19 only). DPRK becomes a stretch actor via the report-split fallback: the ER6 DPRK plan is macOS-targeted. H4's 4×4 is now APT29/menuPass/OilRig/Sandworm, and the cut order is updated.
 - OilRig: the plan YAML has no `cti_source`, but the plan's markdown docs cite ~25 reports. So the temporal fallback (priors must post-date the plan) is not needed. Cited sources for every actor are now YAML `cti_source` plus report URLs in the plan docs, and `check_leakage.py` cross-checks `cited_by_emulation_plan` against them.
+
+## 2026-10-25: emulation-plan choice per actor (§2.3), decided by Jack
+- **APT29:** ATT&CK Evals plan (79 Windows steps; the CTID copy is the same file).
+- **OilRig:** CTID plan (29 Windows steps). The ATT&CK Evals ManagedServices 2022 YAML is byte-identical.
+- **menuPass:** keep the CTID plan (15 Windows steps). The ATT&CK Evals 2024 plan has 96 technique rows over 9 steps, but it is markdown only: no plan tactic labels and no per-row commands. Using it would need a table parser, tactics from ATT&CK technique lookups, and visibility drafts with no commands.
+- **Sandworm:** keep the CTID plan (15 Windows steps, steps 16–19).
+- **Turla (ATT&CK Evals 2023): not used.** Its YAML is operator-side (every ability runs from the attacker's Linux host, with `x` placeholders for tactic and technique), and its scenario markdown has no per-step technique IDs. Ground truth would need hand conversion (a §1 human gate).
