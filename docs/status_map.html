@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W2 Pipeline Status</title>
+<style>
+  :root {
+    --bg: #fafaf8; --fg: #1d1d1b; --muted: #6b6b66; --line: #b9b9b2; --card: #ffffff;
+    --done: #2e7d4f; --done-bg: #e6f3eb;
+    --prog: #9a6a00; --prog-bg: #fbf1d9;
+    --me: #b3261e; --me-bg: #fbe5e3;
+    --todo: #5f6368; --todo-bg: #eceef0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161615; --fg: #ecece8; --muted: #a3a39c; --line: #4a4a46; --card: #1f1f1d;
+      --done: #7fd3a0; --done-bg: #1c3326; --prog: #f0c463; --prog-bg: #3a2f14;
+      --me: #ff8a80; --me-bg: #3d1d1b; --todo: #b5b9bd; --todo-bg: #2a2c2e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161615; --fg: #ecece8; --muted: #a3a39c; --line: #4a4a46; --card: #1f1f1d;
+    --done: #7fd3a0; --done-bg: #1c3326; --prog: #f0c463; --prog-bg: #3a2f14;
+    --me: #ff8a80; --me-bg: #3d1d1b; --todo: #b5b9bd; --todo-bg: #2a2c2e;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 18px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 22px; font-size: 13px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { width: 14px; height: 14px; border-radius: 3px; border: 2px solid; }
+  .lane { margin-bottom: 18px; }
+  .lane h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+  .row { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; }
+  .node { flex: 1 1 150px; min-width: 140px; max-width: 220px; padding: 10px 12px; border-radius: 8px;
+          border: 2px solid; background: var(--card); }
+  .node b { display: block; font-size: 14px; margin-bottom: 2px; }
+  .node small { display: block; color: var(--muted); font-size: 12px; }
+  .arrow { flex: 0 0 26px; display: flex; align-items: center; justify-content: center; color: var(--line); font-size: 20px; }
+  .done { border-color: var(--done); background: var(--done-bg); }
+  .prog { border-color: var(--prog); background: var(--prog-bg); }
+  .me   { border-color: var(--me);   background: var(--me-bg); }
+  .todo { border-color: var(--todo); background: var(--todo-bg); }
+  .merge { text-align: center; color: var(--muted); font-size: 13px; margin: 4px 0 10px; }
+  .side { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 20px; }
+  @media (max-width: 640px) { .arrow { flex-basis: 100%; transform: rotate(90deg); height: 18px; } .node { max-width: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>W2 pipeline: CTI-conditioned transition hunting</h1>
+  <p class="sub">Status as of 2026-10-25. Deadline 20 Nov; writing starts 7 Nov. Details are in docs/STATUS.md.</p>
+
+  <div class="legend" aria-label="Legend">
+    <span><i class="sw done"></i>Done</span>
+    <span><i class="sw prog"></i>In progress</span>
+    <span><i class="sw me"></i>Blocked on Jack</span>
+    <span><i class="sw todo"></i>Not started</span>
+  </div>
+
+  <section class="lane">
+    <h2>Prior: what the CTI says</h2>
+    <div class="row">
+      <div class="node me"><b>CTI reports</b><small>Manifest is header-only; leakage check ready (incl. plan citations)</small></div>
+      <div class="arrow">→</div>
+      <div class="node prog"><b>Extraction F / S</b><small>Schema + Ollama client + digests done; prompts and runs wait on the manifest</small></div>
+      <div class="arrow">→</div>
+      <div class="node prog"><b>Tactic prior</b><small>ATTK + Uni built; projection onto K done; R/B priors not yet</small></div>
+    </div>
+  </section>
+
+  <section class="lane">
+    <h2>Evaluation sequences: what the adversary does</h2>
+    <div class="row">
+      <div class="node done"><b>Emulation plans</b><small>APT29 79 · OilRig 29 · menuPass 15 · Sandworm 15 Windows steps</small></div>
+      <div class="arrow">→</div>
+      <div class="node done"><b>Signature library</b><small>89 / 90 techniques, 170 recordings (Jack)</small></div>
+      <div class="arrow">→</div>
+      <div class="node prog"><b>Tactic-level injection</b><small>splice.py written; untested, not wired into the gate</small></div>
+      <div class="arrow">→</div>
+      <div class="node me"><b>Visibility + H4 gate</b><small>APT29 CSV sign-off; is H4 viable at K = 11?</small></div>
+    </div>
+  </section>
+
+  <section class="lane">
+    <h2>Telemetry and baseline</h2>
+    <div class="row">
+      <div class="node prog"><b>Benign telemetry</b><small>Public done (OTRF, ATLASv2, OTRF atomic); range data + Zeek not here</small></div>
+      <div class="arrow">→</div>
+      <div class="node done"><b>Frozen mapper (v2)</b><small>2017 Sigma rules; K = 11 vs BRiMS 7</small></div>
+      <div class="arrow">→</div>
+      <div class="node todo"><b>Role baseline</b><small>Fit-window, DRIFT counts (WP9)</small></div>
+    </div>
+  </section>
+
+  <p class="merge">↓ prior, injected sequences and baseline meet here ↓</p>
+
+  <section class="lane">
+    <h2>Scoring and results</h2>
+    <div class="row">
+      <div class="node todo"><b>Likelihood-ratio scoring</b><small>Mean log-LR per transition, session windows (WP9)</small></div>
+      <div class="arrow">→</div>
+      <div class="node todo"><b>Metrics + tables</b><small>AUPRC, Det@FPR, TTD, T1–T8 (WP11, WP15)</small></div>
+      <div class="arrow">→</div>
+      <div class="node todo"><b>H1–H4</b><small>H4 depends on the gate above</small></div>
+    </div>
+  </section>
+
+  <div class="side">
+    <div class="node me"><b>DRIFT parity (WP1)</b><small>Harness done; needs the BRiMS parquet path</small></div>
+    <div class="node me"><b>DPRK stretch</b><small>Report-split or drop; Sandworm is core</small></div>
+    <div class="node todo"><b>Zeek vantage (WP14, T8)</b><small>First cut candidate if behind</small></div>
+  </div>
+</main>
+</body>
+</html>
