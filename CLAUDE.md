@@ -19,6 +19,7 @@ DRIFT (github.com/jackdmoody/DRIFT, SBP-BRiMS 2026) is a **pinned, read-only dep
 4. **Leakage rule.** Prior sources and eval sources are disjoint per actor (spec §1). `scripts/check_leakage.py` must pass before any extraction or scoring run. Never build eval sequences from ATT&CK group mappings.
 5. **Tune on validation only.** The test split is touched once per final run. Any hyperparameter chosen by looking at test results is a bug.
 6. **Don't inflate visibility.** Never mark an emulation step `visible=y` without a concrete Sysmon event or Zeek log that the step's procedure produces. When unsure, mark `partial` and explain in `rationale`.
+7. **Tests gate commits.** Run tests with `set -o pipefail` (or check pytest's exit code directly, never through `| tail`). Never chain a commit after tests in one command. Never commit while any test fails.
 
 ## Human gates — stop and ask Jack before proceeding past these
 - APT29 visibility CSV (`data/eval/visibility_apt29.csv`) — sign-off before porting to other actors
