@@ -44,7 +44,7 @@ def run(config: dict, calls=None) -> dict:
     steps = {a: plans.load_plan(a) for a in actors}
     # mapper_version 3: the extended mapper is the frozen v3 subset, and its K comes from a
     # mapper_v3 run; the BRiMS reference is unchanged.
-    rules = v3.load_v3() if config.get("mapper_version") == 3 else None
+    rules = {3: v3.load_v3, "3h": v3.load_v3h}.get(config.get("mapper_version"), lambda: None)()
 
     for a in actors:
         (EVAL / "plans" / f"{a}_cited_sources.txt").write_text("\n".join(plans.cited_sources(a)) + "\n")

@@ -184,12 +184,15 @@ def otrf_atomic_rows() -> tuple[list[dict], list[str]]:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
-    ap.add_argument("--mapper-version", type=int, choices=(2, 3), default=3)
+    ap.add_argument("--mapper-version", choices=("2", "3", "3h"), default="3")
     args = ap.parse_args()
     global EXT_RULES
-    if args.mapper_version == 3:
+    if args.mapper_version == "3":
         from ctit.map.v3 import load_v3
         EXT_RULES = load_v3()
+    elif args.mapper_version == "3h":  # candidate (SPEC_ISSUES 2026-10-26, Part C)
+        from ctit.map.v3 import load_v3h
+        EXT_RULES = load_v3h()
 
     s_rows, s_skip = splunk_rows()
     o_rows, o_skip = otrf_atomic_rows()

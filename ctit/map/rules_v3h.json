@@ -1,0 +1,3823 @@
+{
+ "version": "3h",
+ "base": [
+  "ctit/map/compiled_rules.jsonl (v2, 7d36465)",
+  "ctit/map/compiled_rules_hunting.jsonl"
+ ],
+ "sample": {
+  "day": "2019-09-22",
+  "seed": 0,
+  "hosts": [
+   "sysclient0065",
+   "sysclient0072",
+   "sysclient0075",
+   "sysclient0116",
+   "sysclient0117",
+   "sysclient0163",
+   "sysclient0165",
+   "sysclient0225",
+   "sysclient0256",
+   "sysclient0274",
+   "sysclient0303",
+   "sysclient0311",
+   "sysclient0317",
+   "sysclient0319",
+   "sysclient0324",
+   "sysclient0362",
+   "sysclient0412",
+   "sysclient0413",
+   "sysclient0471",
+   "sysclient0515",
+   "sysclient0521",
+   "sysclient0562",
+   "sysclient0566",
+   "sysclient0604",
+   "sysclient0608",
+   "sysclient0612",
+   "sysclient0620",
+   "sysclient0622",
+   "sysclient0651",
+   "sysclient0657",
+   "sysclient0666",
+   "sysclient0667",
+   "sysclient0670",
+   "sysclient0709",
+   "sysclient0722",
+   "sysclient0725",
+   "sysclient0752",
+   "sysclient0769",
+   "sysclient0818",
+   "sysclient0823",
+   "sysclient0857",
+   "sysclient0868",
+   "sysclient0869",
+   "sysclient0909",
+   "sysclient0915",
+   "sysclient0918",
+   "sysclient0952",
+   "sysclient0959",
+   "sysclient0964",
+   "sysclient0965"
+  ],
+  "distinct_rows": 1142291,
+  "events": 143721684,
+  "restored": 15230
+ },
+ "dropped": {
+  "a_informational": {
+   "queries": 13,
+   "rules": 10,
+   "titles": [
+    "Failed Code Integrity Checks",
+    "Locked Workstation",
+    "New Application in AppCompat",
+    "New PowerShell Instance Created",
+    "Potential BOINC Software Execution (UC-Berkeley Signature)",
+    "Suspicious High IntegrityLevel Conhost Legacy Option",
+    "Suspicious Tasklist Discovery Command",
+    "User Logoff Event",
+    "VSSAudit Security Event Source Registration",
+    "Windows Update Error"
+   ]
+  },
+  "b_not_shared": {
+   "queries": 2576,
+   "rules": 1365
+  },
+  "c2_path_unevaluable": {
+   "queries": 6,
+   "rules": 6,
+   "list": [
+    {
+     "id": "71158e3f-df67-472b-930e-7d287acaa3e1",
+     "variant": "sysmon",
+     "title": "Execution Of Non-Existing File",
+     "bare_events_matched": 84393.0
+    },
+    {
+     "id": "02d1d718-dd13-41af-989d-ea85c7fab93f",
+     "variant": "sysmon",
+     "title": "Rare Remote Thread Creation By Uncommon Source Image",
+     "bare_events_matched": 43001.0
+    },
+    {
+     "id": "a9d4d3fa-8fc0-41bc-80b1-30b9fda79d6f",
+     "variant": "sysmon",
+     "title": "Remote Thread Created In Shell Application",
+     "bare_events_matched": 1094.0
+    },
+    {
+     "id": "84b1ecf9-6eff-4004-bafb-bae5c0e251b2",
+     "variant": "sysmon",
+     "title": "Potentially Suspicious GoogleUpdate Child Process",
+     "bare_events_matched": 3.0
+    },
+    {
+     "id": "a10a2c40-2c4d-49f8-b557-1a946bc55d9d",
+     "variant": "sysmon",
+     "title": "Uncommon File Created In Office Startup Folder",
+     "bare_events_matched": 2.0
+    },
+    {
+     "id": "0a98a10c-685d-4ab0-bddc-b6bdd1d48458",
+     "variant": "sysmon",
+     "title": "Uncommon Userinit Child Process",
+     "bare_events_matched": 1.0
+    }
+   ]
+  },
+  "c3_create_remote_thread": {
+   "queries": 5,
+   "rules": 5,
+   "titles": [
+    "Potential Credential Dumping Attempt Via PowerShell Remote Thread",
+    "Remote Thread Created In KeePass.EXE",
+    "Remote Thread Creation In Mstsc.Exe From Suspicious Location",
+    "Remote Thread Creation Ttdinject.exe Proxy",
+    "Remote Thread Creation Via PowerShell In Uncommon Target"
+   ]
+  }
+ },
+ "keep": [
+  {
+   "id": "0022869c-49f7-4ff2-ba03-85ac42ddac58",
+   "variant": "sysmon",
+   "title": "System Information Discovery via Registry Queries"
+  },
+  {
+   "id": "002bdb95-0cf1-46a6-9e08-d38c128a6127",
+   "variant": "sysmon",
+   "title": "WScript or CScript Dropper - File"
+  },
+  {
+   "id": "00d49ed5-4491-4271-a8db-650a4ef6f8c1",
+   "variant": "sysmon",
+   "title": "Suspicious Download from Office Domain"
+  },
+  {
+   "id": "01d2e2a1-5f09-44f7-9fc1-24faa7479b6d",
+   "variant": "sysmon",
+   "title": "Uncommon Svchost Parent Process"
+  },
+  {
+   "id": "02030f2f-6199-49ec-b258-ea71b07e03dc",
+   "variant": "sysmon",
+   "title": "Malicious PowerShell Commandlets - ProcessCreation"
+  },
+  {
+   "id": "022eaba8-f0bf-4dd9-9217-4604b0bb3bb0",
+   "variant": "sysmon",
+   "title": "HackTool - Wmiexec Default Powershell Command"
+  },
+  {
+   "id": "023c654f-8f16-44d9-bb2b-00ff36a62af9",
+   "variant": "sysmon",
+   "title": "Python Function Execution Security Warning Disabled In Excel"
+  },
+  {
+   "id": "02773bed-83bf-469f-b7ff-e676e7d78bab",
+   "variant": "sysmon",
+   "title": "BloodHound Collection Files"
+  },
+  {
+   "id": "02b64f1b-3f33-4e67-aede-ef3b0a5a8fcf",
+   "variant": "sysmon",
+   "title": "Potential COM Objects Download Cradles Usage - Process Creation"
+  },
+  {
+   "id": "03f4ca17-de95-428d-a75a-4ee78b047256",
+   "variant": "sysmon",
+   "title": "HackTool - Impacket File Indicators"
+  },
+  {
+   "id": "0403d67d-6227-4ea8-8145-4e72db7da120",
+   "variant": "sysmon",
+   "title": "UtilityFunctions.ps1 Proxy Dll"
+  },
+  {
+   "id": "043c4b8b-3a54-4780-9682-081cb6b8185c",
+   "variant": "sysmon",
+   "title": "Suspicious IIS Module Registration"
+  },
+  {
+   "id": "0442defa-b4a2-41c9-ae2c-ea7042fc4701",
+   "variant": "sysmon",
+   "title": "Potential Credential Dumping Attempt Using New NetworkProvider - REG"
+  },
+  {
+   "id": "059c5af9-5131-4d8d-92b2-de4ad6146712",
+   "variant": "sysmon",
+   "title": "LiveKD Driver Creation By Uncommon Process"
+  },
+  {
+   "id": "05a2ab7e-ce11-4b63-86db-ab32e763e11d",
+   "variant": "sysmon",
+   "title": "MMC Spawning Windows Shell"
+  },
+  {
+   "id": "05f3c945-dcc8-4393-9f3d-af65077a8f86",
+   "variant": "sysmon",
+   "title": "Suspicious SYSVOL Domain Group Policy Access"
+  },
+  {
+   "id": "06125661-3814-4e03-bfa2-1e4411c60ac3",
+   "variant": "sysmon",
+   "title": "Backup Files Deleted"
+  },
+  {
+   "id": "0685b176-c816-4837-8e7b-1216f346636b",
+   "variant": "sysmon",
+   "title": "HackTool - Quarks PwDump Execution"
+  },
+  {
+   "id": "074e0ded-6ced-4ebd-8b4d-53f55908119d",
+   "variant": "sysmon",
+   "title": "AWL Bypass with Winrm.vbs and Malicious WsmPty.xsl/WsmTxt.xsl"
+  },
+  {
+   "id": "07743f65-7ec9-404a-a519-913db7118a8d",
+   "variant": "sysmon",
+   "title": "COM Hijack via Sdclt"
+  },
+  {
+   "id": "07a99744-56ac-40d2-97b7-2095967b0e03",
+   "variant": "sysmon",
+   "title": "Potential Privilege Escalation Attempt Via .Exe.Local Technique"
+  },
+  {
+   "id": "07aa184a-870d-413d-893a-157f317f6f58",
+   "variant": "sysmon",
+   "title": "Suspicious Reconnaissance Activity Via GatherNetworkInfo.VBS"
+  },
+  {
+   "id": "07bdd2f5-9c58-4f38-aec8-e101bb79ef8d",
+   "variant": "sysmon",
+   "title": "Terminal Server Client Connection History Cleared - Registry"
+  },
+  {
+   "id": "07e3cb2c-0608-410d-be4b-1511cb1a0448",
+   "variant": "sysmon",
+   "title": "Tamper Windows Defender Remove-MpPreference"
+  },
+  {
+   "id": "086ae989-9ca6-4fe7-895a-759c5544f247",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via TypedPaths"
+  },
+  {
+   "id": "0900463c-b33b-49a8-be1d-552a3b553dae",
+   "variant": "sysmon",
+   "title": "Potential Hidden Directory Creation Via NTFS INDEX_ALLOCATION Stream - CLI"
+  },
+  {
+   "id": "0955e4e1-c281-4fb9-9ee1-5ee7b4b754d2",
+   "variant": "sysmon",
+   "title": "Use of Pcalua For Execution"
+  },
+  {
+   "id": "09576804-7a05-458e-a817-eb718ca91f54",
+   "variant": "sysmon",
+   "title": "Suspicious PowerShell IEX Execution Patterns"
+  },
+  {
+   "id": "0a1255c5-d732-4b62-ac02-b5152d34fb83",
+   "variant": "sysmon",
+   "title": "ADExplorer Writing Complete AD Snapshot Into .dat File"
+  },
+  {
+   "id": "0a1f9d29-6465-4776-b091-7f43b26e4c89",
+   "variant": "sysmon",
+   "title": "Prefetch File Deleted"
+  },
+  {
+   "id": "0a4f6091-223b-41f6-8743-f322ec84930b",
+   "variant": "sysmon",
+   "title": "Suspicious GUP Usage"
+  },
+  {
+   "id": "0afecb6e-6223-4a82-99fb-bf5b981e92a5",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - ScreenConnect Temporary File"
+  },
+  {
+   "id": "0b4ae027-2a2d-4b93-8c7e-962caaba5b2a",
+   "variant": "sysmon",
+   "title": "Time Travel Debugging Utility Usage"
+  },
+  {
+   "id": "0b8baa3f-575c-46ee-8715-d6f28cc7d33c",
+   "variant": "sysmon",
+   "title": "NTDS.DIT Created"
+  },
+  {
+   "id": "0b9ad457-2554-44c1-82c2-d56a99c42377",
+   "variant": "sysmon",
+   "title": "Anydesk Temporary Artefact"
+  },
+  {
+   "id": "0bbc6369-43e3-453d-9944-cae58821c173",
+   "variant": "sysmon",
+   "title": "Execution via WorkFolders.exe"
+  },
+  {
+   "id": "0bcfabcb-7929-47f4-93d6-b33fb67d34d1",
+   "variant": "sysmon",
+   "title": "Adwind RAT / JRAT File Artifact"
+  },
+  {
+   "id": "0c3fac91-5627-46e8-a6a8-a0d7b9b8ae1b",
+   "variant": "sysmon",
+   "title": "Suspicious Get-Variable.exe Creation"
+  },
+  {
+   "id": "0cf2e1c6-8d10-4273-8059-738778f981ad",
+   "variant": "sysmon",
+   "title": "Potential WerFault ReflectDebugger Registry Value Abuse"
+  },
+  {
+   "id": "0d34ed8b-1c12-4ff2-828c-16fc860b766d",
+   "variant": "sysmon",
+   "title": "Suspicious Processes Spawned by Java.EXE"
+  },
+  {
+   "id": "0e0255bf-2548-47b8-9582-c0955c9283f5",
+   "variant": "sysmon",
+   "title": "Suspicious Reg Add BitLocker"
+  },
+  {
+   "id": "0e20c89d-2264-44ae-8238-aeeaba609ece",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via Microsoft Office Startup Folder"
+  },
+  {
+   "id": "0e29e3a7-1ad8-40aa-b691-9f82ecd33d66",
+   "variant": "sysmon",
+   "title": "Office Macro File Download"
+  },
+  {
+   "id": "0e6a9e62-627e-496c-aef5-bfa39da29b5e",
+   "variant": "sysmon",
+   "title": "MaxMpxCt Registry Value Changed"
+  },
+  {
+   "id": "0e8cfe08-02c9-4815-a2f8-0d157b7ed33e",
+   "variant": "sysmon",
+   "title": "File Download with Headless Browser"
+  },
+  {
+   "id": "0ed99dda-6a35-11ef-8c99-0242ac120002",
+   "variant": "sysmon",
+   "title": "Attempts of Kerberos Coercion Via DNS SPN Spoofing"
+  },
+  {
+   "id": "0f0450f3-8b47-441e-a31b-15a91dc243e2",
+   "variant": "sysmon",
+   "title": "Potential DLL File Download Via PowerShell Invoke-WebRequest"
+  },
+  {
+   "id": "0f60b28c-64dd-4e2c-9a63-5334d3e3a6e6",
+   "variant": "sysmon",
+   "title": "Script Interpreter Spawning Credential Scanner - Windows"
+  },
+  {
+   "id": "0f920ebe-7aea-4c54-b202-9aa0c609cfe5",
+   "variant": "sysmon",
+   "title": "Potential Credential Dumping Attempt Via PowerShell"
+  },
+  {
+   "id": "0fc35fc3-efe6-4898-8a37-0b233339524f",
+   "variant": "sysmon",
+   "title": "Suspicious ScreenSave Change by Reg.exe"
+  },
+  {
+   "id": "1027d292-dd87-4a1a-8701-2abe04d7783c",
+   "variant": "sysmon",
+   "title": "PSScriptPolicyTest Creation By Uncommon Process"
+  },
+  {
+   "id": "10344bb3-7f65-46c2-b915-2d00d47be5b0",
+   "variant": "sysmon",
+   "title": "IE ZoneMap Setting Downgraded To MyComputer Zone For HTTP Protocols Via CLI"
+  },
+  {
+   "id": "1070db9a-3e5d-412e-8e7b-7183b616e1b3",
+   "variant": "sysmon",
+   "title": "Persistence Via Sticky Key Backdoor"
+  },
+  {
+   "id": "10fb649c-3600-4d37-b1e6-56ea90bb7e09",
+   "variant": "sysmon",
+   "title": "User Added To Highly Privileged Group"
+  },
+  {
+   "id": "114de787-4eb2-48cc-abdb-c0b449f93ea4",
+   "variant": "sysmon",
+   "title": "Suspicious X509Enrollment - Process Creation"
+  },
+  {
+   "id": "114e7f1c-f137-48c8-8f54-3088c24ce4b9",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - AnyDesk Silent Installation"
+  },
+  {
+   "id": "117d3d3a-755c-4a61-b23e-9171146d094c",
+   "variant": "sysmon",
+   "title": "Suspicious Outlook Macro Created"
+  },
+  {
+   "id": "1193d960-2369-499f-a158-7b50a31df682",
+   "variant": "sysmon",
+   "title": "Potential Suspicious Browser Launch From Document Reader Process"
+  },
+  {
+   "id": "11b1ed55-154d-4e82-8ad7-83739298f720",
+   "variant": "sysmon",
+   "title": "NTDS.DIT Creation By Uncommon Process"
+  },
+  {
+   "id": "1277f594-a7d1-4f28-a2d3-73af5cbeab43",
+   "variant": "sysmon",
+   "title": "Windows Shell/Scripting Application File Write to Suspicious Folder"
+  },
+  {
+   "id": "12b8e9f5-96b2-41e1-9a42-8c6779a5c184",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Execution Of PDQDeployRunner"
+  },
+  {
+   "id": "130c9e58-28ac-4f83-8574-0a4cc913b97e",
+   "variant": "sysmon",
+   "title": "Potential Winnti Dropper Activity"
+  },
+  {
+   "id": "1327381e-6ab0-4f38-b583-4c1b8346a56b",
+   "variant": "sysmon",
+   "title": "Potential Command Line Path Traversal Evasion Attempt"
+  },
+  {
+   "id": "138d3531-8793-4f50-a2cd-f291b2863d78",
+   "variant": "sysmon",
+   "title": "Suspicious Service Path Modification"
+  },
+  {
+   "id": "13c02350-4177-4e45-ac17-cf7ca628ff5e",
+   "variant": "sysmon",
+   "title": "Files With System DLL Name In Unsuspected Locations"
+  },
+  {
+   "id": "1412aa78-a24c-4abd-83df-767dfb2c5bbe",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious WebDAV LNK Execution"
+  },
+  {
+   "id": "145095eb-e273-443b-83d0-f9b519b7867b",
+   "variant": "sysmon",
+   "title": "PDF File Created By RegEdit.EXE"
+  },
+  {
+   "id": "155dbf56-e0a4-4dd0-8905-8a98705045e8",
+   "variant": "sysmon",
+   "title": "UAC Bypass Abusing Winsat Path Parsing - File"
+  },
+  {
+   "id": "15619216-e993-4721-b590-4c520615a67d",
+   "variant": "sysmon",
+   "title": "Potential Meterpreter/CobaltStrike Activity"
+  },
+  {
+   "id": "15904280-565c-4b73-9303-3291f964e7f9",
+   "variant": "sysmon",
+   "title": "Potential Persistence Attempt Via ErrorHandler.Cmd"
+  },
+  {
+   "id": "15b75071-74cc-47e0-b4c6-b43744a62a2b",
+   "variant": "sysmon",
+   "title": "Suspicious Process Start Locations"
+  },
+  {
+   "id": "15c7904e-6ad1-4a45-9b46-5fb25df37fd2",
+   "variant": "sysmon",
+   "title": "Malicious PE Execution by Microsoft Visual Studio Debugger"
+  },
+  {
+   "id": "162ab1e4-6874-4564-853c-53ec3ab8be01",
+   "variant": "sysmon",
+   "title": "TeamViewer Remote Session"
+  },
+  {
+   "id": "16905e21-66ee-42fe-b256-1318ada2d770",
+   "variant": "sysmon",
+   "title": "Start of NT Virtual DOS Machine"
+  },
+  {
+   "id": "16c37b52-b141-42a5-a3ea-bbe098444397",
+   "variant": "sysmon",
+   "title": "Suspect Svchost Activity"
+  },
+  {
+   "id": "16fe46bb-4f64-46aa-817d-ff7bec4a2352",
+   "variant": "sysmon",
+   "title": "LiveKD Driver Creation"
+  },
+  {
+   "id": "1775e15e-b61b-4d14-a1a3-80981298085a",
+   "variant": "sysmon",
+   "title": "Rundll32 Execution Without CommandLine Parameters"
+  },
+  {
+   "id": "17769c90-230e-488b-a463-e05c08e9d48f",
+   "variant": "sysmon",
+   "title": "Powershell Defender Exclusion"
+  },
+  {
+   "id": "17a1be64-8d88-40bf-b5ff-a4f7a50ebcc8",
+   "variant": "sysmon",
+   "title": "Suspicious New Service Creation"
+  },
+  {
+   "id": "180c7c5c-d64b-4a63-86e9-68910451bc8b",
+   "variant": "sysmon",
+   "title": "Potential File Download Via MS-AppInstaller Protocol Handler"
+  },
+  {
+   "id": "185d7418-f250-42d0-b72e-0c8b70661e93",
+   "variant": "sysmon",
+   "title": "Suspicious Diantz Download and Compress Into a CAB File"
+  },
+  {
+   "id": "1908fcc1-1b92-4272-8214-0fbaf2fa5163",
+   "variant": "sysmon",
+   "title": "Malicious DLL File Dropped in the Teams or OneDrive Folder"
+  },
+  {
+   "id": "1a0d4aba-7668-4365-9ce4-6d79ab088dfd",
+   "variant": "sysmon",
+   "title": "Ping Hex IP"
+  },
+  {
+   "id": "1a2d6c47-75b0-45bd-b133-2c0be75349fd",
+   "variant": "sysmon",
+   "title": "Wdigest CredGuard Registry Modification"
+  },
+  {
+   "id": "1ac8666b-046f-4201-8aba-1951aaec03a3",
+   "variant": "sysmon",
+   "title": "Command Line Execution with Suspicious URL and AppData Strings"
+  },
+  {
+   "id": "1af57a4b-460a-4738-9034-db68b880c665",
+   "variant": "sysmon",
+   "title": "PowerShell SAM Copy"
+  },
+  {
+   "id": "1c0e41cd-21bb-4433-9acc-4a2cd6367b9b",
+   "variant": "sysmon",
+   "title": "Suspicious Modification Of Scheduled Tasks"
+  },
+  {
+   "id": "1c526788-0abe-4713-862f-b520da5e5316",
+   "variant": "sysmon",
+   "title": "Chromium Browser Headless Execution To Mockbin Like Site"
+  },
+  {
+   "id": "1c8774a0-44d4-4db0-91f8-e792359c70bd",
+   "variant": "sysmon",
+   "title": "REGISTER_APP.VBS Proxy Execution"
+  },
+  {
+   "id": "1c8e96cd-2bed-487d-9de0-b46c90cade56",
+   "variant": "sysmon",
+   "title": "Potential Qakbot Registry Activity"
+  },
+  {
+   "id": "1cc50f3f-1fc8-4acf-b2e9-6f172e1fdebd",
+   "variant": "sysmon",
+   "title": "Suspicious Rundll32 Invoking Inline VBScript"
+  },
+  {
+   "id": "1cdd9a09-06c9-4769-99ff-626e2b3991b8",
+   "variant": "sysmon",
+   "title": "Suspicious Double Extension File Execution"
+  },
+  {
+   "id": "1cf465a1-2609-4c15-9b66-c32dbe4bfd67",
+   "variant": "sysmon",
+   "title": "Legitimate Application Writing Files In Uncommon Location"
+  },
+  {
+   "id": "1d174d38-8fda-4081-a9b6-56d9763c0cd8",
+   "variant": "sysmon",
+   "title": "Scheduled Task Creation with Curl and PowerShell Execution Combo"
+  },
+  {
+   "id": "1e0e1a81-e79b-44bc-935b-ddb9c8006b3d",
+   "variant": "sysmon",
+   "title": "Potential Script Proxy Execution Via CL_Mutexverifiers.ps1"
+  },
+  {
+   "id": "1e75c1cc-c5d4-42aa-ac3d-91b0b68b3b4c",
+   "variant": "sysmon",
+   "title": "Arbitrary File Download Via Squirrel.EXE"
+  },
+  {
+   "id": "1e8a9b4d-3c2a-4f9b-8d1e-7c6a5b4f3d2e",
+   "variant": "sysmon",
+   "title": "PowerShell Defender Threat Severity Default Action Set to 'Allow' or 'NoAction'"
+  },
+  {
+   "id": "1ec65a5f-9473-4f12-97da-622044d6df21",
+   "variant": "sysmon",
+   "title": "Powershell Defender Disable Scan Feature"
+  },
+  {
+   "id": "1f0489be-b496-4ddf-b3a9-5900f2044e9c",
+   "variant": "sysmon",
+   "title": "Suspicious File Write to SharePoint Layouts Directory"
+  },
+  {
+   "id": "1f1a8509-2cbb-44f5-8751-8e1571518ce2",
+   "variant": "sysmon",
+   "title": "Suspicious Splwow64 Without Params"
+  },
+  {
+   "id": "1f1d8209-636e-4c6c-a137-781cca8b82f9",
+   "variant": "sysmon",
+   "title": "WFP Filter Added via Registry"
+  },
+  {
+   "id": "1fb76ab8-fa60-4b01-bddd-71e89bf555da",
+   "variant": "sysmon",
+   "title": "Pubprn.vbs Proxy Execution"
+  },
+  {
+   "id": "207b0396-3689-42d9-8399-4222658efc99",
+   "variant": "sysmon",
+   "title": "Potential Privilege Escalation To LOCAL SYSTEM"
+  },
+  {
+   "id": "208748f7-881d-47ac-a29c-07ea84bf691d",
+   "variant": "sysmon",
+   "title": "Suspicious Outlook Child Process"
+  },
+  {
+   "id": "214641c2-c579-4ecb-8427-0cf19df6842e",
+   "variant": "sysmon",
+   "title": "Remote File Download Via Desktopimgdownldr Utility"
+  },
+  {
+   "id": "2158f96f-43c2-43cb-952a-ab4580f32382",
+   "variant": "sysmon",
+   "title": "Screen Capture Activity Via Psr.EXE"
+  },
+  {
+   "id": "21d856f9-9281-4ded-9377-51a1a6e2a432",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via Logon Scripts - CommandLine"
+  },
+  {
+   "id": "21dd6d38-2b18-4453-9404-a0fe4a0cc288",
+   "variant": "sysmon",
+   "title": "Curl Download And Execute Combination"
+  },
+  {
+   "id": "21ff4ca9-f13a-41ad-b828-0077b2af2e40",
+   "variant": "sysmon",
+   "title": "Deletion of Volume Shadow Copies via WMI with PowerShell"
+  },
+  {
+   "id": "220457c1-1c9f-4c2e-afe6-9598926222c1",
+   "variant": "sysmon",
+   "title": "Delete All Scheduled Tasks"
+  },
+  {
+   "id": "225274c4-8dd1-40db-9e09-71dff4f6fb3c",
+   "variant": "sysmon",
+   "title": "Potential Defense Evasion Activity Via Emoji Usage In CommandLine - 4"
+  },
+  {
+   "id": "2267fe65-0681-42ad-9a6d-46553d3f3480",
+   "variant": "sysmon",
+   "title": "WSL Child Process Anomaly"
+  },
+  {
+   "id": "22e58743-4ac8-4a9f-bf19-00a0428d8c5f",
+   "variant": "sysmon",
+   "title": "Base64 MZ Header In CommandLine"
+  },
+  {
+   "id": "23ceaf5c-b6f1-4a32-8559-f2ff734be516",
+   "variant": "sysmon",
+   "title": "Dumping Process via Sqldumper.exe"
+  },
+  {
+   "id": "241d52b5-eee0-49d0-ac8a-8b9c15c7221c",
+   "variant": "sysmon",
+   "title": "ClickOnce Deployment Execution - Dfsvc.EXE Child Process"
+  },
+  {
+   "id": "24de4f3b-804c-4165-b442-5a06a2302c7e",
+   "variant": "sysmon",
+   "title": "Arbitrary Shell Command Execution Via Settingcontent-Ms"
+  },
+  {
+   "id": "2569ed8c-1147-498a-9b8c-2ad3656b10ed",
+   "variant": "sysmon",
+   "title": "Potential Renamed Rundll32 Execution"
+  },
+  {
+   "id": "25ffa65d-76d8-4da5-a832-3f2b0136e133",
+   "variant": "sysmon",
+   "title": "PUA - Sysinternal Tool Execution - Registry"
+  },
+  {
+   "id": "26d3f0a2-f514-4a3f-a8a7-e7e48a8d9160",
+   "variant": "sysmon",
+   "title": "PUA - Adidnsdump Execution"
+  },
+  {
+   "id": "270185ff-5f50-4d6d-a27f-24c3b8c9fef8",
+   "variant": "sysmon",
+   "title": "Tomcat WebServer Logs Deleted"
+  },
+  {
+   "id": "272e55a4-9e6b-4211-acb6-78f51f0b1b40",
+   "variant": "sysmon",
+   "title": "Folder Removed From Exploit Guard ProtectedFolders List - Registry"
+  },
+  {
+   "id": "27aec9c9-dbb0-4939-8422-1742242471d0",
+   "variant": "sysmon",
+   "title": "Invoke-Obfuscation VAR+ Launcher"
+  },
+  {
+   "id": "27ba3207-dd30-4812-abbf-5d20c57d474e",
+   "variant": "sysmon",
+   "title": "Suspicious Chromium Browser Instance Executed With Custom Extension"
+  },
+  {
+   "id": "28036918-04d3-423d-91c0-55ecf99fb892",
+   "variant": "sysmon",
+   "title": "NET NGenAssemblyUsageLog Registry Key Tamper"
+  },
+  {
+   "id": "28208707-fe31-437f-9a7f-4b1108b94d2e",
+   "variant": "sysmon",
+   "title": "Suspicious Startup Folder Persistence"
+  },
+  {
+   "id": "28a452f3-786c-4fd8-b8f2-bddbe9d616d1",
+   "variant": "sysmon",
+   "title": "Creation of WerFault.exe/Wer.dll in Unusual Folder"
+  },
+  {
+   "id": "28ac00d6-22d9-4a3c-927f-bbd770104573",
+   "variant": "sysmon",
+   "title": "RestrictedAdminMode Registry Value Tampering - ProcCreation"
+  },
+  {
+   "id": "295a59c1-7b79-4b47-a930-df12c15fc9c2",
+   "variant": "sysmon",
+   "title": "Windows Registry Trust Record Modification"
+  },
+  {
+   "id": "297afac9-5d02-4138-8c58-b977bac60556",
+   "variant": "sysmon",
+   "title": "Creation of an Executable by an Executable"
+  },
+  {
+   "id": "2a4b3e61-9d22-4e4a-b60f-6e8f0cde6f25",
+   "variant": "sysmon",
+   "title": "Potential Provisioning Registry Key Abuse For Binary Proxy Execution"
+  },
+  {
+   "id": "2aa0a6b4-a865-495b-ab51-c28249537b75",
+   "variant": "sysmon",
+   "title": "Startup Folder File Write"
+  },
+  {
+   "id": "2afafd61-6aae-4df4-baed-139fa1f4c345",
+   "variant": "sysmon",
+   "title": "Invocation of Active Directory Diagnostic Tool (ntdsutil.exe)"
+  },
+  {
+   "id": "2c28c248-7f50-417a-9186-a85b223010ee",
+   "variant": "sysmon",
+   "title": "Wscript Shell Run In CommandLine"
+  },
+  {
+   "id": "2d367498-5112-4ae5-a06a-96e7bc33a211",
+   "variant": "sysmon",
+   "title": "Suspicious Binary Writes Via AnyDesk"
+  },
+  {
+   "id": "2db93a3f-3249-4f73-9e68-0e77a0f8ae7e",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - TacticalRMM Agent Registration to Potentially Attacker-Controlled Server"
+  },
+  {
+   "id": "2e65275c-8288-4ab4-aeb7-6274f58b6b20",
+   "variant": "sysmon",
+   "title": "Procdump Execution"
+  },
+  {
+   "id": "2f7979ae-f82b-45af-ac1d-2b10e93b0baa",
+   "variant": "sysmon",
+   "title": "Potential DCOM InternetExplorer.Application DLL Hijack"
+  },
+  {
+   "id": "2f9356ae-bf43-41b8-b858-4496d83b2acb",
+   "variant": "sysmon",
+   "title": "ISO File Created Within Temp Folders"
+  },
+  {
+   "id": "2fbbe9ff-0afc-470b-bdc0-592198339968",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - Potential MeshAgent Execution - Windows"
+  },
+  {
+   "id": "2fdefcb3-dbda-401e-ae23-f0db027628bc",
+   "variant": "sysmon",
+   "title": "Sticky Key Like Backdoor Execution"
+  },
+  {
+   "id": "30bf1789-379d-4fdc-900f-55cd0a90a801",
+   "variant": "sysmon",
+   "title": "Visual Studio Code Tunnel Service Installation"
+  },
+  {
+   "id": "30e92f50-bb5a-4884-98b5-d20aa80f3d7a",
+   "variant": "sysmon",
+   "title": "Hidden Powershell in Link File Pattern"
+  },
+  {
+   "id": "30edb182-aa75-42c0-b0a9-e998bb29067c",
+   "variant": "sysmon",
+   "title": "Potential AMSI Bypass Via .NET Reflection"
+  },
+  {
+   "id": "30fc8de7-d833-40c4-96b6-28319fbc4f6c",
+   "variant": "sysmon",
+   "title": "UAC Bypass Using Event Viewer RecentViews"
+  },
+  {
+   "id": "3109530e-ab47-4cc6-a953-cac5ebcc93ae",
+   "variant": "sysmon",
+   "title": "ADS Zone.Identifier Deleted By Uncommon Application"
+  },
+  {
+   "id": "312d0384-401c-4b8b-abdf-685ffba9a332",
+   "variant": "sysmon",
+   "title": "Email Exifiltration Via Powershell"
+  },
+  {
+   "id": "318557a5-150c-4c8d-b70e-a9910e199857",
+   "variant": "sysmon",
+   "title": "File Creation In Suspicious Directory By Msdt.EXE"
+  },
+  {
+   "id": "3215aa19-f060-4332-86d5-5602511f3ca8",
+   "variant": "sysmon",
+   "title": "Suspicious LNK Double Extension File Created"
+  },
+  {
+   "id": "3268b746-88d8-4cd3-bffc-30077d02c787",
+   "variant": "sysmon",
+   "title": "HackTool - Empire PowerShell UAC Bypass"
+  },
+  {
+   "id": "327f48c1-a6db-4eb8-875a-f6981f1b0183",
+   "variant": "sysmon",
+   "title": "Port Forwarding Activity Via SSH.EXE"
+  },
+  {
+   "id": "32e280f1-8ad4-46ef-9e80-910657611fbc",
+   "variant": "sysmon",
+   "title": "Potential Homoglyph Attack Using Lookalike Characters"
+  },
+  {
+   "id": "33efc23c-6ea2-4503-8cfe-bdf82ce8f705",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via New AMSI Providers - Registry"
+  },
+  {
+   "id": "33f41cdd-35ac-4ba8-814b-c6a4244a1ad4",
+   "variant": "sysmon",
+   "title": "WMI Persistence - Script Event Consumer File Write"
+  },
+  {
+   "id": "34746e8c-5fb8-415a-b135-0abc167e912a",
+   "variant": "sysmon",
+   "title": "WinSxS Executable File Creation By Non-System Process"
+  },
+  {
+   "id": "34986307-b7f4-49be-92f3-e7a4d01ac5db",
+   "variant": "sysmon",
+   "title": "Rclone Config File Creation"
+  },
+  {
+   "id": "349d891d-fef0-4fe4-bc53-eee623a15969",
+   "variant": "sysmon",
+   "title": "Use Short Name Path in Command Line"
+  },
+  {
+   "id": "34ebb878-1b15-4895-b352-ca2eeb99b274",
+   "variant": "sysmon",
+   "title": "Suspicious Execution of Shutdown"
+  },
+  {
+   "id": "35efb964-e6a5-47ad-bbcd-19661854018d",
+   "variant": "sysmon",
+   "title": "Execution From Webserver Root Folder"
+  },
+  {
+   "id": "36210e0d-5b19-485d-a087-c096088885f0",
+   "variant": "sysmon",
+   "title": "Suspicious PowerShell Parameter Substring"
+  },
+  {
+   "id": "36475a7d-0f6d-4dce-9b01-6aeb473bbaf1",
+   "variant": "sysmon",
+   "title": "SyncAppvPublishingServer VBS Execute Arbitrary PowerShell Code"
+  },
+  {
+   "id": "36803969-5421-41ec-b92f-8500f79c23b0",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via GlobalFlags"
+  },
+  {
+   "id": "37ae075c-271b-459b-8d7b-55ad5f993dd8",
+   "variant": "sysmon",
+   "title": "File or Folder Permissions Modifications"
+  },
+  {
+   "id": "38879043-7e1e-47a9-8d46-6bec88e201df",
+   "variant": "sysmon",
+   "title": "Potential Persistence Attempt Via Existing Service Tampering"
+  },
+  {
+   "id": "39019a4e-317f-4ce3-ae63-309a8c6b53c5",
+   "variant": "sysmon",
+   "title": "Suspicious Scheduled Task Creation Involving Temp Folder"
+  },
+  {
+   "id": "395907ee-96e5-4666-af2e-2ca91688e151",
+   "variant": "sysmon",
+   "title": "Wab Execution From Non Default Location"
+  },
+  {
+   "id": "396f6630-f3ac-44e3-bfc8-1b161bc00c4e",
+   "variant": "sysmon",
+   "title": "Suspicious Child Process Of Wermgr.EXE"
+  },
+  {
+   "id": "39b31e81-5f5f-4898-9c0e-2160cfc0f9bf",
+   "variant": "sysmon",
+   "title": "HackTool - Hashcat Password Cracker Execution"
+  },
+  {
+   "id": "39f1f9f2-9636-45de-98f6-a4046aa8e4b9",
+   "variant": "sysmon",
+   "title": "Potential Webshell Creation On Static Website"
+  },
+  {
+   "id": "3a525307-d100-48ae-b3b9-0964699d7f97",
+   "variant": "sysmon",
+   "title": "DMP/HDMP File Creation"
+  },
+  {
+   "id": "3a8da4e0-36c1-40d2-8b29-b3e890d5172a",
+   "variant": "sysmon",
+   "title": "NTDS Exfiltration Filename Patterns"
+  },
+  {
+   "id": "3a9b8c1e-5b2e-4f7a-9d1c-2a7f3b6e1c55",
+   "variant": "sysmon",
+   "title": "RunMRU Registry Key Deletion - Registry"
+  },
+  {
+   "id": "3a9fa2ec-30bc-4ebd-b49e-7c9cff225502",
+   "variant": "sysmon",
+   "title": "VsCode Powershell Profile Modification"
+  },
+  {
+   "id": "3ab79e90-9fab-4cdf-a7b2-6522bc742adb",
+   "variant": "sysmon",
+   "title": "HackTool - RemoteKrbRelay SMB Relay Secrets Dump Module Indicators"
+  },
+  {
+   "id": "3ae9974a-eb09-4044-8e70-8980a50c12c8",
+   "variant": "sysmon",
+   "title": "Suspicious Explorer Process with Whitespace Padding - ClickFix/FileFix"
+  },
+  {
+   "id": "3aff0be0-7802-4a7e-a4fa-c60c74bc5e1d",
+   "variant": "sysmon",
+   "title": "Lolbas OneDriveStandaloneUpdater.exe Proxy Download"
+  },
+  {
+   "id": "3b4e950b-a3ea-44d3-877e-432071990709",
+   "variant": "sysmon",
+   "title": "Notepad Password Files Discovery"
+  },
+  {
+   "id": "3b8f4c92-6a51-4d7e-9c3a-8e2d1f5a7b09",
+   "variant": "sysmon",
+   "title": "Uncommon File Created by Notepad++ Updater Gup.EXE"
+  },
+  {
+   "id": "3c1b5fb0-c72f-45ba-abd1-4d4c353144ab",
+   "variant": "sysmon",
+   "title": "Process Creation Using Sysnative Folder"
+  },
+  {
+   "id": "3c89a1e8-0fba-449e-8f1b-8409d6267ec8",
+   "variant": "sysmon",
+   "title": "Suspicious Process Created Via Wmic.EXE"
+  },
+  {
+   "id": "3d0ed417-3d94-4963-a562-4a92c940656a",
+   "variant": "sysmon",
+   "title": "Creation of a Diagcab"
+  },
+  {
+   "id": "3d27f6dd-1c74-4687-b4fa-ca849d128d1c",
+   "variant": "sysmon",
+   "title": "Office Application Startup - Office Test"
+  },
+  {
+   "id": "3d2a2d59-929c-4b78-8c1a-145dfe9e07b1",
+   "variant": "sysmon",
+   "title": "Publisher Attachment File Dropped In Suspicious Location"
+  },
+  {
+   "id": "3d48c9d3-1aa6-418d-98d3-8fd3c01a564e",
+   "variant": "sysmon",
+   "title": "Potential Mftrace.EXE Abuse"
+  },
+  {
+   "id": "3d7679bd-0c00-440c-97b0-3f204273e6c7",
+   "variant": "sysmon",
+   "title": "New Process Created Via Taskmgr.EXE"
+  },
+  {
+   "id": "3da70954-0f2c-4103-adff-b7440368f50e",
+   "variant": "sysmon",
+   "title": "Suspicious PROCEXP152.sys File Created In TMP"
+  },
+  {
+   "id": "3dfd06d2-eaf4-4532-9555-68aca59f57c4",
+   "variant": "sysmon",
+   "title": "Process Execution From A Potentially Suspicious Folder"
+  },
+  {
+   "id": "3e8207c5-fcd2-4ea6-9418-15d45b4890e4",
+   "variant": "sysmon",
+   "title": "Potential Data Stealing Via Chromium Headless Debugging"
+  },
+  {
+   "id": "3eb8c339-a765-48cc-a150-4364c04652bf",
+   "variant": "sysmon",
+   "title": "IIS WebServer Access Logs Deleted"
+  },
+  {
+   "id": "3ef5605c-9eb9-47b0-9a71-b727e6aa5c3b",
+   "variant": "sysmon",
+   "title": "Use NTFS Short Name in Image"
+  },
+  {
+   "id": "409f8a98-4496-4aaa-818a-c931c0a8b832",
+   "variant": "sysmon",
+   "title": "Created Files by Microsoft Sync Center"
+  },
+  {
+   "id": "40b19fa6-d835-400c-b301-41f3a2baacaf",
+   "variant": "sysmon",
+   "title": "VolumeShadowCopy Symlink Creation Via Mklink"
+  },
+  {
+   "id": "41421f44-58f9-455d-838a-c398859841d4",
+   "variant": "sysmon",
+   "title": "ETW Logging Tamper In .NET Processes Via CommandLine"
+  },
+  {
+   "id": "41bb431f-56d8-4691-bb56-ed34e390906f",
+   "variant": "sysmon",
+   "title": "UAC Bypass Using MSConfig Token Modification - File"
+  },
+  {
+   "id": "41d1058a-aea7-4952-9293-29eaaf516465",
+   "variant": "sysmon",
+   "title": "Removal Of AMSI Provider Registry Keys"
+  },
+  {
+   "id": "41f6531d-af6e-4c6e-918f-b946f2b85a36",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via LSA Extensions"
+  },
+  {
+   "id": "42205c73-75c8-4a63-9db1-e3782e06fda0",
+   "variant": "sysmon",
+   "title": "Suspicious Application Allowed Through Exploit Guard"
+  },
+  {
+   "id": "42333b2c-b425-441c-b70e-99404a17170f",
+   "variant": "sysmon",
+   "title": "HackTool - Sliver C2 Implant Activity Pattern"
+  },
+  {
+   "id": "42a993dd-bb3e-48c8-b372-4d6684c4106c",
+   "variant": "sysmon",
+   "title": "HackTool - CrackMapExec Execution"
+  },
+  {
+   "id": "43103702-5886-11ed-9b6a-0242ac120002",
+   "variant": "sysmon",
+   "title": "Suspicious Vsls-Agent Command With AgentExtensionPath Load"
+  },
+  {
+   "id": "431a1fdb-4799-4f3b-91c3-a683b003fc49",
+   "variant": "sysmon",
+   "title": "New Kernel Driver Via SC.EXE"
+  },
+  {
+   "id": "4358e5a5-7542-4dcb-b9f3-87667371839b",
+   "variant": "sysmon",
+   "title": "ISO or Image Mount Indicator in Recent Files"
+  },
+  {
+   "id": "43d91656-a9b2-4541-b7e2-6a9bd3a13f4e",
+   "variant": "sysmon",
+   "title": "DSInternals Suspicious PowerShell Cmdlets"
+  },
+  {
+   "id": "44030449-b0df-4c94-aae1-502359ab28ee",
+   "variant": "sysmon",
+   "title": "PUA - TruffleHog Execution"
+  },
+  {
+   "id": "44e24481-6202-4c62-9127-5a0ae8e3fe3d",
+   "variant": "sysmon",
+   "title": "Obfuscated PowerShell OneLiner Execution"
+  },
+  {
+   "id": "45239e6a-b035-4aaf-b339-8ad379fcb67e",
+   "variant": "sysmon",
+   "title": "Process Proxy Execution Via Squirrel.EXE"
+  },
+  {
+   "id": "455b9d50-15a1-4b99-853f-8d37655a4c1b",
+   "variant": "sysmon",
+   "title": "PUA - Suspicious ActiveDirectory Enumeration Via AdFind.EXE"
+  },
+  {
+   "id": "45a594aa-1fbd-4972-a809-ff5a99dd81b8",
+   "variant": "sysmon",
+   "title": "Run PowerShell Script from ADS"
+  },
+  {
+   "id": "45d3a03d-f441-458c-8883-df101a3bb146",
+   "variant": "sysmon",
+   "title": "Launch-VsDevShell.PS1 Proxy Execution"
+  },
+  {
+   "id": "460479f3-80b7-42da-9c43-2cc1d54dbccd",
+   "variant": "sysmon",
+   "title": "Creation of a Local Hidden User Account by Registry"
+  },
+  {
+   "id": "4627c6ae-6899-46e2-aa0c-6ebcb1becd19",
+   "variant": "sysmon",
+   "title": "HackTool - Impacket Tools Execution"
+  },
+  {
+   "id": "4782eb5a-a513-4523-a0ac-f3082b26ac5c",
+   "variant": "sysmon",
+   "title": "Mshtml.DLL RunHTMLApplication Suspicious Usage"
+  },
+  {
+   "id": "480e7e51-e797-47e3-8d72-ebfce65b6d8d",
+   "variant": "sysmon",
+   "title": "Python Spawning Pretty TTY on Windows"
+  },
+  {
+   "id": "48917adc-a28e-4f5d-b729-11e75da8941f",
+   "variant": "sysmon",
+   "title": "Suspicious Windows Defender Folder Exclusion Added Via Reg.EXE"
+  },
+  {
+   "id": "48ea844d-19b1-4642-944e-fe39c2cc1fec",
+   "variant": "sysmon",
+   "title": "UAC Bypass Using IDiagnostic Profile - File"
+  },
+  {
+   "id": "4916a35e-bfc4-47d0-8e25-a003d7067061",
+   "variant": "sysmon",
+   "title": "Sysmon Driver Altitude Change"
+  },
+  {
+   "id": "4a30ac0c-b9d6-4e01-b71a-5f851bbf4259",
+   "variant": "sysmon",
+   "title": "Potential Defense Evasion Activity Via Emoji Usage In CommandLine - 1"
+  },
+  {
+   "id": "4a6713f6-3331-11ed-a261-0242ac120002",
+   "variant": "sysmon",
+   "title": "Taskkill Symantec Endpoint Protection"
+  },
+  {
+   "id": "4aafb0fa-bff5-4b9d-b99e-8093e659c65f",
+   "variant": "sysmon",
+   "title": "Writing Local Admin Share"
+  },
+  {
+   "id": "4abc0ec4-db5a-412f-9632-26659cddf145",
+   "variant": "sysmon",
+   "title": "UEFI Persistence Via Wpbbin - ProcessCreation"
+  },
+  {
+   "id": "4ac47ed3-44c2-4b1f-9d51-bf46e8914126",
+   "variant": "sysmon",
+   "title": "TrustedPath UAC Bypass Pattern"
+  },
+  {
+   "id": "4b13db67-0c45-40f1-aba8-66a1a7198a1e",
+   "variant": "sysmon",
+   "title": "Suspicious Extrac32 Alternate Data Stream Execution"
+  },
+  {
+   "id": "4b991083-3d0e-44ce-8fc4-b254025d8d4b",
+   "variant": "sysmon",
+   "title": "Unusual Parent Process For Cmd.EXE"
+  },
+  {
+   "id": "4bc90587-e6ca-4b41-be0b-ed4d04e4ed0c",
+   "variant": "sysmon",
+   "title": "Suspicious Velociraptor Child Process"
+  },
+  {
+   "id": "4bf943c6-5146-4273-98dd-e958fd1e3abf",
+   "variant": "sysmon",
+   "title": "Invoke-Obfuscation Obfuscated IEX Invocation"
+  },
+  {
+   "id": "4c55738d-72d8-490e-a2db-7969654e375f",
+   "variant": "sysmon",
+   "title": "WebDAV Temporary Local File Creation"
+  },
+  {
+   "id": "4c7f49ee-2638-43bb-b85b-ce676c30b260",
+   "variant": "sysmon",
+   "title": "Assembly DLL Creation Via AspNetCompiler"
+  },
+  {
+   "id": "4e762605-34a8-406d-b72e-c1a089313320",
+   "variant": "sysmon",
+   "title": "Potential Fake Instance Of Hxtsr.EXE Executed"
+  },
+  {
+   "id": "4e87b8e2-2ee9-4b2a-a715-4727d297ece0",
+   "variant": "sysmon",
+   "title": "Potential SAM Database Dump"
+  },
+  {
+   "id": "4ebc877f-4612-45cb-b3a5-8e3834db36c9",
+   "variant": "sysmon",
+   "title": "Webshell Hacking Activity Patterns"
+  },
+  {
+   "id": "4eec988f-7bf0-49f1-8675-1e6a510b3a2a",
+   "variant": "sysmon",
+   "title": "Potential PendingFileRenameOperations Tampering"
+  },
+  {
+   "id": "4f1707b1-b50b-45b4-b5a2-3978b5a5d0d6",
+   "variant": "sysmon",
+   "title": "Potential Homoglyph Attack Using Lookalike Characters in Filename"
+  },
+  {
+   "id": "4f647cfa-b598-4e12-ad69-c68dd16caef8",
+   "variant": "sysmon",
+   "title": "DumpStack.log Defender Evasion"
+  },
+  {
+   "id": "4f73421b-5a0b-4bbf-a892-5a7fb99bea66",
+   "variant": "sysmon",
+   "title": "Mavinject Inject DLL Into Running Process"
+  },
+  {
+   "id": "50d66fb0-03f8-4da0-8add-84e77d12a020",
+   "variant": "sysmon",
+   "title": "Suspicious RunAs-Like Flag Combination"
+  },
+  {
+   "id": "526cc8bc-1cdc-48ad-8b26-f19bff969cec",
+   "variant": "sysmon",
+   "title": "Removal Of Index Value to Hide Schedule Task - Registry"
+  },
+  {
+   "id": "52753ea4-b3a0-4365-910d-36cff487b789",
+   "variant": "sysmon",
+   "title": "Hijack Legit RDP Session to Move Laterally"
+  },
+  {
+   "id": "52cad028-0ff0-4854-8f67-d25dfcbc78b4",
+   "variant": "sysmon",
+   "title": "HTML Help HH.EXE Suspicious Child Process"
+  },
+  {
+   "id": "53330955-dc52-487f-a3a2-da24dcff99b5",
+   "variant": "sysmon",
+   "title": "New BgInfo.EXE Custom DB Path Registry Configuration"
+  },
+  {
+   "id": "536e2947-3729-478c-9903-745aaffe60d2",
+   "variant": "sysmon",
+   "title": "Suspicious PowerShell Invocations - Specific - ProcessCreation"
+  },
+  {
+   "id": "538c5851-8c03-4724-8ec4-623bc7aadaea",
+   "variant": "sysmon",
+   "title": "HTML File Opened From Download Folder"
+  },
+  {
+   "id": "5394fcc7-aeb2-43b5-9a09-cac9fc5edcd5",
+   "variant": "sysmon",
+   "title": "Suspicious Execution Location Of Wermgr.EXE"
+  },
+  {
+   "id": "53d4bb30-3f36-4e8a-b078-69d36c4a79ff",
+   "variant": "sysmon",
+   "title": "COM Object Execution via Xwizard.EXE"
+  },
+  {
+   "id": "53ef0cef-fa24-4f25-a34a-6c72dfa2e6e2",
+   "variant": "sysmon",
+   "title": "Query Usage To Exfil Data"
+  },
+  {
+   "id": "54127bd4-f541-4ac3-afdb-ea073f63f692",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via Notepad++ Plugins"
+  },
+  {
+   "id": "54786ddc-5b8a-11ed-9b6a-0242ac120002",
+   "variant": "sysmon",
+   "title": "Suspicious Ping/Del Command Combination"
+  },
+  {
+   "id": "554601fb-9b71-4bcc-abf4-21a611be4fde",
+   "variant": "sysmon",
+   "title": "Suspicious Recursive Takeown"
+  },
+  {
+   "id": "555155a2-03bf-4fe7-af74-d176b3fdbe16",
+   "variant": "sysmon",
+   "title": "Driver Added To Disallowed Images In HVCI - Registry"
+  },
+  {
+   "id": "5589ab4f-a767-433c-961d-c91f3f704db1",
+   "variant": "sysmon",
+   "title": "Potential SMB Relay Attack Tool Execution"
+  },
+  {
+   "id": "55e29995-75e7-451a-bef0-6225e2f13597",
+   "variant": "sysmon",
+   "title": "Potential Credential Dumping Via LSASS SilentProcessExit Technique"
+  },
+  {
+   "id": "55f0a3a1-846e-40eb-8273-677371b8d912",
+   "variant": "sysmon",
+   "title": "Outlook EnableUnsafeClientMailRules Setting Enabled"
+  },
+  {
+   "id": "56b1dde8-b274-435f-a73a-fb75eb81262a",
+   "variant": "sysmon",
+   "title": "Diskshadow Child Process Spawned"
+  },
+  {
+   "id": "56d19cb4-6414-4769-9644-1ed35ffbb148",
+   "variant": "sysmon",
+   "title": "Obfuscated IP Via CLI"
+  },
+  {
+   "id": "56e05d41-ce99-4ecd-912d-93f019ee0b71",
+   "variant": "sysmon",
+   "title": "Visual Studio Code Tunnel Remote File Creation"
+  },
+  {
+   "id": "576426ad-0131-4001-ae01-be175da0c108",
+   "variant": "sysmon",
+   "title": "PowerShell Script Dropped Via PowerShell.EXE"
+  },
+  {
+   "id": "58f4ea09-0fc2-4520-ba18-b85c540b0eaf",
+   "variant": "sysmon",
+   "title": "Suspicious Serv-U Process Pattern"
+  },
+  {
+   "id": "59b39960-5f9d-4a49-9cef-1e4d2c1d0cb9",
+   "variant": "sysmon",
+   "title": "Cab File Extraction Via Wusa.EXE"
+  },
+  {
+   "id": "59e938ff-0d6d-4dc3-b13f-36cc28734d4e",
+   "variant": "sysmon",
+   "title": "Execute Code with Pester.bat"
+  },
+  {
+   "id": "5a3164f2-b373-4152-93cf-090b13c12d27",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Child Process Of VsCode"
+  },
+  {
+   "id": "5aad0995-46ab-41bd-a9ff-724f41114971",
+   "variant": "sysmon",
+   "title": "Esentutl Volume Shadow Copy Service Keys"
+  },
+  {
+   "id": "5afee48e-67dd-4e03-a783-f74259dcf998",
+   "variant": "sysmon",
+   "title": "Potential LSASS Process Dump Via Procdump"
+  },
+  {
+   "id": "5b175490-b652-4b02-b1de-5b5b4083c5f8",
+   "variant": "sysmon",
+   "title": "RedMimicry Winnti Playbook Registry Manipulation"
+  },
+  {
+   "id": "5b40a734-99b6-4b98-a1d0-1cea51a08ab2",
+   "variant": "sysmon",
+   "title": "Suspicious Interactive PowerShell as SYSTEM"
+  },
+  {
+   "id": "5bb68627-3198-40ca-b458-49f973db8752",
+   "variant": "sysmon",
+   "title": "Rundll32 Execution Without Parameters"
+  },
+  {
+   "id": "5cc2cda8-f261-4d88-a2de-e9e193c86716",
+   "variant": "sysmon",
+   "title": "Suspicious Processes Spawned by WinRM"
+  },
+  {
+   "id": "5ce0f04e-3efc-42af-839d-5b3a543b76c0",
+   "variant": "sysmon",
+   "title": "Suspicious Process Execution From Fake Recycle.Bin Folder"
+  },
+  {
+   "id": "5d756aee-ad3e-4306-ad95-cb1abec48de2",
+   "variant": "sysmon",
+   "title": "GoToAssist Temporary Installation Artefact"
+  },
+  {
+   "id": "5dfc1465-8f65-4fde-8eb5-6194380c6a62",
+   "variant": "sysmon",
+   "title": "Windows Recall Feature Enabled - DisableAIDataAnalysis Value Deleted"
+  },
+  {
+   "id": "5e95028c-5229-4214-afae-d653d573d0ec",
+   "variant": "sysmon",
+   "title": "Security Service Disabled Via Reg.EXE"
+  },
+  {
+   "id": "5f6a601c-2ecb-498b-9c33-660362323afa",
+   "variant": "sysmon",
+   "title": "Root Certificate Installed From Susp Locations"
+  },
+  {
+   "id": "5f87308a-0a5b-4623-ae15-d8fa1809bc60",
+   "variant": "sysmon",
+   "title": "Suspicious Files in Default GPO Folder"
+  },
+  {
+   "id": "5fc297ae-25b6-488a-8f25-cc12ac29b744",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Usage Of Qemu"
+  },
+  {
+   "id": "6004abd0-afa4-4557-ba90-49d172e0a299",
+   "variant": "sysmon",
+   "title": "Execute Pcwrun.EXE To Leverage Follina"
+  },
+  {
+   "id": "602a1f13-c640-4d73-b053-be9a2fa58b96",
+   "variant": "sysmon",
+   "title": "HackTool - Powerup Write Hijack DLL"
+  },
+  {
+   "id": "60fc936d-2eb0-4543-8a13-911c750a1dfc",
+   "variant": "sysmon",
+   "title": "Interactive AT Job"
+  },
+  {
+   "id": "614a7e17-5643-4d89-b6fe-f9df1a79641c",
+   "variant": "sysmon",
+   "title": "Wmiprvse Wbemcomn DLL Hijack - File"
+  },
+  {
+   "id": "62120148-6b7a-42be-8b91-271c04e281a3",
+   "variant": "sysmon",
+   "title": "Suspicious Camera and Microphone Access"
+  },
+  {
+   "id": "62b7ccc9-23b4-471e-aa15-6da3663c4d59",
+   "variant": "sysmon",
+   "title": "PowerShell Base64 Encoded Reflective Assembly Load"
+  },
+  {
+   "id": "62ed5b55-f991-406a-85d9-e8e8fdf18789",
+   "variant": "sysmon",
+   "title": "UAC Bypass Using Consent and Comctl32 - File"
+  },
+  {
+   "id": "63c779ba-f638-40a0-a593-ddd45e8b1ddc",
+   "variant": "sysmon",
+   "title": "EventLog EVTX File Deleted"
+  },
+  {
+   "id": "63d1ccc0-2a43-4f4b-9289-361b308991ff",
+   "variant": "sysmon",
+   "title": "Wab/Wabmig Unusual Parent Or Child Processes"
+  },
+  {
+   "id": "63e4f530-65dc-49cc-8f80-ccfa95c69d43",
+   "variant": "sysmon",
+   "title": "UAC Bypass Using EventVwr"
+  },
+  {
+   "id": "646bc99f-6682-4b47-a73a-17b1b64c9d34",
+   "variant": "sysmon",
+   "title": "Execute Files with Msdeploy.exe"
+  },
+  {
+   "id": "65236ec7-ace0-4f0c-82fd-737b04fd4dcb",
+   "variant": "sysmon",
+   "title": "EVTX Created In Uncommon Location"
+  },
+  {
+   "id": "654fcc6d-840d-4844-9b07-2c3300e54a26",
+   "variant": "sysmon",
+   "title": "Legitimate Application Dropped Archive"
+  },
+  {
+   "id": "6640f31c-01ad-49b5-beb5-83498a5cd8bd",
+   "variant": "sysmon",
+   "title": "Potential Arbitrary Code Execution Via Node.EXE"
+  },
+  {
+   "id": "66c3b204-9f88-4d0a-a7f7-8a57d521ca55",
+   "variant": "sysmon",
+   "title": "Potential Crypto Mining Activity"
+  },
+  {
+   "id": "66e563f9-1cbd-4a22-a957-d8b7c0f44372",
+   "variant": "sysmon",
+   "title": "HackTool - XORDump Execution"
+  },
+  {
+   "id": "67a6c006-3fbe-46a7-9074-2ba3b82c3000",
+   "variant": "sysmon",
+   "title": "Path To Screensaver Binary Modified"
+  },
+  {
+   "id": "67bc0e75-c0a9-4cfc-8754-84a505b63c04",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Child Process Of ClickOnce Application"
+  },
+  {
+   "id": "68578b43-65df-4f81-9a9b-92f32711a951",
+   "variant": "sysmon",
+   "title": "UAC Bypass Using Windows Media Player - File"
+  },
+  {
+   "id": "6902955a-01b7-432c-b32a-6f5f81d8f625",
+   "variant": "sysmon",
+   "title": "LSASS Process Dump Artefact In CrashDumps Folder"
+  },
+  {
+   "id": "696bfb54-227e-4602-ac5b-30d9d2053312",
+   "variant": "sysmon",
+   "title": "Veeam Backup Database Suspicious Query"
+  },
+  {
+   "id": "69bd9b97-2be2-41b6-9816-fb08757a4d1a",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Execution From Parent Process In Public Folder"
+  },
+  {
+   "id": "69ca12af-119d-44ed-b50f-a47af0ebc364",
+   "variant": "sysmon",
+   "title": "LSASS Process Memory Dump Creation Via Taskmgr.EXE"
+  },
+  {
+   "id": "6b369ced-4b1d-48f1-b427-fdc0de0790bd",
+   "variant": "sysmon",
+   "title": "Suspicious Diantz Alternate Data Stream Execution"
+  },
+  {
+   "id": "6ba5a05f-b095-4f0a-8654-b825f4f16334",
+   "variant": "sysmon",
+   "title": "Potential MSTSC Shadowing Activity"
+  },
+  {
+   "id": "6bba49bf-7f8c-47d6-a1bb-6b4dece4640e",
+   "variant": "sysmon",
+   "title": "Suspicious RASdial Activity"
+  },
+  {
+   "id": "6c0ce3b6-85e2-49d4-9c3f-6e008ce9796e",
+   "variant": "sysmon",
+   "title": "Suspicious Deno File Written from Remote Source"
+  },
+  {
+   "id": "6c96fc76-0eb1-11eb-adc1-0242ac120002",
+   "variant": "sysmon",
+   "title": "Invoke-Obfuscation STDIN+ Launcher"
+  },
+  {
+   "id": "6d3a3952-6530-44a3-8554-cf17c116c615",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious JWT Token Search Via CLI"
+  },
+  {
+   "id": "6db5eaf9-88f7-4ed9-af7d-9ef2ad12f236",
+   "variant": "sysmon",
+   "title": "Winget Admin Settings Modification"
+  },
+  {
+   "id": "6ddab845-b1b8-49c2-bbf7-1a11967f64bc",
+   "variant": "sysmon",
+   "title": "File Deleted Via Sysinternals SDelete"
+  },
+  {
+   "id": "6ddff2e8-ea1a-45d0-8938-93dfc1d67ae7",
+   "variant": "sysmon",
+   "title": "PUA - Restic Backup Tool Execution"
+  },
+  {
+   "id": "6e2a900a-ced9-4e4a-a9c2-13e706f9518a",
+   "variant": "sysmon",
+   "title": "HackTool - Potential Remote Credential Dumping Activity Via CrackMapExec Or Impacket-Secretsdump"
+  },
+  {
+   "id": "6e90ae7a-7cd3-473f-a035-4ebb72d961da",
+   "variant": "sysmon",
+   "title": "PCRE.NET Package Temp Files"
+  },
+  {
+   "id": "6e968eb1-5f05-4dac-94e9-fd0c5cb49fd6",
+   "variant": "sysmon",
+   "title": "Uncommon Link.EXE Parent Process"
+  },
+  {
+   "id": "6ea3bf32-9680-422d-9f50-e90716b12a66",
+   "variant": "sysmon",
+   "title": "UAC Bypass Via Wsreset"
+  },
+  {
+   "id": "6ea858a8-ba71-4a12-b2cc-5d83312404c7",
+   "variant": "sysmon",
+   "title": "HackTool - Typical HiveNightmare SAM File Export"
+  },
+  {
+   "id": "6f0947a4-1c5e-4e0d-8ac7-53159b8f23ca",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Child Process Of Regsvr32"
+  },
+  {
+   "id": "6f1a11aa-4b8a-4b7f-9e13-4d3e4ff0e0d4",
+   "variant": "sysmon",
+   "title": "WSL Kali-Linux Usage"
+  },
+  {
+   "id": "6f3e2987-db24-4c78-a860-b4f4095a7095",
+   "variant": "sysmon",
+   "title": "Files Added To An Archive Using Rar.EXE"
+  },
+  {
+   "id": "6f4191bb-912b-48a8-9ce7-682769541e6d",
+   "variant": "sysmon",
+   "title": "Suspicious Msiexec Execute Arbitrary DLL"
+  },
+  {
+   "id": "7002aa10-b8d4-47ae-b5ba-51ab07e228b9",
+   "variant": "sysmon",
+   "title": "Potential Mpclient.DLL Sideloading Via Defender Binaries"
+  },
+  {
+   "id": "7021255e-5db3-4946-a8b9-0ba7a4644a69",
+   "variant": "sysmon",
+   "title": "Potential Provisioning Registry Key Abuse For Binary Proxy Execution - REG"
+  },
+  {
+   "id": "7047d730-036f-4f40-b9d8-1c63e36d5e62",
+   "variant": "sysmon",
+   "title": "Potential Binary Or Script Dropper Via PowerShell"
+  },
+  {
+   "id": "7050bba1-1aed-454e-8f73-3f46f09ce56a",
+   "variant": "sysmon",
+   "title": "Cloudflared Tunnel Connections Cleanup"
+  },
+  {
+   "id": "7124aebe-4cd7-4ccb-8df0-6d6b93c96795",
+   "variant": "sysmon",
+   "title": "Suspicious Kernel Dump Using Dtrace"
+  },
+  {
+   "id": "7280c9f3-a5af-45d0-916a-bc01cb4151c9",
+   "variant": "sysmon",
+   "title": "Suspicious MSExchangeMailboxReplication ASPX Write"
+  },
+  {
+   "id": "72a0369a-2576-4aaf-bfc9-6bb24a574ac6",
+   "variant": "sysmon",
+   "title": "Delete Defender Scan ShellEx Context Menu Registry Key"
+  },
+  {
+   "id": "731231b9-0b5d-4219-94dd-abb6959aa7ea",
+   "variant": "sysmon",
+   "title": "Suspicious Rundll32 Activity Invoking Sys File"
+  },
+  {
+   "id": "734f8d9b-42b8-41b2-bcf5-abaf49d5a3c8",
+   "variant": "sysmon",
+   "title": "Remote PowerShell Session Host Process (WinRM)"
+  },
+  {
+   "id": "736ffa74-5f6f-44ca-94ef-1c0df4f51d2a",
+   "variant": "sysmon",
+   "title": "HackTool - CrackMapExec File Indicators"
+  },
+  {
+   "id": "737e618a-a410-49b5-bec3-9e55ff7fbc15",
+   "variant": "sysmon",
+   "title": "Suspicious Calculator Usage"
+  },
+  {
+   "id": "74a2b202-73e0-4693-9a3a-9d36146d0775",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - MeshAgent Command Execution via MeshCentral"
+  },
+  {
+   "id": "74a2b37d-fea4-41e0-9ac7-c9fbcf1f60cc",
+   "variant": "sysmon",
+   "title": "WinRAR Creating Files in Startup Locations"
+  },
+  {
+   "id": "74babdd6-a758-4549-9632-26535279e654",
+   "variant": "sysmon",
+   "title": "Suspicious Executable File Creation"
+  },
+  {
+   "id": "75bf09fa-1dd7-4d18-9af9-dd9e492562eb",
+   "variant": "sysmon",
+   "title": "ADSI-Cache File Creation By Uncommon Tool"
+  },
+  {
+   "id": "75bfe6e6-cd8e-429e-91d3-03921e1d7962",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - ScreenConnect Installation Execution"
+  },
+  {
+   "id": "75d0a94e-6252-448d-a7be-d953dff527bb",
+   "variant": "sysmon",
+   "title": "Remote XSL Execution Via Msxsl.EXE"
+  },
+  {
+   "id": "75f7a0e2-7154-4c4d-9eae-5cdb4e0a5c13",
+   "variant": "sysmon",
+   "title": "Write Protect For Storage Disabled"
+  },
+  {
+   "id": "760e75d8-c3b5-409b-a9bf-6130b4c4603f",
+   "variant": "sysmon",
+   "title": "Self Extraction Directive File Created In Potentially Suspicious Location"
+  },
+  {
+   "id": "762bb580-79b4-40f4-8b9e-9349ce1710f4",
+   "variant": "sysmon",
+   "title": "Indirect Command Execution via SFTP ProxyCommand"
+  },
+  {
+   "id": "7638e5fe-600c-4289-a968-f49dd537ec7d",
+   "variant": "sysmon",
+   "title": "HackTool - NetExec Execution"
+  },
+  {
+   "id": "7892ec59-c5bb-496d-8968-e5d210ca3ac4",
+   "variant": "sysmon",
+   "title": "DPAPI Backup Keys And Certificate Export Activity IOC"
+  },
+  {
+   "id": "78f10490-f2f4-4d19-a75b-4e0683bf3b8d",
+   "variant": "sysmon",
+   "title": "Suspicious Speech Runtime Binary Child Process"
+  },
+  {
+   "id": "797011dc-44f4-4e6f-9f10-a8ceefbe566b",
+   "variant": "sysmon",
+   "title": "WMI Backdoor Exchange Transport Agent"
+  },
+  {
+   "id": "79b06761-465f-4f88-9ef2-150e24d3d737",
+   "variant": "sysmon",
+   "title": "Potential SysInternals ProcDump Evasion"
+  },
+  {
+   "id": "79df3f68-dccb-48e9-9171-b75cbc37c51d",
+   "variant": "sysmon",
+   "title": "Potential Lateral Movement via Windows Remote Shell"
+  },
+  {
+   "id": "79f4ede3-402e-41c8-bc3e-ebbf5f162581",
+   "variant": "sysmon",
+   "title": "HackTool - Empire PowerShell Launch Parameters"
+  },
+  {
+   "id": "7b10f171-7f04-47c7-9fa2-5be43c76e535",
+   "variant": "sysmon",
+   "title": "Visual Basic Command Line Compiler Usage"
+  },
+  {
+   "id": "7be5fb68-f9ef-476d-8b51-0256ebece19e",
+   "variant": "sysmon",
+   "title": "Suspicious Execution of Hostname"
+  },
+  {
+   "id": "7c0dcd3d-acf8-4f71-9570-f448b0034f94",
+   "variant": "sysmon",
+   "title": "PsExec Service Child Process Execution as LOCAL SYSTEM"
+  },
+  {
+   "id": "7c81fec3-1c1d-43b0-996a-46753041b1b6",
+   "variant": "sysmon",
+   "title": "UAC Bypass via Event Viewer"
+  },
+  {
+   "id": "7cccd811-7ae9-4ebe-9afd-cb5c406b824b",
+   "variant": "sysmon",
+   "title": "Potential Execution of Sysinternals Tools"
+  },
+  {
+   "id": "7d1aaf3d-4304-425c-b7c3-162055e0b3ab",
+   "variant": "sysmon",
+   "title": "Potential Data Exfiltration Activity Via CommandLine Tools"
+  },
+  {
+   "id": "7d4aaec2-08ed-4430-8b96-28420e030e04",
+   "variant": "sysmon",
+   "title": "Uncommon Sigverif.EXE Child Process"
+  },
+  {
+   "id": "7d604714-e071-49ff-8726-edeb95a70679",
+   "variant": "sysmon",
+   "title": "Legitimate Application Dropped Script"
+  },
+  {
+   "id": "7da7809e-f3d5-47a3-9d5d-fc9d019caf14",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - Ammy Admin Agent Execution"
+  },
+  {
+   "id": "7eac0a16-5832-4e81-865f-0268a6d19e4b",
+   "variant": "sysmon",
+   "title": "ADS Zone.Identifier Deleted"
+  },
+  {
+   "id": "7eedcc9d-9fdb-4d94-9c54-474e8affc0c7",
+   "variant": "sysmon",
+   "title": "Invoke-Obfuscation COMPRESS OBFUSCATION"
+  },
+  {
+   "id": "7f2376f9-42ee-4dfc-9360-fecff9a88fc8",
+   "variant": "sysmon",
+   "title": "BitLockerTogo.EXE Execution"
+  },
+  {
+   "id": "7f3a9c2d-4e8b-4a7f-9d3e-5c6f8a9b2e1d",
+   "variant": "sysmon",
+   "title": "OpenEDR Spawning Command Shell"
+  },
+  {
+   "id": "7f43c430-5001-4f8b-aaa9-c3b88f18fa5c",
+   "variant": "sysmon",
+   "title": "Execute From Alternate Data Streams"
+  },
+  {
+   "id": "7f5d1c9a-3e83-48df-95a7-2b98aae6c13c",
+   "variant": "sysmon",
+   "title": "Potential Provlaunch.EXE Binary Proxy Execution Abuse"
+  },
+  {
+   "id": "7f741dcf-fc22-4759-87b4-9ae8376676a2",
+   "variant": "sysmon",
+   "title": "Bypass UAC via Fodhelper.exe"
+  },
+  {
+   "id": "7fd164ba-126a-4d9c-9392-0d4f7c243df0",
+   "variant": "sysmon",
+   "title": "OneNote Attachment File Dropped In Suspicious Location"
+  },
+  {
+   "id": "7fff6773-2baa-46de-a24a-b6eec1aba2d1",
+   "variant": "sysmon",
+   "title": "UAC Bypass Using NTFS Reparse Point - File"
+  },
+  {
+   "id": "8023f872-3f1d-4301-a384-801889917ab4",
+   "variant": "sysmon",
+   "title": "Usage of Renamed Sysinternals Tools - RegistrySet"
+  },
+  {
+   "id": "805c55d9-31e6-4846-9878-c34c75054fe9",
+   "variant": "sysmon",
+   "title": "Octopus Scanner Malware"
+  },
+  {
+   "id": "80e1f67a-4596-4351-98f5-a9c3efabac95",
+   "variant": "sysmon",
+   "title": "Suspicious Scheduled Task Write to System32 Tasks"
+  },
+  {
+   "id": "811f459f-9231-45d4-959a-0266c6311987",
+   "variant": "sysmon",
+   "title": "Suspicious Child Process Of BgInfo.EXE"
+  },
+  {
+   "id": "81315b50-6b60-4d8f-9928-3466e1022515",
+   "variant": "sysmon",
+   "title": "Desktop.INI Created by Uncommon Process"
+  },
+  {
+   "id": "814ddeca-3d31-4265-8e07-8cc54fb44903",
+   "variant": "sysmon",
+   "title": "LiveKD Kernel Memory Dump File Created"
+  },
+  {
+   "id": "81ebd28b-9607-4478-bf06-974ed9d53ed7",
+   "variant": "sysmon",
+   "title": "Potential Application Whitelisting Bypass via Dnx.EXE"
+  },
+  {
+   "id": "833ef470-fa01-4631-a79b-6f291c9ac498",
+   "variant": "sysmon",
+   "title": "Add Debugger Entry To Hangs Key For Persistence"
+  },
+  {
+   "id": "835e75bf-4bfd-47a4-b8a6-b766cac8bcb7",
+   "variant": "sysmon",
+   "title": "Uncommon Child Process Of Setres.EXE"
+  },
+  {
+   "id": "83809e84-4475-4b69-bc3e-4aad8568612f",
+   "variant": "sysmon",
+   "title": "MSExchange Transport Agent Installation"
+  },
+  {
+   "id": "83865853-59aa-449e-9600-74b9d89a6d6e",
+   "variant": "sysmon",
+   "title": "Audio Capture via SoundRecorder"
+  },
+  {
+   "id": "8468111a-ef07-4654-903b-b863a80bbc95",
+   "variant": "sysmon",
+   "title": "VHD Image Download Via Browser"
+  },
+  {
+   "id": "847d5ff3-8a31-4737-a970-aeae8fe21765",
+   "variant": "sysmon",
+   "title": "Potential Tampering With Security Products Via WMIC"
+  },
+  {
+   "id": "847def9e-924d-4e90-b7c4-5f581395a2b4",
+   "variant": "sysmon",
+   "title": "HackTool - QuarksPwDump Dump File"
+  },
+  {
+   "id": "84b14121-9d14-416e-800b-f3b829c5a14d",
+   "variant": "sysmon",
+   "title": "Suspicious CustomShellHost Execution"
+  },
+  {
+   "id": "84b1706c-932a-44c4-ae28-892b28a25b94",
+   "variant": "sysmon",
+   "title": "OneNote.EXE Execution of Malicious Embedded Scripts"
+  },
+  {
+   "id": "85a8e5ba-bd03-4bfb-bbfa-a4409a8f8b98",
+   "variant": "sysmon",
+   "title": "Folder Compress To Potentially Suspicious Output Via Compress-Archive Cmdlet"
+  },
+  {
+   "id": "85b0b087-eddf-4a2b-b033-d771fa2b9775",
+   "variant": "sysmon",
+   "title": "PowerShell Download and Execution Cradles"
+  },
+  {
+   "id": "85d23b42-9a9d-4f8f-b3d7-d2733c1d58f5",
+   "variant": "sysmon",
+   "title": "HackTool - HollowReaper Execution"
+  },
+  {
+   "id": "85ff530b-261d-48c6-a441-facaa2e81e48",
+   "variant": "sysmon",
+   "title": "New Service Creation Using Sc.EXE"
+  },
+  {
+   "id": "868df2d1-0939-4562-83a7-27408c4a1ada",
+   "variant": "sysmon",
+   "title": "Shell Context Menu Command Tampering"
+  },
+  {
+   "id": "869b9ca7-9ea2-4a5a-8325-e80e62f75445",
+   "variant": "sysmon",
+   "title": "Suspicious Child Process Of SQL Server"
+  },
+  {
+   "id": "87a476dc-0079-4583-a985-dee7a20a03de",
+   "variant": "sysmon",
+   "title": "Enumeration for 3rd Party Creds From CLI"
+  },
+  {
+   "id": "8834e2f7-6b4b-4f09-8906-d2276470ee23",
+   "variant": "sysmon",
+   "title": "PsExec/PAExec Escalation to LOCAL SYSTEM"
+  },
+  {
+   "id": "883835a7-df45-43e4-bf1d-4268768afda4",
+   "variant": "sysmon",
+   "title": "Regedit as Trusted Installer"
+  },
+  {
+   "id": "8839e550-52d7-4958-9f2f-e13c1e736838",
+   "variant": "sysmon",
+   "title": "Security Event Logging Disabled via MiniNt Registry Key - Registry Set"
+  },
+  {
+   "id": "883faa95-175a-4e22-8181-e5761aeb373c",
+   "variant": "sysmon",
+   "title": "Suspicious Service Binary Directory"
+  },
+  {
+   "id": "889719ef-dd62-43df-86c3-768fb08dc7c0",
+   "variant": "sysmon",
+   "title": "Suspicious PowerShell Mailbox Export to Share"
+  },
+  {
+   "id": "88d6e60c-759d-4ac1-a447-c0f1466c2d21",
+   "variant": "sysmon",
+   "title": "Chromium Browser Instance Executed With Custom Extension"
+  },
+  {
+   "id": "88f680b8-070e-402c-ae11-d2914f2257f1",
+   "variant": "sysmon",
+   "title": "PowerShell Base64 Encoded IEX Cmdlet"
+  },
+  {
+   "id": "89c42960-f244-4dad-9151-ae9b1a3287a2",
+   "variant": "sysmon",
+   "title": "Suspicious File Write to Webapps Root Directory"
+  },
+  {
+   "id": "89ca78fd-b37c-4310-b3d3-81a023f83936",
+   "variant": "sysmon",
+   "title": "Schtasks Creation Or Modification With SYSTEM Privileges"
+  },
+  {
+   "id": "8a3038e8-9c9d-46f8-b184-66234a160f6f",
+   "variant": "sysmon",
+   "title": "Potential Remote Desktop Tunneling"
+  },
+  {
+   "id": "8a582fe2-0882-4b89-a82a-da6b2dc32937",
+   "variant": "sysmon",
+   "title": "Suspicious WmiPrvSE Child Process"
+  },
+  {
+   "id": "8b0e12da-d3c3-49db-bb4f-256703f380e5",
+   "variant": "sysmon",
+   "title": "PUA - Chisel Tunneling Tool Execution"
+  },
+  {
+   "id": "8bc64091-6875-4881-aaf9-7bd25b5dda08",
+   "variant": "sysmon",
+   "title": "Suspicious Process Patterns NTDS.DIT Exfil"
+  },
+  {
+   "id": "8c31f563-f9a7-450c-bfa8-35f8f32f1f61",
+   "variant": "sysmon",
+   "title": "New Outlook Macro Created"
+  },
+  {
+   "id": "8c3c76ca-8f8b-4b1d-aaf3-81aebcd367c9",
+   "variant": "sysmon",
+   "title": "Creation Exe for Service with Unquoted Path"
+  },
+  {
+   "id": "8d01b53f-456f-48ee-90f6-bc28e67d4e35",
+   "variant": "sysmon",
+   "title": "Suspicious Obfuscated PowerShell Code"
+  },
+  {
+   "id": "8d5aca11-22b3-4f22-b7ba-90e60533e1fb",
+   "variant": "sysmon",
+   "title": "Wmiexec Default Output File"
+  },
+  {
+   "id": "8de89e52-f6e1-4b5b-afd1-41ecfa300d48",
+   "variant": "sysmon",
+   "title": "Suspicious WindowsTerminal Child Processes"
+  },
+  {
+   "id": "8e1cb247-6cf6-42fa-b440-3f27d57e9936",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via Microsoft Office Add-In"
+  },
+  {
+   "id": "8e3c7994-131e-4ba5-b6ea-804d49113a26",
+   "variant": "sysmon",
+   "title": "Uncommon Child Process Spawned By Odbcconf.EXE"
+  },
+  {
+   "id": "8e95e73e-ba02-4a87-b4d7-0929b8053038",
+   "variant": "sysmon",
+   "title": "Suspicious ArcSOC.exe Child Process"
+  },
+  {
+   "id": "8f0b1fb1-9bd4-4e74-8cdf-a8de4d2adfd0",
+   "variant": "sysmon",
+   "title": "Unusual File Deletion by Dns.exe"
+  },
+  {
+   "id": "8f88e3f6-2a49-48f5-a5c4-2f7eedf78710",
+   "variant": "sysmon",
+   "title": "Java Running with Remote Debugging"
+  },
+  {
+   "id": "8fbe98a8-8f9d-44f8-aa71-8c572e29ef06",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via MyComputer Registry Keys"
+  },
+  {
+   "id": "8fbf3271-1ef6-4e94-8210-03c2317947f6",
+   "variant": "sysmon",
+   "title": "Cred Dump Tools Dropped Files"
+  },
+  {
+   "id": "90b63c33-2b97-4631-a011-ceb0f47b77c3",
+   "variant": "sysmon",
+   "title": "Potential Suspicious Execution From GUID Like Folder Names"
+  },
+  {
+   "id": "90d50722-0483-4065-8e35-57efaadd354d",
+   "variant": "sysmon",
+   "title": "Arbitrary MSI Download Via Devinit.EXE"
+  },
+  {
+   "id": "90dcf730-1b71-4ae7-9ffc-6fcf62bd0132",
+   "variant": "sysmon",
+   "title": "Suspicious ZipExec Execution"
+  },
+  {
+   "id": "90fb5e62-ca1f-4e22-b42e-cc521874c938",
+   "variant": "sysmon",
+   "title": "Suspicious Shells Spawn by Java Utility Keytool"
+  },
+  {
+   "id": "91174a41-dc8f-401b-be89-7bfc140612a0",
+   "variant": "sysmon",
+   "title": "Office Macro File Creation"
+  },
+  {
+   "id": "91edcfb1-2529-4ac2-9ecc-7617f895c7e4",
+   "variant": "sysmon",
+   "title": "Weak or Abused Passwords In CLI"
+  },
+  {
+   "id": "921aa10f-2e74-4cca-9498-98f9ca4d6fdf",
+   "variant": "sysmon",
+   "title": "Registry Modification Attempt Via VBScript"
+  },
+  {
+   "id": "92772523-d9c1-4c93-9547-b0ca500baba3",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via Mpnotify"
+  },
+  {
+   "id": "9292293b-8496-4715-9db6-37028dcda4b3",
+   "variant": "sysmon",
+   "title": "Replace.exe Usage"
+  },
+  {
+   "id": "92a974db-ab84-457f-9ec0-55db83d7a825",
+   "variant": "sysmon",
+   "title": "Potential AMSI Bypass Using NULL Bits"
+  },
+  {
+   "id": "92fa78e7-4d39-45f1-91a3-8b23f3f1088d",
+   "variant": "sysmon",
+   "title": "Potential Startup Shortcut Persistence Via PowerShell.EXE"
+  },
+  {
+   "id": "932fb0d8-692b-4b0f-a26e-5643a50fe7d6",
+   "variant": "sysmon",
+   "title": "Audio Capture via PowerShell"
+  },
+  {
+   "id": "93a19907-d4f9-4deb-9f91-aac4692776a6",
+   "variant": "sysmon",
+   "title": "UAC Bypass Using .NET Code Profiler on MMC"
+  },
+  {
+   "id": "93d94efc-d7ad-4161-ad7d-1638c4f908d8",
+   "variant": "sysmon",
+   "title": "HackTool - Dumpert Process Dumper Default File"
+  },
+  {
+   "id": "94771a71-ba41-4b6e-a757-b531372eaab6",
+   "variant": "sysmon",
+   "title": "File Download From Browser Process Via Inline URL"
+  },
+  {
+   "id": "9494479d-d994-40bf-a8b1-eea890237021",
+   "variant": "sysmon",
+   "title": "Scheduled Task Creation From Potential Suspicious Parent Location"
+  },
+  {
+   "id": "949f1ffb-6e85-4f00-ae1e-c3c5b190d605",
+   "variant": "sysmon",
+   "title": "Explorer Process Tree Break"
+  },
+  {
+   "id": "95022b85-ff2a-49fa-939a-d7b8f56eeb9b",
+   "variant": "sysmon",
+   "title": "HackTool - RedMimicry Winnti Playbook Execution"
+  },
+  {
+   "id": "95724fc1-a258-4674-97db-a30351981c5a",
+   "variant": "sysmon",
+   "title": "Manual Execution of Script Inside of a Compressed File"
+  },
+  {
+   "id": "95e60a2b-4705-444b-b7da-ba0ea81a3ee2",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - Simple Help Execution"
+  },
+  {
+   "id": "96036718-71cc-4027-a538-d1587e0006a7",
+   "variant": "sysmon",
+   "title": "Windows Processes Suspicious Parent Directory"
+  },
+  {
+   "id": "961e0abb-1b1e-4c84-a453-aafe56ad0d34",
+   "variant": "sysmon",
+   "title": "Execution via stordiag.exe"
+  },
+  {
+   "id": "9661ec9d-4439-4a7a-abed-d9be4ca43b6d",
+   "variant": "sysmon",
+   "title": "VsCode Code Tunnel Execution File Indicator"
+  },
+  {
+   "id": "96f697b0-b499-4e5d-9908-a67bec11cdb6",
+   "variant": "sysmon",
+   "title": "Removal of Potential COM Hijacking Registry Keys"
+  },
+  {
+   "id": "9711de76-5d4f-4c50-a94f-21e4e8f8384d",
+   "variant": "sysmon",
+   "title": "Installation of TeamViewer Desktop"
+  },
+  {
+   "id": "976dd1f2-a484-45ec-aa1d-0e87e882262b",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via CHM Helper DLL"
+  },
+  {
+   "id": "979baf41-ca44-4540-9d0c-4fcef3b5a3a4",
+   "variant": "sysmon",
+   "title": "Potential File Extension Spoofing Using Right-to-Left Override"
+  },
+  {
+   "id": "97aa2e88-555c-450d-85a6-229bcd87efb8",
+   "variant": "sysmon",
+   "title": "Suspicious Screensaver Binary File Creation"
+  },
+  {
+   "id": "9847f263-4a81-424f-970c-875dab15b79b",
+   "variant": "sysmon",
+   "title": "Suspicious TSCON Start as SYSTEM"
+  },
+  {
+   "id": "98767d61-b2e8-4d71-b661-e36783ee24c1",
+   "variant": "sysmon",
+   "title": "Gzip Archive Decode Via PowerShell"
+  },
+  {
+   "id": "98a96a5a-64a0-4c42-92c5-489da3866cb0",
+   "variant": "sysmon",
+   "title": "DNS Exfiltration and Tunneling Tools Execution"
+  },
+  {
+   "id": "98dedfdd-8333-49d4-9f23-d7018cccae53",
+   "variant": "sysmon",
+   "title": "Enable LM Hash Storage - ProcCreation"
+  },
+  {
+   "id": "99793437-3e16-439b-be0f-078782cf953d",
+   "variant": "sysmon",
+   "title": "Tap Installer Execution"
+  },
+  {
+   "id": "9a019ffc-3580-4c9d-8d87-079f7e8d3fd4",
+   "variant": "sysmon",
+   "title": "Cloudflared Tunnel Execution"
+  },
+  {
+   "id": "9a132afa-654e-11eb-ae93-0242ac130002",
+   "variant": "sysmon",
+   "title": "PUA - AdFind Suspicious Execution"
+  },
+  {
+   "id": "9ace0707-b560-49b8-b6ca-5148b42f39fb",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via Logon Scripts - Registry"
+  },
+  {
+   "id": "9b0b7ac3-6223-47aa-a3fd-e8f211e637db",
+   "variant": "sysmon",
+   "title": "Changing Existing Service ImagePath Value Via Reg.EXE"
+  },
+  {
+   "id": "9b0f8a61-91b2-464f-aceb-0527e0a45020",
+   "variant": "sysmon",
+   "title": "Potential COM Object Hijacking Via TreatAs Subkey - Registry"
+  },
+  {
+   "id": "9b64de98-9db3-4033-bd7a-f51430105f00",
+   "variant": "sysmon",
+   "title": "Windows Terminal Profile Settings Modification By Uncommon Process"
+  },
+  {
+   "id": "9bdaf1e9-fdef-443b-8081-4341b74a7e28",
+   "variant": "sysmon",
+   "title": "Suspicious New Instance Of An Office COM Object"
+  },
+  {
+   "id": "9c0295ce-d60d-40bd-bd74-84673b7592b1",
+   "variant": "sysmon",
+   "title": "Suspicious Encoded And Obfuscated Reflection Assembly Load Function Call"
+  },
+  {
+   "id": "9c14c9fa-1a63-4a64-8e57-d19280559490",
+   "variant": "sysmon",
+   "title": "Invoke-Obfuscation Via Stdin"
+  },
+  {
+   "id": "9c5037d1-c568-49b3-88c7-9846a5bdc2be",
+   "variant": "sysmon",
+   "title": "Suspicious Run Key from Download"
+  },
+  {
+   "id": "9c7e131a-0f2c-4ae0-9d43-b04f4e266d43",
+   "variant": "sysmon",
+   "title": "Uncommon Child Process Of Appvlp.EXE"
+  },
+  {
+   "id": "9c8c7000-3065-44a8-a555-79bcba5d9955",
+   "variant": "sysmon",
+   "title": "MSDT Execution Via Answer File"
+  },
+  {
+   "id": "9ccba514-7cb6-4c5c-b377-700758f2f120",
+   "variant": "sysmon",
+   "title": "Suspicious Child Process of AspNetCompiler"
+  },
+  {
+   "id": "9d15044a-7cfe-4d23-8085-6ebc11df7685",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via Visual Studio Tools for Office"
+  },
+  {
+   "id": "9d3436ef-9476-4c43-acca-90ce06bdf33a",
+   "variant": "sysmon",
+   "title": "DHCP Callout DLL Installation"
+  },
+  {
+   "id": "9e099d99-44c2-42b6-a6d8-54c3545cab29",
+   "variant": "sysmon",
+   "title": "HackTool - Mimikatz Kirbi File Creation"
+  },
+  {
+   "id": "9e4b7d3a-6f2c-4e9a-8d1b-3c5e7a9f2b4d",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious File Creation by OpenEDR's ITSMService"
+  },
+  {
+   "id": "9e50a8b3-dd05-4eb8-9153-bdb6b79d50b0",
+   "variant": "sysmon",
+   "title": "Msxsl.EXE Execution"
+  },
+  {
+   "id": "9e716b33-63b2-46da-86a4-bd3c3b9b5dfb",
+   "variant": "sysmon",
+   "title": "Certificate Exported Via PowerShell"
+  },
+  {
+   "id": "9eb271b9-24ae-4cd4-9465-19cfc1047f3e",
+   "variant": "sysmon",
+   "title": "Potential Proxy Execution Via Explorer.EXE From Shell Process"
+  },
+  {
+   "id": "9ec9fb1b-e059-4489-9642-f270c207923d",
+   "variant": "sysmon",
+   "title": "Hiding User Account Via SpecialAccounts Registry Key - CommandLine"
+  },
+  {
+   "id": "9f107a84-532c-41af-b005-8d12a607639f",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Cabinet File Expansion"
+  },
+  {
+   "id": "9f2cc74d-78af-4eb2-bb64-9cd1d292b87b",
+   "variant": "sysmon",
+   "title": "Microsoft Sync Center Suspicious Network Connections"
+  },
+  {
+   "id": "9f38c1db-e2ae-40bf-81d0-5b68f73fb512",
+   "variant": "sysmon",
+   "title": "Suspicious BitLocker Access Agent Update Utility Execution"
+  },
+  {
+   "id": "9f50fe98-fe5c-4a2d-86c7-fad7f63ed622",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious ASP.NET Compilation Via AspNetCompiler"
+  },
+  {
+   "id": "9f546b25-5f12-4c8d-8532-5893dcb1e4b8",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Child Process Of DiskShadow.EXE"
+  },
+  {
+   "id": "9fb6b26e-7f9e-4517-a48b-8cac4a1b6c60",
+   "variant": "sysmon",
+   "title": "Uncommon FileSystem Load Attempt By Format.com"
+  },
+  {
+   "id": "9fc51a3c-81b3-4fa7-b35f-7c02cf10fd2d",
+   "variant": "sysmon",
+   "title": "Usage Of Web Request Commands And Cmdlets"
+  },
+  {
+   "id": "9fff585c-c33e-4a86-b3cd-39312079a65f",
+   "variant": "sysmon",
+   "title": "Taskmgr as LOCAL_SYSTEM"
+  },
+  {
+   "id": "a018fdc3-46a3-44e5-9afb-2cd4af1d4b39",
+   "variant": "sysmon",
+   "title": "Suspicious Execution From Outlook Temporary Folder"
+  },
+  {
+   "id": "a01b8329-5953-4f73-ae2d-aa01e1f35f00",
+   "variant": "sysmon",
+   "title": "AspNetCompiler Execution"
+  },
+  {
+   "id": "a0459f02-ac51-4c09-b511-b8c9203fc429",
+   "variant": "sysmon",
+   "title": "Potential Process Execution Proxy Via CL_Invocation.ps1"
+  },
+  {
+   "id": "a05baa88-e922-4001-bc4d-8738135f27de",
+   "variant": "sysmon",
+   "title": "Process Monitor Driver Creation By Non-Sysinternals Binary"
+  },
+  {
+   "id": "a0bed973-45fa-4625-adb5-6ecdf9be70ac",
+   "variant": "sysmon",
+   "title": "Microsoft Office Trusted Location Updated"
+  },
+  {
+   "id": "a166f74e-bf44-409d-b9ba-ea4b2dd8b3cd",
+   "variant": "sysmon",
+   "title": "Macro Enabled In A Potentially Suspicious Document"
+  },
+  {
+   "id": "a16980c2-0c56-4de0-9a79-17971979efdd",
+   "variant": "sysmon",
+   "title": "Cmd.EXE Missing Space Characters Execution Anomaly"
+  },
+  {
+   "id": "a197e378-d31b-41c0-9635-cfdf1c1bb423",
+   "variant": "sysmon",
+   "title": "HackTool - WinRM Access Via Evil-WinRM"
+  },
+  {
+   "id": "a1b1fd53-9c4a-444c-bae0-34a330fc7aa8",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via DLLPathOverride"
+  },
+  {
+   "id": "a20391f8-76fb-437b-abc0-dba2df1952c6",
+   "variant": "sysmon",
+   "title": "Visual Studio NodejsTools PressAnyKey Arbitrary Binary Execution"
+  },
+  {
+   "id": "a238b5d0-ce2d-4414-a676-7a531b3d13d6",
+   "variant": "sysmon",
+   "title": "ETW Trace Evasion Activity"
+  },
+  {
+   "id": "a2910908-e86f-4687-aeba-76a5f996e652",
+   "variant": "sysmon",
+   "title": "DLL Execution Via Register-cimprovider.exe"
+  },
+  {
+   "id": "a29808fd-ef50-49ff-9c7a-59a9b040b404",
+   "variant": "sysmon",
+   "title": "HackTool - Pypykatz Credentials Dumping Activity"
+  },
+  {
+   "id": "a29c1813-ab1f-4dde-b489-330b952e91ae",
+   "variant": "sysmon",
+   "title": "Suspicious Network Command"
+  },
+  {
+   "id": "a2ea3ae7-d3d0-40a0-a55c-25a45c87cac1",
+   "variant": "sysmon",
+   "title": "Suspicious Driver Install by pnputil.exe"
+  },
+  {
+   "id": "a31eeaed-3fd5-478e-a8ba-e62c6b3f9ecc",
+   "variant": "sysmon",
+   "title": "Raccine Uninstall"
+  },
+  {
+   "id": "a4e3d776-f12e-42c2-8510-9e6ed1f43ec3",
+   "variant": "sysmon",
+   "title": "Unusual Child Process of dns.exe"
+  },
+  {
+   "id": "a54f842a-3713-4b45-8c84-5f136fdebd3c",
+   "variant": "sysmon",
+   "title": "New PortProxy Registry Entry Added"
+  },
+  {
+   "id": "a55349d8-9588-4c5a-8e3b-1925fe2a4ffe",
+   "variant": "sysmon",
+   "title": "Exchange PowerShell Cmdlet History Deleted"
+  },
+  {
+   "id": "a5a2d357-1ab8-4675-a967-ef9990a59391",
+   "variant": "sysmon",
+   "title": "LSASS Process Memory Dump Files"
+  },
+  {
+   "id": "a642964e-bead-4bed-8910-1bb4d63e3b4d",
+   "variant": "sysmon",
+   "title": "HackTool - Mimikatz Execution"
+  },
+  {
+   "id": "a66bc059-c370-472c-a0d7-f8fd1bf9d583",
+   "variant": "sysmon",
+   "title": "Network Connection Initiated By Eqnedt32.EXE"
+  },
+  {
+   "id": "a6976974-ea6f-4e97-818e-ea08625c52cb",
+   "variant": "sysmon",
+   "title": "Potential RipZip Attack on Startup Folder"
+  },
+  {
+   "id": "a6a39bdb-935c-4f0a-ab77-35f4bbf44d33",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Powershell Script Execution From Temp Folder"
+  },
+  {
+   "id": "a6fc3c46-23b8-4996-9ea2-573f4c4d88c5",
+   "variant": "sysmon",
+   "title": "RemoteFXvGPUDisablement Abuse Via AtomicTestHarnesses"
+  },
+  {
+   "id": "a77c1610-fc73-4019-8e29-0f51efc04a51",
+   "variant": "sysmon",
+   "title": "Potential Dosfuscation Activity"
+  },
+  {
+   "id": "a85ffc3a-e8fd-4040-93bf-78aff284d801",
+   "variant": "sysmon",
+   "title": "Use Of The SFTP.EXE Binary As A LOLBIN"
+  },
+  {
+   "id": "a8f866e1-bdd4-425e-a27a-37619238d9c7",
+   "variant": "sysmon",
+   "title": "Potential Hidden Directory Creation Via NTFS INDEX_ALLOCATION Stream"
+  },
+  {
+   "id": "a982fc9c-6333-4ffb-a51d-addb04e8b529",
+   "variant": "sysmon",
+   "title": "Windows Defender Exclusions Added - Registry"
+  },
+  {
+   "id": "aa0b3a82-eacc-4ec3-9150-b5a9a3e3f82f",
+   "variant": "sysmon",
+   "title": "Potential Download/Upload Activity Using Type Command"
+  },
+  {
+   "id": "aaafa146-074c-11eb-adc1-0242ac120002",
+   "variant": "sysmon",
+   "title": "HackTool - Hydra Password Bruteforce Execution"
+  },
+  {
+   "id": "aaf46cdc-934e-4284-b329-34aa701e3771",
+   "variant": "sysmon",
+   "title": "Uncommon Child Process Of BgInfo.EXE"
+  },
+  {
+   "id": "ab37a6ec-6068-432b-a64e-2c7bf95b1d22",
+   "variant": "sysmon",
+   "title": "Scripting/CommandLine Process Spawned Regsvr32"
+  },
+  {
+   "id": "ab70c354-d9ac-4e11-bbb6-ec8e3b153357",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - Team Viewer Session Started On Windows Host"
+  },
+  {
+   "id": "ab9e3b40-0c85-4ba1-aede-455d226fd124",
+   "variant": "sysmon",
+   "title": "Suspicious Redirection to Local Admin Share"
+  },
+  {
+   "id": "aba15bdd-657f-422a-bab3-ac2d2a0d6f1c",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious DMP/HDMP File Creation"
+  },
+  {
+   "id": "ac175779-025a-4f12-98b0-acdaeb77ea85",
+   "variant": "sysmon",
+   "title": "PowerShell Script Run in AppData"
+  },
+  {
+   "id": "ac20ae82-8758-4f38-958e-b44a3140ca88",
+   "variant": "sysmon",
+   "title": "Invoke-Obfuscation Via Use MSHTA"
+  },
+  {
+   "id": "acd74772-5f88-45c7-956b-6a7b36c294d2",
+   "variant": "sysmon",
+   "title": "Removal Of SD Value to Hide Schedule Task - Registry"
+  },
+  {
+   "id": "acf2807c-805b-4042-aab9-f86b6ba9cb2b",
+   "variant": "sysmon",
+   "title": "Dynamic .NET Compilation Via Csc.EXE - Hunting"
+  },
+  {
+   "id": "ad691d92-15f2-4181-9aa4-723c74f9ddc3",
+   "variant": "sysmon",
+   "title": "Potential Defense Evasion Via Right-to-Left Override"
+  },
+  {
+   "id": "ad720b90-25ad-43ff-9b5e-5c841facc8e5",
+   "variant": "sysmon",
+   "title": "User Added to Local Administrators Group"
+  },
+  {
+   "id": "ad89044a-8f49-4673-9a55-cbd88a1b374f",
+   "variant": "sysmon",
+   "title": "Enabling COR Profiler Environment Variables"
+  },
+  {
+   "id": "ae215552-081e-44c7-805f-be16f975c8a2",
+   "variant": "sysmon",
+   "title": "Suspicious Debugger Registration Cmdline"
+  },
+  {
+   "id": "ae9b0bd7-8888-4606-b444-0ed7410cb728",
+   "variant": "sysmon",
+   "title": "Writing Of Malicious Files To The Fonts Folder"
+  },
+  {
+   "id": "b0524451-19af-4efa-a46f-562a977f792e",
+   "variant": "sysmon",
+   "title": "ShimCache Flush"
+  },
+  {
+   "id": "b0ce780f-10bd-496d-9067-066d23dc3aa5",
+   "variant": "sysmon",
+   "title": "HackTool - SharpWSUS/WSUSpendu Execution"
+  },
+  {
+   "id": "b1377339-fda6-477a-b455-ac0923f9ec2c",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - AnyDesk Piped Password Via CLI"
+  },
+  {
+   "id": "b18c9d4c-fac9-4708-bd06-dd5bfacf200f",
+   "variant": "sysmon",
+   "title": "HackTool - F-Secure C3 Load by Rundll32"
+  },
+  {
+   "id": "b19146a3-25d4-41b4-928b-1e2a92641b1b",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - ScreenConnect Server Web Shell Execution"
+  },
+  {
+   "id": "b1decb61-ed83-4339-8e95-53ea51901720",
+   "variant": "sysmon",
+   "title": "TeamViewer Log File Deleted"
+  },
+  {
+   "id": "b222df08-0e07-11eb-adc1-0242ac120002",
+   "variant": "sysmon",
+   "title": "Invoke-Obfuscation CLIP+ Launcher"
+  },
+  {
+   "id": "b2309017-4235-44fe-b5af-b15363011957",
+   "variant": "sysmon",
+   "title": "Uncommon Child Process Of Defaultpack.EXE"
+  },
+  {
+   "id": "b236190c-1c61-41e9-84b3-3fe03f6d76b0",
+   "variant": "sysmon",
+   "title": "Potential Regsvr32 Commandline Flag Anomaly"
+  },
+  {
+   "id": "b23818c7-e575-4d13-8012-332075ec0a2b",
+   "variant": "sysmon",
+   "title": "Register New IFiltre For Persistence"
+  },
+  {
+   "id": "b243b280-65fe-48df-ba07-6ddea7646427",
+   "variant": "sysmon",
+   "title": "Discovery of a System Time"
+  },
+  {
+   "id": "b2815d0d-7481-4bf0-9b6c-a4c48a94b349",
+   "variant": "sysmon",
+   "title": "PowerShell Get-Process LSASS"
+  },
+  {
+   "id": "b3512211-c67e-4707-bedc-66efc7848863",
+   "variant": "sysmon",
+   "title": "Potential PowerShell Downgrade Attack"
+  },
+  {
+   "id": "b3d34dc5-2efd-4ae3-845f-8ec14921f449",
+   "variant": "sysmon",
+   "title": "Browser Started with Remote Debugging"
+  },
+  {
+   "id": "b447f7de-1e53-4cbf-bfb4-f1f6d0b04e4e",
+   "variant": "sysmon",
+   "title": "Suspicious Binaries and Scripts in Public Folder"
+  },
+  {
+   "id": "b4926b47-a9d7-434c-b3a0-adc3fa0bd13e",
+   "variant": "sysmon",
+   "title": "Suspicious Double Extension Files"
+  },
+  {
+   "id": "b5746143-59d6-4603-8d06-acbd60e166ee",
+   "variant": "sysmon",
+   "title": "Uncommon Child Process Of AddinUtil.EXE"
+  },
+  {
+   "id": "b57ba453-b384-4ab9-9f40-1038086b4e53",
+   "variant": "sysmon",
+   "title": "VeeamBackup Database Credentials Dump Via Sqlcmd.EXE"
+  },
+  {
+   "id": "b5b29e4e-31fa-4fdf-b058-296e7a1aa0c2",
+   "variant": "sysmon",
+   "title": "Suspicious FileFix Execution Pattern"
+  },
+  {
+   "id": "b5b78988-486d-4a80-b991-930eff3ff8bf",
+   "variant": "sysmon",
+   "title": "PowerShell Profile Modification"
+  },
+  {
+   "id": "b6457d63-d2a2-4e29-859d-4e7affc153d1",
+   "variant": "sysmon",
+   "title": "Potential Discovery Activity Via Dnscmd.EXE"
+  },
+  {
+   "id": "b64a026b-8deb-4c1d-92fd-98893209dff1",
+   "variant": "sysmon",
+   "title": "Running Chrome VPN Extensions via the Registry 2 VPN Extension"
+  },
+  {
+   "id": "b6676963-0353-4f88-90f5-36c20d443c6a",
+   "variant": "sysmon",
+   "title": "Cscript/Wscript Potentially Suspicious Child Process"
+  },
+  {
+   "id": "b6f91281-20aa-446a-b986-38a92813a18f",
+   "variant": "sysmon",
+   "title": "DLL Search Order Hijackig Via Additional Space in Path"
+  },
+  {
+   "id": "b7966f4a-b333-455b-8370-8ca53c229762",
+   "variant": "sysmon",
+   "title": "Dropping Of Password Filter DLL"
+  },
+  {
+   "id": "b7b19cb6-9b32-4fc4-a108-73f19acfe262",
+   "variant": "sysmon",
+   "title": "Suspicious VBoxDrvInst.exe Parameters"
+  },
+  {
+   "id": "b8b1b304-a60f-4999-9a6e-c547bde03ffd",
+   "variant": "sysmon",
+   "title": "DeviceCredentialDeployment Execution"
+  },
+  {
+   "id": "b8fd0e93-ff58-4cbd-8f48-1c114e342e62",
+   "variant": "sysmon",
+   "title": "Windows Binaries Write Suspicious Extensions"
+  },
+  {
+   "id": "b97cd4b1-30b8-4a9d-bd72-6293928d52bc",
+   "variant": "sysmon",
+   "title": "Indirect Command Execution By Program Compatibility Wizard"
+  },
+  {
+   "id": "b98968aa-dbc0-4a9c-ac35-108363cbf8d5",
+   "variant": "sysmon",
+   "title": "WINEKEY Registry Modification"
+  },
+  {
+   "id": "b9aeac14-2ffd-4ad3-b967-1354a4e628c3",
+   "variant": "sysmon",
+   "title": "PowerShell Get-Clipboard Cmdlet Via CLI"
+  },
+  {
+   "id": "ba1f7802-adc7-48b4-9ecb-81e227fddfd5",
+   "variant": "sysmon",
+   "title": "Potential Network Sniffing Activity Using Network Tools"
+  },
+  {
+   "id": "ba3f5c1b-6272-4119-9dbd-0bc8d21c2702",
+   "variant": "sysmon",
+   "title": "Potential WinAPI Calls Via CommandLine"
+  },
+  {
+   "id": "ba42babc-0666-4393-a4f7-ceaf5a69191e",
+   "variant": "sysmon",
+   "title": "Uncommon Child Processes Of SndVol.exe"
+  },
+  {
+   "id": "bab049ca-7471-4828-9024-38279a4c04da",
+   "variant": "sysmon",
+   "title": "Virtualbox Driver Installation or Starting of VMs"
+  },
+  {
+   "id": "baca5663-583c-45f9-b5dc-ea96a22ce542",
+   "variant": "sysmon",
+   "title": "Sticky Key Like Backdoor Usage - Registry"
+  },
+  {
+   "id": "baef1ec6-2ca9-47a3-97cc-4cf2bda10b77",
+   "variant": "sysmon",
+   "title": "Potential Credential Dumping Attempt Using New NetworkProvider - CLI"
+  },
+  {
+   "id": "bafac3d6-7de9-4dd9-8874-4a1194b493ed",
+   "variant": "sysmon",
+   "title": "Abusing Print Executable"
+  },
+  {
+   "id": "bb09dd3e-2b78-4819-8e35-a7c1b874e449",
+   "variant": "sysmon",
+   "title": "HackTool - Inveigh Execution Artefacts"
+  },
+  {
+   "id": "bb0e87ce-c89f-4857-84fa-095e4483e9cb",
+   "variant": "sysmon",
+   "title": "Suspicious Child Process of Notepad++ Updater - GUP.Exe"
+  },
+  {
+   "id": "bb58aa4a-b80b-415a-a2c0-2f65a4c81009",
+   "variant": "sysmon",
+   "title": "Suspicious Desktopimgdownldr Command"
+  },
+  {
+   "id": "bbb7e38c-0b41-4a11-b306-d2a457b7ac2b",
+   "variant": "sysmon",
+   "title": "Suspicious File Created In PerfLogs"
+  },
+  {
+   "id": "bbc865e4-7fcd-45a6-8ff1-95ced28ec5b2",
+   "variant": "sysmon",
+   "title": "NtdllPipe Like Activity Execution"
+  },
+  {
+   "id": "bdd8157d-8e85-4397-bb82-f06cc9c71dbb",
+   "variant": "sysmon",
+   "title": "UAC Bypass Using IEInstal - File"
+  },
+  {
+   "id": "be344333-921d-4c4d-8bb8-e584cf584780",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Event Viewer Child Process"
+  },
+  {
+   "id": "bf344fea-d947-4ef4-9192-34d008315d3a",
+   "variant": "sysmon",
+   "title": "Suspicious Shim Database Patching Activity"
+  },
+  {
+   "id": "c02e96b7-c63a-4c47-bd83-4a9f74afcfb2",
+   "variant": "sysmon",
+   "title": "New Service Creation Using PowerShell"
+  },
+  {
+   "id": "c048f047-7e2a-4888-b302-55f509d4a91d",
+   "variant": "sysmon",
+   "title": "SCR File Write Event"
+  },
+  {
+   "id": "c09dad97-1c78-4f71-b127-7edb2b8e491a",
+   "variant": "sysmon",
+   "title": "Execution of Suspicious File Type Extension"
+  },
+  {
+   "id": "c260b6db-48ba-4b4a-a76f-2f67644e99d2",
+   "variant": "sysmon",
+   "title": "HackTool - Covenant PowerShell Launcher"
+  },
+  {
+   "id": "c2b86e67-b880-4eec-b045-50bc98ef4844",
+   "variant": "sysmon",
+   "title": "HackTool - LaZagne Execution"
+  },
+  {
+   "id": "c31364f7-8be6-4b77-8483-dd2b5a7b69a3",
+   "variant": "sysmon",
+   "title": "Import PowerShell Modules From Suspicious Directories - ProcCreation"
+  },
+  {
+   "id": "c3cefdf4-6703-4e1c-bad8-bf422fc5015a",
+   "variant": "sysmon",
+   "title": "Outlook Security Settings Updated - Registry"
+  },
+  {
+   "id": "c3d76afc-93df-461e-8e67-9b2bad3f2ac4",
+   "variant": "sysmon",
+   "title": "File Explorer Folder Opened Using Explorer Folder Shortcut Via Shell"
+  },
+  {
+   "id": "c3e76af5-4ce0-4a14-9c9a-25ceb8fda182",
+   "variant": "sysmon",
+   "title": "WerFault LSASS Process Memory Dump"
+  },
+  {
+   "id": "c3edc6a5-d9d4-48d8-930e-aab518390917",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via Outlook Form"
+  },
+  {
+   "id": "c57872c7-614f-4d7f-a40d-b78c8df2d30d",
+   "variant": "sysmon",
+   "title": "Assembly Loading Via CL_LoadAssembly.ps1"
+  },
+  {
+   "id": "c5c00f49-b3f9-45a6-997e-cfdecc6e1967",
+   "variant": "sysmon",
+   "title": "Suspicious Schtasks Execution AppData Folder"
+  },
+  {
+   "id": "c61daa90-3c1e-4f18-af62-8f288b5c9aaf",
+   "variant": "sysmon",
+   "title": "Uncommon File Creation By Mysql Daemon Process"
+  },
+  {
+   "id": "c6c56ada-612b-42d1-9a29-adad3c5c2c1e",
+   "variant": "sysmon",
+   "title": "Audit Policy Tampering Via NT Resource Kit Auditpol"
+  },
+  {
+   "id": "c6fb44c6-71f5-49e6-9462-1425d328aee3",
+   "variant": "sysmon",
+   "title": "Powershell Base64 Encoded MpPreference Cmdlet"
+  },
+  {
+   "id": "c73124a7-3e89-44a3-bdc1-25fe4df754b1",
+   "variant": "sysmon",
+   "title": "Copy From VolumeShadowCopy Via Cmd.EXE"
+  },
+  {
+   "id": "c740d4cf-a1e9-41de-bb16-8a46a4f57918",
+   "variant": "sysmon",
+   "title": "Potential Suspicious Windows Feature Enabled - ProcCreation"
+  },
+  {
+   "id": "c74c0390-3e20-41fd-a69a-128f0275a5ea",
+   "variant": "sysmon",
+   "title": "Cab File Extraction Via Wusa.EXE From Potentially Suspicious Paths"
+  },
+  {
+   "id": "c75309a3-59f8-4a8d-9c2c-4c927ad50555",
+   "variant": "sysmon",
+   "title": "Tunneling Tool Execution"
+  },
+  {
+   "id": "c7942406-33dd-4377-a564-0f62db0593a3",
+   "variant": "sysmon",
+   "title": "Suspicious CodePage Switch Via CHCP"
+  },
+  {
+   "id": "c7a74c80-ba5a-486e-9974-ab9e682bc5e4",
+   "variant": "sysmon",
+   "title": "File With Uncommon Extension Created By An Office Application"
+  },
+  {
+   "id": "c7da8edc-49ae-45a2-9e61-9fd860e4e73d",
+   "variant": "sysmon",
+   "title": "PUA - Sysinternals Tools Execution - Registry"
+  },
+  {
+   "id": "c83bf4b5-cdf0-437c-90fa-43d734f7c476",
+   "variant": "sysmon",
+   "title": "Run PowerShell Script from Redirected Input Stream"
+  },
+  {
+   "id": "c8a180d6-47a3-4345-a609-53f9c3d834fc",
+   "variant": "sysmon",
+   "title": "Suspicious Reconnaissance Activity Using Get-LocalGroupMember Cmdlet"
+  },
+  {
+   "id": "c8da0dfd-4ed0-4b68-962d-13c9c884384e",
+   "variant": "sysmon",
+   "title": "Potential Credential Dumping Via LSASS Process Clone"
+  },
+  {
+   "id": "c98f2a0d-e1b8-4f76-90d3-359caf88d6b9",
+   "variant": "sysmon",
+   "title": "Potential Defense Evasion Activity Via Emoji Usage In CommandLine - 2"
+  },
+  {
+   "id": "cad1fe90-2406-44dc-bd03-59d0b58fe722",
+   "variant": "sysmon",
+   "title": "HackTool - NPPSpy Hacktool Usage"
+  },
+  {
+   "id": "caf02a0a-1e1c-4552-9b48-5e070bd88d11",
+   "variant": "sysmon",
+   "title": "Suspicious Creation TXT File in User Desktop"
+  },
+  {
+   "id": "caf201a9-c2ce-4a26-9c3a-2b9525413711",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Call To Win32_NTEventlogFile Class"
+  },
+  {
+   "id": "cafeeba3-01da-4ab4-b6c4-a31b1d9730c7",
+   "variant": "sysmon",
+   "title": "PrintBrm ZIP Creation of Extraction"
+  },
+  {
+   "id": "cb5a2333-56cf-4562-8fcb-22ba1bca728d",
+   "variant": "sysmon",
+   "title": "Obfuscated IP Download Activity"
+  },
+  {
+   "id": "cbec226f-63d9-4eca-9f52-dfb6652f24df",
+   "variant": "sysmon",
+   "title": "Suspicious Process Parents"
+  },
+  {
+   "id": "cc268ac1-42d9-40fd-9ed3-8c4e1a5b87e6",
+   "variant": "sysmon",
+   "title": "Devtoolslauncher.exe Executes Specified Binary"
+  },
+  {
+   "id": "cc4e02ba-9c06-48e2-b09e-2500cace9ae0",
+   "variant": "sysmon",
+   "title": "Tasks Folder Evasion"
+  },
+  {
+   "id": "ccb5742c-c248-4982-8c5c-5571b9275ad3",
+   "variant": "sysmon",
+   "title": "Recon Command Output Piped To Findstr.EXE"
+  },
+  {
+   "id": "cd71385d-fd9b-4691-9b98-2b1f7e508714",
+   "variant": "sysmon",
+   "title": "Lolbin Runexehelper Use As Proxy"
+  },
+  {
+   "id": "cd8b36ac-8e4a-4c2f-a402-a29b8fbd5bca",
+   "variant": "sysmon",
+   "title": "Suspicious File Creation Activity From Fake Recycle.Bin Folder"
+  },
+  {
+   "id": "cd8c163e-a19b-402e-bdd5-419ff5859f12",
+   "variant": "sysmon",
+   "title": "HackTool - ADCSPwn Execution"
+  },
+  {
+   "id": "ce7066a6-508a-42d3-995b-2952c65dc2ce",
+   "variant": "sysmon",
+   "title": "Drop Binaries Into Spool Drivers Color Folder"
+  },
+  {
+   "id": "ce7cf472-6fcc-490a-9481-3786840b5d9b",
+   "variant": "sysmon",
+   "title": "InfDefaultInstall.exe .inf Execution"
+  },
+  {
+   "id": "cea2b7ea-792b-405f-95a1-b903ea06458f",
+   "variant": "sysmon",
+   "title": "Suspicious Child Process Of Manage Engine ServiceDesk"
+  },
+  {
+   "id": "cea72823-df4d-4567-950c-0b579eaf0846",
+   "variant": "sysmon",
+   "title": "Potential Dropper Script Execution Via WScript/CScript/MSHTA"
+  },
+  {
+   "id": "cec8e918-30f7-4e2d-9bfa-a59cc97ae60f",
+   "variant": "sysmon",
+   "title": "OpenWith.exe Executes Specified Binary"
+  },
+  {
+   "id": "cf2e938e-9a3e-4fe8-a347-411642b28a9f",
+   "variant": "sysmon",
+   "title": "Potential PowerShell Execution Policy Tampering - ProcCreation"
+  },
+  {
+   "id": "d042284c-a296-4988-9be5-f424fadcc28c",
+   "variant": "sysmon",
+   "title": "Suspicious Execution of InstallUtil Without Log"
+  },
+  {
+   "id": "d047726b-c71c-4048-a99b-2e2f50dc107d",
+   "variant": "sysmon",
+   "title": "Kavremover Dropped Binary LOLBIN Usage"
+  },
+  {
+   "id": "d102b8f5-61dc-4e68-bd83-9a3187c67377",
+   "variant": "sysmon",
+   "title": "Renamed VsCode Code Tunnel Execution - File Indicator"
+  },
+  {
+   "id": "d1a401ab-8c47-4e86-a7d8-2460b6a53e4a",
+   "variant": "sysmon",
+   "title": "Remote Access Tool - ScreenConnect Remote Command Execution - Hunting"
+  },
+  {
+   "id": "d20ee2f4-822c-4827-9e15-41500b1fff10",
+   "variant": "sysmon",
+   "title": "Potential Amazon SSM Agent Hijacking"
+  },
+  {
+   "id": "d2eb17db-1d39-41dc-b57f-301f6512fa75",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Command Targeting Teams Sensitive Files"
+  },
+  {
+   "id": "d353dac0-1b41-46c2-820c-d7d2561fc6ed",
+   "variant": "sysmon",
+   "title": "AWL Bypass with Winrm.vbs and Malicious WsmPty.xsl/WsmTxt.xsl - File"
+  },
+  {
+   "id": "d3b70aad-097e-409c-9df2-450f80dc476b",
+   "variant": "sysmon",
+   "title": "PUA - DIT Snapshot Viewer"
+  },
+  {
+   "id": "d487ed4a-fd24-436d-a0b2-f4e95f7b2635",
+   "variant": "sysmon",
+   "title": "Suspicious ClickFix/FileFix Execution Pattern"
+  },
+  {
+   "id": "d4f4e0be-cf12-439f-9e25-4e2cdcf7df5a",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via Disk Cleanup Handler - Registry"
+  },
+  {
+   "id": "d557dc06-62e8-4468-a8e8-7984124908ce",
+   "variant": "sysmon",
+   "title": "HackTool - WinPwn Execution"
+  },
+  {
+   "id": "d5866ddf-ce8f-4aea-b28e-d96485a20d3d",
+   "variant": "sysmon",
+   "title": "Files With System Process Name In Unsuspected Locations"
+  },
+  {
+   "id": "d5b9ae7a-e6fc-405e-80ff-2ff9dcc64e7e",
+   "variant": "sysmon",
+   "title": "Sysprep on AppData Folder"
+  },
+  {
+   "id": "d645ef86-2396-48a1-a2b6-b629ca3f57ff",
+   "variant": "sysmon",
+   "title": "Windows Credential Guard Related Registry Value Deleted - Registry"
+  },
+  {
+   "id": "d65aee4d-2292-4cea-b832-83accd6cfa43",
+   "variant": "sysmon",
+   "title": "Arbitrary Binary Execution Using GUP Utility"
+  },
+  {
+   "id": "d6ce7ebd-260b-4323-9768-a9631c8d4db2",
+   "variant": "sysmon",
+   "title": "RestrictedAdminMode Registry Value Tampering"
+  },
+  {
+   "id": "d75d6b6b-adb9-48f7-824b-ac2e786efe1f",
+   "variant": "sysmon",
+   "title": "Suspicious FromBase64String Usage On Gzip Archive - Process Creation"
+  },
+  {
+   "id": "d78b5d61-187d-44b6-bf02-93486a80de5a",
+   "variant": "sysmon",
+   "title": "HackTool - DInjector PowerShell Cradle Execution"
+  },
+  {
+   "id": "d7b50671-d1ad-4871-aa60-5aa5b331fe04",
+   "variant": "sysmon",
+   "title": "Suspicious File Creation In Uncommon AppData Folder"
+  },
+  {
+   "id": "d87bd452-6da1-456e-8155-7dc988157b7d",
+   "variant": "sysmon",
+   "title": "Suspicious Usage Of ShellExec_RunDLL"
+  },
+  {
+   "id": "da2738f2-fadb-4394-afa7-0a0674885afa",
+   "variant": "sysmon",
+   "title": "Sdclt Child Processes"
+  },
+  {
+   "id": "dbbd9f66-2ed3-4ca2-98a4-6ea985dd1a1c",
+   "variant": "sysmon",
+   "title": "Potential Initial Access via DLL Search Order Hijacking"
+  },
+  {
+   "id": "dc5c24af-6995-49b2-86eb-a9ff62199e82",
+   "variant": "sysmon",
+   "title": "COM Hijacking via TreatAs"
+  },
+  {
+   "id": "dca1b3e8-e043-4ec8-85d7-867f334b5724",
+   "variant": "sysmon",
+   "title": "PFX File Creation"
+  },
+  {
+   "id": "dd6b39d9-d9be-4a3b-8fe0-fe3c6a5c1795",
+   "variant": "sysmon",
+   "title": "Use NTFS Short Name in Command Line"
+  },
+  {
+   "id": "ddd171b5-2cc6-4975-9e78-f0eccd08cc76",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via Outlook Home Page"
+  },
+  {
+   "id": "de46c52b-0bf8-4936-a327-aace94f94ac6",
+   "variant": "sysmon",
+   "title": "Process Explorer Driver Creation By Non-Sysinternals Binary"
+  },
+  {
+   "id": "de587dce-915e-4218-aac4-835ca6af6f70",
+   "variant": "sysmon",
+   "title": "Potential Persistence Attempt Via Run Keys Using Reg.EXE"
+  },
+  {
+   "id": "deb9b646-a508-44ee-b7c9-d8965921c6b6",
+   "variant": "sysmon",
+   "title": "Powershell Token Obfuscation - Process Creation"
+  },
+  {
+   "id": "dee4af55-1f22-4e1d-a9d2-4bdc7ecb472a",
+   "variant": "sysmon",
+   "title": "Disabled Volume Snapshots"
+  },
+  {
+   "id": "def8b624-e08f-4ae1-8612-1ba21190da6b",
+   "variant": "sysmon",
+   "title": "Outgoing Logon with New Credentials"
+  },
+  {
+   "id": "df1f26d3-bea7-4700-9ea2-ad3e990cf90e",
+   "variant": "sysmon",
+   "title": "Node Process Executions"
+  },
+  {
+   "id": "df4dc653-1029-47ba-8231-3c44238cc0ae",
+   "variant": "sysmon",
+   "title": "Potential Persistence Using DebugPath"
+  },
+  {
+   "id": "df6ecb8b-7822-4f4b-b412-08f524b4576c",
+   "variant": "sysmon",
+   "title": "Creation Of Non-Existent System DLL"
+  },
+  {
+   "id": "dff1e1cc-d3fd-47c8-bfc2-aeb878a754c0",
+   "variant": "sysmon",
+   "title": "Shell Process Spawned by Java.EXE"
+  },
+  {
+   "id": "e0552b19-5a83-4222-b141-b36184bb8d79",
+   "variant": "sysmon",
+   "title": "Potential CommandLine Obfuscation Using Unicode Characters"
+  },
+  {
+   "id": "e074832a-eada-4fd7-94a1-10642b130e16",
+   "variant": "sysmon",
+   "title": "HackTool - SafetyKatz Dump Indicator"
+  },
+  {
+   "id": "e0b0c2ab-3d52-46d9-8cb7-049dc775fbd1",
+   "variant": "sysmon",
+   "title": "Enumeration for Credentials in Registry"
+  },
+  {
+   "id": "e13f668e-7f95-443d-98d2-1816a7648a7b",
+   "variant": "sysmon",
+   "title": "Detected Windows Software Discovery"
+  },
+  {
+   "id": "e1561947-b4e3-4a74-9bdd-83baed21bdb5",
+   "variant": "sysmon",
+   "title": "Invoke-Obfuscation Via Use Clip"
+  },
+  {
+   "id": "e15b518d-b4ce-4410-a9cd-501f23ce4a18",
+   "variant": "sysmon",
+   "title": "Suspicious Creation with Colorcpl"
+  },
+  {
+   "id": "e20b5b14-ce93-4230-88af-981983ef6e74",
+   "variant": "sysmon",
+   "title": "QuickAssist Execution"
+  },
+  {
+   "id": "e212d415-0e93-435f-9e1a-f29005bb4723",
+   "variant": "sysmon",
+   "title": "Suspicious Remote Child Process From Outlook"
+  },
+  {
+   "id": "e2e80da2-8c66-4e00-ae3c-2eebd29f6b6d",
+   "variant": "sysmon",
+   "title": "Compress Data and Lock With Password for Exfiltration With WINZIP"
+  },
+  {
+   "id": "e31033fc-33f0-4020-9a16-faf9b31cbf08",
+   "variant": "sysmon",
+   "title": "PUA - Netcat Suspicious Execution"
+  },
+  {
+   "id": "e312efd0-35a1-407f-8439-b8d434b438a6",
+   "variant": "sysmon",
+   "title": "Potential PowerShell Obfuscation Via WCHAR/CHAR"
+  },
+  {
+   "id": "e32d4572-9826-4738-b651-95fa63747e8a",
+   "variant": "sysmon",
+   "title": "Base64 Encoded PowerShell Command Detected"
+  },
+  {
+   "id": "e3652ba3-0ad8-4010-a957-b7ba369e7bac",
+   "variant": "sysmon",
+   "title": "Python Path Configuration File Creation - Windows"
+  },
+  {
+   "id": "e36941d0-c0f0-443f-bc6f-cb2952eb69ea",
+   "variant": "sysmon",
+   "title": "PowerShell Module File Created"
+  },
+  {
+   "id": "e3845023-ca9a-4024-b2b2-5422156d5527",
+   "variant": "sysmon",
+   "title": "PowerShell Module File Created By Non-PowerShell Process"
+  },
+  {
+   "id": "e4a6b256-3e47-40fc-89d2-7a477edd6915",
+   "variant": "sysmon",
+   "title": "System File Execution Location Anomaly"
+  },
+  {
+   "id": "e4a74e34-ecde-4aab-b2fb-9112dd01aed0",
+   "variant": "sysmon",
+   "title": "Dynamic CSharp Compile Artefact"
+  },
+  {
+   "id": "e56d3073-83ff-4021-90fe-c658e0709e72",
+   "variant": "sysmon",
+   "title": "Gpresult Display Group Policy Information"
+  },
+  {
+   "id": "e61e8a88-59a9-451c-874e-70fcc9740d67",
+   "variant": "sysmon",
+   "title": "New DNS ServerLevelPluginDll Installed"
+  },
+  {
+   "id": "e6313acd-208c-44fc-a0ff-db85d572e90e",
+   "variant": "sysmon",
+   "title": "Network Reconnaissance Activity"
+  },
+  {
+   "id": "e6c54d94-498c-4562-a37c-b469d8e9a275",
+   "variant": "sysmon",
+   "title": "Suspicious PowerShell Download and Execute Pattern"
+  },
+  {
+   "id": "e6fe26ee-d063-4f5b-b007-39e90aaf50e3",
+   "variant": "sysmon",
+   "title": "Potential Persistence Via AutodialDLL"
+  },
+  {
+   "id": "e7888eb1-13b0-4616-bd99-4bc0c2b054b9",
+   "variant": "sysmon",
+   "title": "Dllhost.EXE Execution Anomaly"
+  },
+  {
+   "id": "e81528db-fc02-45e8-8e98-4e84aba1f10b",
+   "variant": "sysmon",
+   "title": "Network Connection Initiated Via Notepad.EXE"
+  },
+  {
+   "id": "e890acee-d488-420e-8f20-d9b19b3c3d43",
+   "variant": "sysmon",
+   "title": "Suspicious File Created by ArcSOC.exe"
+  },
+  {
+   "id": "e8a52bbd-bced-459f-bd93-64db45ce7657",
+   "variant": "sysmon",
+   "title": "Potential Suspicious PowerShell Module File Created"
+  },
+  {
+   "id": "e9142d84-fbe0-401d-ac50-3e519fb00c89",
+   "variant": "sysmon",
+   "title": "WhoAmI as Parameter"
+  },
+  {
+   "id": "e92a4287-e072-4a40-9739-370c106bb750",
+   "variant": "sysmon",
+   "title": "HackTool - SOAPHound Execution"
+  },
+  {
+   "id": "e94b9ddc-eec5-4bb8-8a58-b9dc5f4e185f",
+   "variant": "sysmon",
+   "title": "UEFI Persistence Via Wpbbin - FileCreation"
+  },
+  {
+   "id": "e9f55347-2928-4c06-88e5-1a7f8169942e",
+   "variant": "sysmon",
+   "title": "Invoke-Obfuscation VAR++ LAUNCHER OBFUSCATION"
+  },
+  {
+   "id": "ea011323-7045-460b-b2d7-0f7442ea6b38",
+   "variant": "sysmon",
+   "title": "Potential PsExec Remote Execution"
+  },
+  {
+   "id": "ebea773c-a8f1-42ad-a856-00cb221966e8",
+   "variant": "sysmon",
+   "title": "DLL Sideloading by VMware Xfer Utility"
+  },
+  {
+   "id": "ec1d5e28-8f3b-4188-a6f8-6e8df81dc28e",
+   "variant": "sysmon",
+   "title": "WMI Persistence - Script Event Consumer"
+  },
+  {
+   "id": "ec290c06-9b6b-4338-8b6b-095c0f284f10",
+   "variant": "sysmon",
+   "title": "Suspicious Execution of Shutdown to Log Out"
+  },
+  {
+   "id": "ec88289a-7e1a-4cc3-8d18-bd1f60e4b9ba",
+   "variant": "sysmon",
+   "title": "Persistence Via TypedPaths - CommandLine"
+  },
+  {
+   "id": "eca49c87-8a75-4f13-9c73-a5a29e845f03",
+   "variant": "sysmon",
+   "title": "Suspicious Runscripthelper.exe"
+  },
+  {
+   "id": "ed5d72a6-f8f4-479d-ba79-02f6a80d7471",
+   "variant": "sysmon",
+   "title": "Potential LethalHTA Technique Execution"
+  },
+  {
+   "id": "ee218c12-627a-4d27-9e30-d6fb2fe22ed2",
+   "variant": "sysmon",
+   "title": "Powershell Inline Execution From A File"
+  },
+  {
+   "id": "ee37eb7c-a4e7-4cd5-8fa4-efa27f1c3f31",
+   "variant": "sysmon",
+   "title": "PUA - Ngrok Execution"
+  },
+  {
+   "id": "ee63c85c-6d51-4d12-ad09-04e25877a947",
+   "variant": "sysmon",
+   "title": "New Custom Shim Database Created"
+  },
+  {
+   "id": "eeb30123-9fbd-4ee8-aaa0-2e545bbed6dc",
+   "variant": "sysmon",
+   "title": "Security Support Provider (SSP) Added to LSA Configuration"
+  },
+  {
+   "id": "eee00933-a761-4cd0-be70-c42fe91731e7",
+   "variant": "sysmon",
+   "title": "Arbitrary File Download Via GfxDownloadWrapper.EXE"
+  },
+  {
+   "id": "ef64fc9c-a45e-43cc-8fd8-7d75d73b4c99",
+   "variant": "sysmon",
+   "title": "Wusa.EXE Executed By Parent Process Located In Suspicious Location"
+  },
+  {
+   "id": "ef9dcfed-690c-4c5d-a9d1-482cd422225c",
+   "variant": "sysmon",
+   "title": "Browser Execution In Headless Mode"
+  },
+  {
+   "id": "efc21479-9e83-41da-8cf1-122e06ba8db3",
+   "variant": "sysmon",
+   "title": "HackTool - NetExec File Indicators"
+  },
+  {
+   "id": "efdd8dd5-cee8-4e59-9390-7d4d5e4dd6f6",
+   "variant": "sysmon",
+   "title": "Suspicious Program Names"
+  },
+  {
+   "id": "f01d1f70-cd41-42ec-9c0b-26dd9c22bf29",
+   "variant": "sysmon",
+   "title": "Process Deletion of Its Own Executable"
+  },
+  {
+   "id": "f0540f7e-2db3-4432-b9e0-3965486744bc",
+   "variant": "sysmon",
+   "title": "Legitimate Application Dropped Executable"
+  },
+  {
+   "id": "f0cdd048-82dc-4f7a-8a7a-b87a52b6d0fd",
+   "variant": "sysmon",
+   "title": "Potential Commandline Obfuscation Using Escape Characters"
+  },
+  {
+   "id": "f0f7be61-9cf5-43be-9836-99d6ef448a18",
+   "variant": "sysmon",
+   "title": "Uninstall Crowdstrike Falcon Sensor"
+  },
+  {
+   "id": "f11f2808-adb4-46c0-802a-8660db50fa99",
+   "variant": "sysmon",
+   "title": "ImagingDevices Unusual Parent/Child Processes"
+  },
+  {
+   "id": "f14e169e-9978-4c69-acb3-1cff8200bc36",
+   "variant": "sysmon",
+   "title": "Suspicious GrpConv Execution"
+  },
+  {
+   "id": "f17211f1-1f24-4d0c-829f-31e28dc93cdd",
+   "variant": "sysmon",
+   "title": "Uncommon Svchost Command Line Parameter"
+  },
+  {
+   "id": "f1f3bf22-deb2-418d-8cce-e1a45e46a5bd",
+   "variant": "sysmon",
+   "title": "MMC20 Lateral Movement"
+  },
+  {
+   "id": "f208d6d8-d83a-4c2c-960d-877c37da84e5",
+   "variant": "sysmon",
+   "title": "Process Launched Without Image Name"
+  },
+  {
+   "id": "f26307d8-14cd-47e3-a26b-4b4769f24af6",
+   "variant": "sysmon",
+   "title": "HackTool - CrackMapExec Process Patterns"
+  },
+  {
+   "id": "f26eb764-fd89-464b-85e2-dc4a8e6e77b8",
+   "variant": "sysmon",
+   "title": "Suspicious Electron Application Child Processes"
+  },
+  {
+   "id": "f2c64357-b1d2-41b7-849f-34d2682c0fad",
+   "variant": "sysmon",
+   "title": "Suspicious Command Patterns In Scheduled Task Creation"
+  },
+  {
+   "id": "f331aa1f-8c53-4fc3-b083-cc159bc971cb",
+   "variant": "sysmon",
+   "title": "Malicious PowerShell Scripts - FileCreation"
+  },
+  {
+   "id": "f38ce0b9-5e97-4b47-a211-7dc8d8b871da",
+   "variant": "sysmon",
+   "title": "Potential RDP Tunneling Via Plink"
+  },
+  {
+   "id": "f3d39c45-de1a-4486-a687-ab126124f744",
+   "variant": "sysmon",
+   "title": "Sdiagnhost Calling Suspicious Child Process"
+  },
+  {
+   "id": "f44800ac-38ec-471f-936e-3fa7d9c53100",
+   "variant": "sysmon",
+   "title": "PUA - CleanWipe Execution"
+  },
+  {
+   "id": "f4ff7323-b5fc-4323-8b52-6b9408e15788",
+   "variant": "sysmon",
+   "title": "Potential PowerShell Console History Access Attempt via History File"
+  },
+  {
+   "id": "f50f3c09-557d-492d-81db-9064a8d4e211",
+   "variant": "sysmon",
+   "title": "Suspicious Execution Of Renamed Sysinternals Tools - Registry"
+  },
+  {
+   "id": "f5240972-3938-4e56-8e4b-e33893176c1f",
+   "variant": "sysmon",
+   "title": "Suspicious Query of MachineGUID"
+  },
+  {
+   "id": "f57f8d16-1f39-4dcb-a604-6c73d9b54b3d",
+   "variant": "sysmon",
+   "title": "Sensitive File Access Via Volume Shadow Copy Backup"
+  },
+  {
+   "id": "f63b56ee-3f79-4b8a-97fb-5c48007e8573",
+   "variant": "sysmon",
+   "title": "New DNS ServerLevelPluginDll Installed Via Dnscmd.EXE"
+  },
+  {
+   "id": "f64e5c19-879c-4bae-b471-6d84c8339677",
+   "variant": "sysmon",
+   "title": "Webshell Tool Reconnaissance Activity"
+  },
+  {
+   "id": "f663a6d9-9d1b-49b8-b2b1-0637914d199a",
+   "variant": "sysmon",
+   "title": "Narrator's Feedback-Hub Persistence"
+  },
+  {
+   "id": "f6d1dd2f-b8ce-40ca-bc23-062efb686b34",
+   "variant": "sysmon",
+   "title": "Script Event Consumer Spawning Process"
+  },
+  {
+   "id": "f72aa3e8-49f9-4c7d-bd74-f8ab84ff9bbb",
+   "variant": "sysmon",
+   "title": "Suspicious RDP Redirect Using TSCON"
+  },
+  {
+   "id": "f7b5f842-a6af-4da5-9e95-e32478f3cd2f",
+   "variant": "sysmon",
+   "title": "MsiExec Web Install"
+  },
+  {
+   "id": "f7d7ebd5-a016-46e2-9c54-f9932f2d386d",
+   "variant": "sysmon",
+   "title": "Potential RDP Tunneling Via SSH"
+  },
+  {
+   "id": "f7f9ab88-7557-4a69-b30e-0a8f91b3a0e7",
+   "variant": "sysmon",
+   "title": "Registry Entries For Azorult Malware"
+  },
+  {
+   "id": "f8ad2e2c-40b6-4117-84d7-20b89896ab23",
+   "variant": "sysmon",
+   "title": "Suspicious Scan Loop Network"
+  },
+  {
+   "id": "f8de9dd5-7a63-4cfd-9d0c-ae124878b5a9",
+   "variant": "sysmon",
+   "title": "Process Execution From WebDAV Share"
+  },
+  {
+   "id": "f91ed517-a6ba-471d-9910-b3b4a398c0f3",
+   "variant": "sysmon",
+   "title": "Potentially Suspicious Windows App Activity"
+  },
+  {
+   "id": "f92a6f1e-a512-4a15-9735-da09e78d7273",
+   "variant": "sysmon",
+   "title": "GatherNetworkInfo.VBS Reconnaissance Script Output"
+  },
+  {
+   "id": "f9578658-9e71-4711-b634-3f9b50cd3c06",
+   "variant": "sysmon",
+   "title": "Potential Defense Evasion Activity Via Emoji Usage In CommandLine - 3"
+  },
+  {
+   "id": "f9999590-1f94-4a34-a91e-951e47bedefd",
+   "variant": "sysmon",
+   "title": "Suspicious Provlaunch.EXE Child Process"
+  },
+  {
+   "id": "fa00b701-44c6-4679-994d-5a18afa8a707",
+   "variant": "sysmon",
+   "title": "PUA - AdvancedRun Suspicious Execution"
+  },
+  {
+   "id": "fa3c117a-bc0d-416e-a31b-0c0e80653efb",
+   "variant": "sysmon",
+   "title": "Chopper Webshell Process Pattern"
+  },
+  {
+   "id": "faa48cae-6b25-4f00-a094-08947fef582f",
+   "variant": "sysmon",
+   "title": "Rar Usage with Password and Compression Level"
+  },
+  {
+   "id": "fabb0e80-030c-4e3e-a104-d09676991ac3",
+   "variant": "sysmon",
+   "title": "Suspicious File Created in Outlook Temporary Directory"
+  },
+  {
+   "id": "fadb84f0-4e84-4f6d-a1ce-9ef2bffb6ccd",
+   "variant": "sysmon",
+   "title": "Cloudflared Portable Execution"
+  },
+  {
+   "id": "fb50eb7a-5ab1-43ae-bcc9-091818cb8424",
+   "variant": "sysmon",
+   "title": "Disabled IE Security Features"
+  },
+  {
+   "id": "fb843269-508c-4b76-8b8d-88679db22ce7",
+   "variant": "sysmon",
+   "title": "Suspicious Execution of Powershell with Base64"
+  },
+  {
+   "id": "fb9d3ff7-7348-46ab-af8c-b55f5fbf39b4",
+   "variant": "sysmon",
+   "title": "Execution of Powershell Script in Public Folder"
+  },
+  {
+   "id": "fc4f4817-0c53-4683-a4ee-b17a64bc1039",
+   "variant": "sysmon",
+   "title": "Suspicious Desktopimgdownldr Target File"
+  },
+  {
+   "id": "fcc6d700-68d9-4241-9a1a-06874d621b06",
+   "variant": "sysmon",
+   "title": "Suspicious File Created Via OneNote Application"
+  },
+  {
+   "id": "fccfb43e-09a7-4bd2-8b37-a5a7df33386d",
+   "variant": "sysmon",
+   "title": ".RDP File Created By Uncommon Application"
+  },
+  {
+   "id": "fcdf69e5-a3d3-452a-9724-26f2308bf2b1",
+   "variant": "sysmon",
+   "title": "Phishing Pattern ISO in Archive"
+  },
+  {
+   "id": "fdb62a13-9a81-4e5c-a38f-ea93a16f6d7c",
+   "variant": "sysmon",
+   "title": "PowerShell Base64 Encoded FromBase64String Cmdlet"
+  },
+  {
+   "id": "fec96f39-988b-4586-b746-b93d59fd1922",
+   "variant": "sysmon",
+   "title": "ScreenConnect Temporary Installation Artefact"
+  },
+  {
+   "id": "fed85bf9-e075-4280-9159-fbe8a023d6fa",
+   "variant": "sysmon",
+   "title": "Advanced IP Scanner - File Event"
+  },
+  {
+   "id": "ff2fff64-4cd6-4a2b-ba7d-e28a30bbe66b",
+   "variant": "sysmon",
+   "title": "Suspicious Scheduled Task Name As GUID"
+  },
+  {
+   "id": "ff301988-c231-4bd0-834c-ac9d73b86586",
+   "variant": "sysmon",
+   "title": "PowerShell Console History Logs Deleted"
+  },
+  {
+   "id": "ffa28e60-bdb1-46e0-9f82-05f7a61cc06e",
+   "variant": "sysmon",
+   "title": "User Added to Remote Desktop Users Group"
+  },
+  {
+   "id": "ffa6861c-4461-4f59-8a41-578c39f3f23e",
+   "variant": "sysmon",
+   "title": "LSASS Dump Keyword In CommandLine"
+  }
+ ]
+}
