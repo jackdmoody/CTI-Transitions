@@ -45,11 +45,13 @@ Note for the paper: because frontier models were trained on public APT29 materia
 ## 2. Data
 
 ### 2.1 Benign corpus (open data only)
-- **Range data is out of scope for this paper (2026-10-26, Jack).** Every benign background, injection target and real-attack check comes from open datasets. The primary corpus is fixed in a separate decision (SPEC_ISSUES, 2026-10-26, corpus decision). No critical-infrastructure claim is made.
-- **Baseline:** a pooled benign baseline over all baseline-fit hosts is the default (§5). Role-indexed baselines are optional, used only where the corpus documents host roles.
-- **Split:** fit / validation / test with no test data in baseline fitting; the split unit is fixed with the corpus decision.
+- **Range data is out of scope for this paper (2026-10-26, Jack).** Every benign background, injection target and real-attack check comes from open datasets. No critical-infrastructure claim is made.
+- **Primary corpus: DARPA OpTC** (decided 2026-10-26, Jack; SPEC_ISSUES). eCAR endpoint telemetry converted to Sysmon fields (`ctit/ingest/optc.py`, read-only over the STRATA-E conversion). Benign days 19–22 Sep 2019. Population: the 473 hosts converted on all four benign days (OpTC ships 475; SysClient0213 and 0222 have empty files on 21 Sep). Clean hosts: 446 = 473 minus the 27 red-team targets in that population. The other 2 SysClient targets (0005, 0010) have no benign days in OpTC at all, and DC1 has no SysClient eCAR file. Red-team targets (`configs/optc_redteam.yaml`) never enter any baseline. BOTS is out.
+- **Baseline:** a pooled benign baseline over all baseline-fit hosts is the default (§5). Role-indexed baselines are optional, used only where the corpus documents host roles (OpTC hostnames carry no role).
+- **Split (B2): by host, not by day.** Drawn once with a fixed seed before any scoring and never redrawn: `configs/optc_split.yaml` (seed 20261026): fit 223 hosts (baseline), validation 67 (α, λ tuning only), test 156; all four benign days for each host.
+- **ATLASv2** is kept as a robustness check only if it gives ≥500 benign windows (§5) under mapper v3; otherwise it is dropped (decided by the pre-registered count, SPEC_ISSUES 2026-10-26).
 - **Telemetry:** Sysmon (or an equivalent endpoint stream converted to Sysmon fields) is the primary source. Windows Security events, where the corpus has them, go through the same extended mapper (§2.5). Report which sources were present in T1. Do not collect new data.
-- **Zeek (network vantage, optional; T8).** Used only if the chosen corpus ships Zeek logs for the same hosts and time. Do not build full host-network fusion for this paper.
+- **Zeek (network vantage, optional; T8).** Used only if the chosen corpus ships Zeek logs for the same hosts and time (OpTC does). Do not build full host-network fusion for this paper.
   - **Pre-flight checks (block Zeek work until both pass):** (a) Zeek sensors and endpoint hosts time-synced: estimate clock offset from matched events (Sysmon event 3 vs. conn.log on the same 5-tuple) and require median |offset| ≤ 2 s, else correct per host or drop Zeek; (b) Zeek capture windows cover the fit and test data. Report both in T1.
   - **Logs and fields to ingest** (`ctit/ingest/zeek.py`):
     - conn: ts, uid, id.orig_h, id.orig_p, id.resp_h, id.resp_p, proto, service, duration, orig_bytes, resp_bytes, conn_state, history, orig_pkts, resp_pkts
@@ -124,6 +126,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 - **Extended mapper** (`ctit/map/`, W2-side): SigmaHQ Windows rules (Sysmon and Security) pinned to one commit, with tactic taken from each rule's ATT&CK tags. No other gap-filling. No hand-written rules derived from emulation plans or eval data. Rules tagged with an ATT&CK group or software ID are excluded (leakage). Process-creation rules run on Sysmon EID 1 and Security 4688. Stealth and Defense Impairment (ATT&CK v19) fold into Defense Evasion. A deterministic primary-tactic policy for multi-tactic techniques is documented in `docs/MAPPER_POLICY.md`.
 - The extended mapper is frozen (committed) before any injection or scoring. Its report gives: the reachable tactic set K; the per-tactic benign tag rate on public data; and recall against OTRF APT29 ground truth.
 - All W2 conditions, U included, use the extended mapper.
+- **Mapper v3 (2026-10-26, pre-scoring; SPEC_ISSUES, B3).** The frozen v2 rules minus: (a) `level: informational` (general policy); (b) rules outside the shared subset, i.e. not field-evaluable on both the OpTC conversion and the Sysmon technique recordings; (c) after restoring bare OpTC image paths where the data allows, rules whose path conditions still can't be evaluated on OpTC (they matched a fit-host event through a path field holding a bare image name), and the `create_remote_thread` category. The same rule set applies to benign and injected events. Frozen in `ctit/map/rules_v3.json`; `data/eval/tactic_signatures.parquet` is rebuilt under v3. v3 is the extended mapper for every W2 condition from here on.
 - **K:** the set of tactics a mapper can emit from the available sources (Sysmon, Security if present, Zeek once ingested). Priors and ground-truth sequences are projected onto K (§5).
 
 ---
@@ -176,7 +179,7 @@ that is, the mean log-LR per transition. The summed (unnormalized) version is re
 
 - **P_ben** (benign baseline) is **pooled by default**: sum the baseline-fit tactic-transition counts over all baseline-fit hosts (DRIFT ingest semantics, unmapped events skipped). Add α = 0.5 over a fixed K×K list of edges and normalize each row. **Role-indexed baselines are optional** (P_role: the same sum over role-r hosts only), used only where the corpus documents host roles; without row-normalization a role baseline equals DRIFT's role-mean edge vector.
 - **P_adv** is a first-order Markov model whose transition matrix is the CTI prior projected onto K. Unreachable tactics are skipped as DRIFT skips unmapped events: T_obs = T_KK + T_KU (I − T_UU)⁻¹ T_UK. It is optionally mixed with P_ben, λ ∈ {0.1, 0.3, 0.5}, chosen on a validation split, never test.
-- **Window** = a DRIFT session (`sessionize_host`, τ fitted per host on the fit window only). Windows with fewer than 2 tagged events are skipped and counted. The appendix sweeps fixed windows of 8, 16 and 32 tagged events.
+- **Window (primary, 2026-10-26)** = 8 consecutive tagged events on one host (non-overlapping; a trailing partial window is dropped). The appendix reports DRIFT sessions (`sessionize_host`, τ fitted per host on fit hosts only; windows with fewer than 2 tagged events skipped and counted) and fixed windows of 16 and 32 tagged events.
 - **U** is DRIFT's scorer (prior work): the JSD between a window's smoothed edge distribution and the pooled baseline-fit mean (or the role-r mean when role baselines are used), over the same fixed edge list.
 - **Uni** (likelihood ratio with a uniform P_adv) separates the scorer from the prior: R − Uni is reported as the CTI effect, Uni − U as the scorer effect.
 
@@ -194,7 +197,7 @@ Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the proj
 
 **Hunting**
 - AUPRC (primary — heavy class imbalance) and AUROC
-- Detection rate at fixed FPR (0.1%, 1%) per host-window
+- Detection rate at fixed FPR per host-window (window as in §5). **Pre-registered (2026-10-26):** Det@0.1%FPR is reported only if the OpTC test hosts give ≥5,000 benign windows; otherwise the hunting metrics are Det@1%FPR, AUPRC and P@k only. The count is recorded by `configs/benign_windows.yaml`.
 - Precision@k for k = 10, 50 (analyst-queue framing)
 - Time-to-detect: index of the first injected step at which the score crosses the threshold (fixed at 1% FPR), as a fraction of chain length. Truncated variants test this directly.
 - Uncertainty: mean ± 95% bootstrap CI over seeds. Paired Wilcoxon for R vs. U, R vs. B, S vs. F.
@@ -214,7 +217,8 @@ Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the proj
 - **T4** Specificity (H4): 4×4 heatmap, prior actor (rows) × eval actor (cols), cell = AUPRC lift over U, R-S (R-F in appendix). Reported under both the extended mapper (main) and the BRiMS mapper. This is the paper's headline figure-table
 - **F4** H2b: report-minus-no-report AUPRC gap vs. actor public-coverage proxy (4 points, labeled; descriptive only)
 - **T5** Small-model sufficiency + cost: F vs. S on edge-F1, hunting lift over U, $/report, latency
-- **T6** ATLASv2 robustness check: {U, Uni, R-F, R-S}, with its limits stated in the caption (Sysmon EIDs 1/5 only; provenance-style ground truth; not actor-attributed)
+- **T9** Real intrusion (OpTC red team, B6): rows U / Uni / ATTK / R per actor (F, S) / oracle (F, S); columns AUPRC, Det@1%FPR, TTD. The OpTC red team is not a named APT, so no matched prior exists: the R rows are an off-target check (does mismatched intel help, do nothing, or hurt?). The **oracle** rows use a prior extracted from `OpTCRedTeamGroundTruth.pdf` with the same prompts and pipeline (F and S), labelled "oracle (answer key) — upper bound, not a method result". The oracle never influences α, λ or any other tuning (validation hosts only). Test set: the 29 red-team hosts' benign days plus attack days (23–25 Sep), window labels from the Inria corrected-release labels (a window is positive if it contains a labelled malicious event). Red-team hosts are never in a baseline.
+- **T6** ATLASv2 robustness check (only if ATLASv2 passes the ≥500-window rule, §2.1): {U, Uni, R-F, R-S}, with its limits stated in the caption (Sysmon EIDs 1/5 only; provenance-style ground truth; not actor-attributed)
 - **F1** Method diagram (separate deliverable)
 - **F2** Score timeline on one injected host: U vs. R-S, injected steps marked
 - **F3** Extracted vs. ground-truth transition heatmaps (APT29, R-S)
@@ -262,7 +266,7 @@ results/<run_id>/{config.yaml, metrics.json, calls.jsonl}
 | 16–18 Nov | Revision, AAAI-27 formatting, page check (target ~7 pp + refs) | Compiles clean |
 | 19 Nov | Submit | — |
 
-**Cut order if behind (drop first → last):** DPRK stretch → appendix sweeps → secondary Security/PowerShell telemetry run → Zeek vantage ablation T8 (main results stay Sysmon-only) → noisy variant → ~4B size-curve model → ATLASv2 → OTRF validation → Sandworm (fall back to a 3×3 matrix and say so). Never cut: leakage control, visibility filter, no-report baseline, open-weight run, ATTK baseline, the Russia/China/Iran matrix.
+**Cut order if behind (drop first → last):** DPRK stretch → appendix sweeps → secondary Security/PowerShell telemetry run → Zeek vantage ablation T8 (main results stay Sysmon-only) → truncated and noisy variants → ~4B size-curve model → ATLASv2 → OpTC real-intrusion check T9 (B6; the only real-attack evidence on the main corpus, so cut last of these three, 2026-10-26) → OTRF validation → Sandworm (fall back to a 3×3 matrix and say so). Never cut: leakage control, visibility filter, no-report baseline, open-weight run, ATTK baseline, the Russia/China/Iran matrix.
 
 ---
 
@@ -278,4 +282,4 @@ Goal: everything is public and runnable; the paper uses open data only.
 - Fit: AICS "AI in cyber security" (threat detection, tools and metrics). No critical-infrastructure claim.
 - Special theme: offensive knowledge (attacker-behavior descriptions) repurposed as defensive priors, and small-model sufficiency (T5).
 - Related work: Khanna, Raff, Krasser et al., "Cybersecurity Detection Classification with Reasoning-enabled Language Models" (arXiv 2607.28460); the BRiMS DRIFT paper; CTI-to-ATT&CK extraction (TRAM-style mappers, LLM CTI extraction); ATLAS/ATLASv2; provenance/HIDS hunting.
-- Limitations to state: frontier-model memorization of public APT29 material (bounded by B); first-order Markov assumption; tactic-mapper coverage; ATLASv2 not actor-attributed; synthetic injection vs. live intrusions.
+- Limitations to state: frontier-model memorization of public APT29 material (bounded by B); first-order Markov assumption; tactic-mapper coverage; ATLASv2 not actor-attributed; synthetic injection vs. live intrusions; **OpTC's benign activity is partly scripted** (range-management jobs); **injected signatures come from Sysmon recordings while the background is eCAR** (mitigated by mapper v3's shared rule subset, applied identically to both sides, and the eCAR-quirk exclusions, §2.5).

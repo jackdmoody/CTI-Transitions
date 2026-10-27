@@ -1,0 +1,12 @@
+# WP5 gate rerun under mapper v3 (B3, SPEC_ISSUES 2026-10-26). Same plans, drafts and JSD as
+# configs/wp5_gate.yaml; the extended mapper is the frozen v3 subset and its K comes from the
+# mapper_v3 run (OpTC benign sample ∪ technique recordings). BRiMS reference unchanged.
+# The v3 APT29 visibility draft is written next to the v2 draft under review, not over it.
+experiment: wp5_gate
+mapper_version: 3
+mapper_report: results/20261024T153421Z-mapper_report-7d36465/metrics.json  # BRiMS K
+mapper_v3_report: MAPPER_V3_RUN/metrics.json
+visibility_out: visibility_apt29_v3.csv
+actors: [APT29, menuPass, OilRig, Sandworm]
+k_scope: public_all
+alphas: [0.5, 0.0]

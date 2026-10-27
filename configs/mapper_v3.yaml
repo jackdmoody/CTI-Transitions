@@ -1,0 +1,7 @@
+# B3 (SPEC_ISSUES 2026-10-26): mapper v3 steps on an OpTC fit-host sample and the recordings.
+# The c2 exclusions are decided on fit-split hosts only (configs/optc_split.yaml).
+experiment: mapper_v3
+sample_day: '2019-09-22'
+sample_seed: 0
+sample_hosts: 50
+freeze: true   # writes ctit/map/rules_v3.json if absent (commit = freeze)

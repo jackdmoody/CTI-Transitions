@@ -14,6 +14,7 @@ the Sigma rules need and would understate the extended mapper.
 Usage (repo root, w2 env):
   python scripts/build_signatures.py
   python scripts/build_signatures.py --out data/eval/tactic_signatures.parquet
+  python scripts/build_signatures.py --mapper-version 2   # the earlier v2 library
 """
 from __future__ import annotations
 
@@ -92,8 +93,11 @@ def collapse(tactics: list[str], rel_s: list[float]) -> tuple[list[str], list[fl
     return ct, cr
 
 
+EXT_RULES: list[dict] | None = None  # None = frozen v2 (tag's default); --mapper-version 3 sets v3
+
+
 def tag_with(df: pd.DataFrame, mapper: str) -> pd.DataFrame:
-    return ext_tag(df) if mapper == "extended" else brims_tag(df)
+    return ext_tag(df, EXT_RULES) if mapper == "extended" else brims_tag(df)
 
 
 def per_host_sequences(tagged: pd.DataFrame):
@@ -180,7 +184,12 @@ def otrf_atomic_rows() -> tuple[list[dict], list[str]]:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    ap.add_argument("--mapper-version", type=int, choices=(2, 3), default=3)
     args = ap.parse_args()
+    global EXT_RULES
+    if args.mapper_version == 3:
+        from ctit.map.v3 import load_v3
+        EXT_RULES = load_v3()
 
     s_rows, s_skip = splunk_rows()
     o_rows, o_skip = otrf_atomic_rows()
@@ -200,6 +209,7 @@ def main() -> None:
             m: int(nonempty.loc[nonempty.mapper == m, "technique"].nunique()) for m in MAPPERS
         },
         "recordings": int(df["recording"].nunique()),
+        "extended_mapper_version": args.mapper_version,
         "skipped": s_skip + o_skip,
     }
     summary_path = args.out.with_suffix(".summary.json")

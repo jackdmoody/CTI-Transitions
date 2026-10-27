@@ -1,0 +1,22 @@
+# DARPA OpTC red-team targets (spec §2.1, B6). Never in any benign baseline.
+# Source: Inria corrected-release host labels (labelling/host/ground_truths file names), commit
+# 644f41fb0a955e471f34bed016fb2bfd9c74dc04, as recorded in $CTIT_OPTC_LABELS/redteam_hosts.json.
+# Label rows (host, pid, start, end) are in ground_truth_corrected_sc{1,2,3}_updated.csv there.
+# Attack days by label timestamps: sc1 2019-09-23; sc2 2019-09-24 (2 rows on 25 Sep); sc3 2019-09-25.
+# 0005 and 0010 belong to the 0001-0025 block, which OpTC ships only on 23-25 Sep: no benign days.
+# DC1 is a labelled target (1 row each in sc1 and sc2) but has no SysClient eCAR file.
+label_commit: 644f41fb0a955e471f34bed016fb2bfd9c74dc04
+scenarios:
+  sc1: [sysclient0104, sysclient0170, sysclient0201, sysclient0205, sysclient0255, sysclient0321,
+        sysclient0355, sysclient0402, sysclient0419, sysclient0462, sysclient0503, sysclient0559,
+        sysclient0609, sysclient0660, sysclient0771, sysclient0874, sysclient0955]
+  sc2: [sysclient0005, sysclient0010, sysclient0069, sysclient0203, sysclient0358, sysclient0501,
+        sysclient0618, sysclient0811, sysclient0851, sysclient0974]
+  sc3: [sysclient0051, sysclient0351]
+targets: [sysclient0005, sysclient0010, sysclient0051, sysclient0069, sysclient0104, sysclient0170,
+          sysclient0201, sysclient0203, sysclient0205, sysclient0255, sysclient0321, sysclient0351,
+          sysclient0355, sysclient0358, sysclient0402, sysclient0419, sysclient0462, sysclient0501,
+          sysclient0503, sysclient0559, sysclient0609, sysclient0618, sysclient0660, sysclient0771,
+          sysclient0811, sysclient0851, sysclient0874, sysclient0955, sysclient0974]
+no_benign_history: [sysclient0005, sysclient0010]
+other_targets: [dc1]

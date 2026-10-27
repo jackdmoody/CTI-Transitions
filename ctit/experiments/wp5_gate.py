@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 
 from ctit.eval import actor_jsd, plans, visibility
+from ctit.map import v3
 from ctit.map.attack import TACTICS
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -28,17 +29,31 @@ def k_from_report(report: dict, mapper: str) -> dict[str, list[str]]:
             "public_all": srt(otrf | atlas)}
 
 
+def k_from_v3(v3_report: dict) -> dict[str, list[str]]:
+    """K under mapper v3 = primary tactics v3 emitted on the OpTC benign sample or the
+    technique recordings (the paper's two sides: background and injected signatures)."""
+    st = v3_report["steps"]["c3_no_remote_thread"]
+    srt = lambda s: sorted(s, key=ORDER.get)  # noqa: E731
+    k = srt(set(st["optc"]["K"]) | set(st["recordings"]["K"]))
+    return {"optc_benign": srt(st["optc"]["K"]), "recordings": srt(st["recordings"]["K"]), "public_all": k}
+
+
 def run(config: dict, calls=None) -> dict:
     report = json.loads((REPO_ROOT / config["mapper_report"]).read_text())
     actors = config["actors"]
     steps = {a: plans.load_plan(a) for a in actors}
+    # mapper_version 3: the extended mapper is the frozen v3 subset, and its K comes from a
+    # mapper_v3 run; the BRiMS reference is unchanged.
+    rules = v3.load_v3() if config.get("mapper_version") == 3 else None
 
     for a in actors:
         (EVAL / "plans" / f"{a}_cited_sources.txt").write_text("\n".join(plans.cited_sources(a)) + "\n")
-    drafts = {a: visibility.draft_rows(steps[a]) for a in actors}
-    drafts["APT29"].to_csv(EVAL / "visibility_apt29.csv", index=False)
+    drafts = {a: visibility.draft_rows(steps[a], rules) for a in actors}
+    drafts["APT29"].to_csv(EVAL / config.get("visibility_out", "visibility_apt29.csv"), index=False)
 
     K = {m: k_from_report(report, m) for m in ("extended", "brims")}
+    if rules is not None:
+        K["extended"] = k_from_v3(json.loads((REPO_ROOT / config["mapper_v3_report"]).read_text()))
     k_choice = config.get("k_scope", "public_all")
     plan_seqs = {a: plans.sequences(steps[a]) for a in actors}
     out: dict = {

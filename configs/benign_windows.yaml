@@ -1,0 +1,7 @@
+# B5 (SPEC_ISSUES 2026-10-26): benign windows (8 consecutive tagged events per host) under
+# mapper v3, for the OpTC test hosts and the ATLASv2 benign split. Pre-registered rule in
+# ctit/experiments/benign_windows.py: Det@0.1%FPR only if OpTC test windows >= 5,000;
+# ATLASv2 only if >= 500. Counts only: no scoring.
+experiment: benign_windows
+splits: [test]
+workers: 6
