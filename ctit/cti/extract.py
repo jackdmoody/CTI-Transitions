@@ -10,8 +10,12 @@
    self-transitions). A response that isn't a JSON list of objects is retried once, then
    logged and skipped.
 4. Evidence check (§4.5): an evidence_span must be a substring of the chunk it came from,
-   after collapsing whitespace. Unsupported spans are counted (hallucinated-span rate) and,
-   with require_evidence=True, left out of the counts.
+   after collapsing whitespace (strict). Fragment-aware variant (pre-registered 2026-10-27,
+   before any recovery metric): split the span on "..." and "\u2026"; normalize whitespace,
+   curly quotes and dashes on both sides; every fragment of >= 8 characters must appear
+   verbatim in the source, in order. A span with no fragment of >= 8 characters fails.
+   Both rates are reported. Unsupported spans (strict) are counted and, with
+   require_evidence=True, left out of the counts.
 5. Aggregation (2026-10-27): one count per (document, edge): an edge seen in several chunks
    or places of one report counts once for that report, and a no-report sample is one
    document. Prior = row-normalized (C + alpha), so each report weighs the same whatever
@@ -92,6 +96,31 @@ def normalize(s: str) -> str:
 
 def evidence_ok(span: str, source: str) -> bool:
     return bool(normalize(span)) and normalize(span) in normalize(source)
+
+
+_PUNCT = str.maketrans({"\u2018": "'", "\u2019": "'", "\u201a": "'", "\u201b": "'", "\u2032": "'",
+                        "\u201c": '"', "\u201d": '"', "\u201e": '"', "\u201f": '"', "\u2033": '"',
+                        "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2013": "-", "\u2014": "-",
+                        "\u2015": "-", "\u2212": "-"})
+_ELLIPSIS = re.compile(r"\.\.\.|\u2026")
+MIN_FRAGMENT = 8
+
+
+def _norm_frag(s: str) -> str:
+    return normalize(s.translate(_PUNCT))
+
+
+def evidence_ok_fragments(span: str, source: str) -> bool:
+    frags = [f for f in (_norm_frag(x) for x in _ELLIPSIS.split(span)) if len(f) >= MIN_FRAGMENT]
+    if not frags:
+        return False
+    src, pos = _norm_frag(source), 0
+    for f in frags:
+        i = src.find(f, pos)
+        if i < 0:
+            return False
+        pos = i + len(f)
+    return True
 
 
 # ----------------------------------------------------------------------------- models
@@ -180,6 +209,7 @@ def extract_chunk(model, template: str, text: str, doc_id: str, index: int, call
     ok, res.rejected = schema.validate(items)
     for t in ok:
         t["evidence_ok"] = evidence_ok(t["evidence_span"], text)
+        t["evidence_ok_fragments"] = evidence_ok_fragments(t["evidence_span"], text)
         t["doc_id"], t["chunk"] = doc_id, index
     res.transitions = ok
     return res
@@ -233,6 +263,8 @@ def summarize(results: list[ChunkResult]) -> dict:
         "rejected_by_reason": dict(Counter(_reason(why) for r in results for _, why in r.rejected)),
         "chunks_per_doc": dict(Counter(r.doc_id for r in results)),
         "hallucinated_span_rate": (sum(not t["evidence_ok"] for t in checked) / len(checked)) if checked else None,
+        "hallucinated_span_rate_fragments": (sum(not t["evidence_ok_fragments"] for t in checked) / len(checked))
+        if checked else None,
     }
 
 

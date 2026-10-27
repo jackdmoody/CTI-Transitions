@@ -1,7 +1,8 @@
 """Transition recovery (spec §6, T2, T4/H4): extracted priors vs. emulation-plan ground truth.
 
-Ground truth (2026-10-27): each plan scenario's tactic sequence (ctit.eval.plans, full
-14-tactic space, no visibility filter) with consecutive repeated tactics collapsed
+Ground truth (2026-10-27): each plan scenario's tactic sequence over ALL plan steps, every
+platform (ctit.eval.plans, full 14-tactic space, no visibility filter; the Windows-only
+variant is the appendix one) with consecutive repeated tactics collapsed
 (Discovery, Discovery, Execution -> Discovery, Execution), then consecutive pairs counted.
 Collapsing removes the self-transitions the extraction prompts forbid, so both sides live on
 the 14 x 14 off-diagonal cells.
@@ -26,8 +27,9 @@ def collapse(seq: list[str]) -> list[str]:
     return [t for i, t in enumerate(seq) if i == 0 or t != seq[i - 1]]
 
 
-def ground_truth_counts(actor: str) -> np.ndarray:
-    seqs = [collapse(s) for s in plans.sequences(plans.load_plan(actor))]
+def ground_truth_counts(actor: str, all_platforms: bool = True) -> np.ndarray:
+    steps = plans.load_plan(actor, platforms=None if all_platforms else ("windows",))
+    seqs = [collapse(s) for s in plans.sequences(steps)]
     return actor_jsd.counts(seqs, list(TACTICS))
 
 

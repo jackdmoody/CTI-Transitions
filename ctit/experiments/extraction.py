@@ -141,13 +141,17 @@ def run(config: dict, calls=None) -> dict:
             dest = run_dir / mode / f"{cond}_{actor}_{s}.json"
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(json.dumps({**p, "transitions": trans,
+                                        "chunks": [{"doc_id": r.doc_id, "index": r.index, "status": r.status,
+                                                    "attempts": r.attempts} for r in res],
                                         "rejected": [[it, why] for r in res for it, why in r.rejected]}, indent=1))
             C = np.array(p["counts"])
             entry = {k: p["meta"][k] for k in ("chunks", "chunk_status", "retried", "transitions", "rejected_items",
-                                               "rejected_by_reason", "hallucinated_span_rate")}
+                                               "rejected_by_reason", "hallucinated_span_rate",
+                                               "hallucinated_span_rate_fragments")}
             entry["edges"] = int((C > 0).sum())
             if cond == "B":
                 entry["hallucinated_span_rate"] = None  # recall, not verifiable (spec §6)
+                entry["hallucinated_span_rate_fragments"] = None
             if actor in truths:
                 entry["recovery"] = {**recovery.edge_prf(C, truths[actor]), "jsd": recovery.jsd(C, truths[actor], alpha)}
             mo["priors"].setdefault(f"{cond}/{actor}", {})[s] = entry

@@ -209,3 +209,24 @@ def test_approved_prompts_render():
     assert "<excerpt>\nEXCERPT\n</excerpt>" in p and "different tactics" in p
     q = extract.render(mem, tactics=extract.tactic_list(), actor="APT29", aliases="Cozy Bear")
     assert "APT29 (also tracked as: Cozy Bear)" in q
+
+
+def test_fragment_aware_evidence_check():
+    src = "The implant created a “scheduled task” for persistence — then it beaconed out."
+    ok = extract.evidence_ok_fragments
+    assert ok('The implant created a "scheduled task" ... it beaconed out.', src)
+    assert ok("created a “scheduled task”… then it beaconed", src)
+    assert ok("persistence - then it beaconed", src)          # dash normalized
+    assert not ok("then it beaconed ... The implant created", src)  # out of order
+    assert not ok("The implant created ... exfiltrated 4 GB", src)  # a fragment is missing
+    assert ok("The implant created ... it ... then it beaconed", src)  # "it" < 8 chars is ignored
+    assert not ok("it ... then", src)                               # nothing >= 8 chars to check
+    assert not extract.evidence_ok('The implant created a "scheduled task"', src)  # strict unchanged
+
+
+def test_summary_reports_both_rates():
+    resp = json.dumps([_t("Initial Access", "Execution", "spearphishing emails ... a PowerShell loader ran"),
+                       _t("Execution", "Persistence", "the implant created a scheduled task")])
+    r = extract.extract_chunk(Replay([resp]), TEMPLATE, REPORT, "d1", 0)
+    s = extract.summarize([r])
+    assert s["hallucinated_span_rate"] == 0.5 and s["hallucinated_span_rate_fragments"] == 0.0

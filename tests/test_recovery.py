@@ -40,3 +40,8 @@ def test_ground_truth_has_no_self_transitions():
     for actor in ("menuPass", "OilRig", "Sandworm"):
         G = recovery.ground_truth_counts(actor)
         assert G.trace() == 0 and G.sum() > 0
+
+
+def test_ground_truth_all_platforms_default_with_windows_variant():
+    for actor in ("OilRig", "Sandworm"):
+        assert recovery.ground_truth_counts(actor).sum() > recovery.ground_truth_counts(actor, all_platforms=False).sum()

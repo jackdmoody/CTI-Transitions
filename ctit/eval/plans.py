@@ -2,8 +2,9 @@
 nothing here may feed a prior.
 
 Plans (CALDERA-style YAML) live in data/eval/plans/<actor>.yaml, pinned in SOURCES.txt.
-Steps keep file order. Only `windows` abilities are used (spec §2.3: no macOS/Linux steps
-on Windows hosts). Tactic = the plan's own tactic label, normalized to the 14-tactic
+Steps keep file order. By default only `windows` abilities are used (spec §2.3: no
+macOS/Linux steps on Windows hosts; injection and visibility). Extraction ground truth uses
+every platform (load_plan(..., platforms=None); spec §6, 2026-10-27). Tactic = the plan's own tactic label, normalized to the 14-tactic
 scheme; if the label isn't a tactic (e.g. CALDERA's "stage-capabilities"), the first
 ATT&CK v18.1 tactic of the step's technique.
 """
@@ -74,16 +75,19 @@ def substitute(command: str, input_arguments: dict) -> str:
     return _PLACEHOLDER.sub(repl, command)
 
 
-def load_plan(actor: str, path: Path | None = None) -> list[Step]:
+def load_plan(actor: str, path: Path | None = None, platforms: tuple[str, ...] | None = ("windows",)) -> list[Step]:
+    """platforms: abilities with any of these platforms are kept; None keeps every step.
+    A step's executor/command come from its windows entry if it has one, else its first."""
     doc = yaml.safe_load((path or PLANS / f"{actor}.yaml").read_text())
     steps = []
     for ab in doc:
         if not isinstance(ab, dict) or "technique" not in ab:
             continue
-        platforms = ab.get("platforms") or {}
-        if "windows" not in platforms:
+        plats = ab.get("platforms") or {}
+        if platforms is not None and not set(plats) & set(platforms):
             continue
-        executor, command = next(iter(platforms["windows"].items()))
+        entry = plats.get("windows") or next(iter(plats.values()), {}) or {}
+        executor, command = next(iter(entry.items()), ("", {}))
         command = substitute((command or {}).get("command") or "", ab.get("input_arguments") or {})
         technique = str(ab["technique"]["attack_id"]).upper()
         tactic, source = _tactic(str(ab["tactic"]), technique)
