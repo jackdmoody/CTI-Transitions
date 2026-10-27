@@ -68,3 +68,20 @@ def test_cited_url_must_be_marked_y():
 def test_normalize_url():
     assert manifest.normalize_url("https://www.Example.org/a/b/|") == "example.org/a/b"
     assert manifest.normalize_url("http://example.org/a/<br>") == "example.org/a"
+
+
+def test_excluded_rows_need_a_note_and_never_count_as_priors(tmp_path):
+    header, rows = manifest.load(FIXTURES / "good.csv")
+    actors = manifest.load_actors()
+    rows = [dict(r, note="") for r in rows]
+    assert manifest.check(header + ["note"], rows, actors) == []
+    oil = [i for i, r in enumerate(rows) if r["actor"] == "OilRig" and r["used_for"] == "prior"]
+    for i in oil[:-1]:
+        rows[i]["used_for"] = "excluded"
+    errors = manifest.check(header + ["note"], rows, actors)
+    assert any("excluded row needs a reason" in e for e in errors)
+    assert any("actor OilRig: 1 prior docs" in e for e in errors)
+    for i in oil[:-1]:
+        rows[i]["note"] = "does not name the actor"
+    errors = manifest.check(header + ["note"], rows, actors)
+    assert not any("needs a reason" in e for e in errors) and any("actor OilRig: 1 prior" in e for e in errors)

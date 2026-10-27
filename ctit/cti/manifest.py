@@ -22,7 +22,10 @@ COLUMNS = [
     "doc_id", "actor", "nation", "source_org", "url", "pub_date", "sha256",
     "used_for", "cited_by_emulation_plan",
 ]
-USED_FOR = {"prior", "eval"}
+# Optional trailing column: free-text reason, required when used_for is "excluded".
+OPTIONAL = ["note"]
+# "excluded": kept in the manifest for the record but never used as a prior or eval source.
+USED_FOR = {"prior", "eval", "excluded"}
 YES_NO = {"y", "n"}
 MIN_PRIOR_DOCS = 2
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -76,8 +79,8 @@ def check(
     cited: dict[str, set[str]] | None = None,
 ) -> list[str]:
     """Return every violation; empty means the manifest passes."""
-    if header != COLUMNS:
-        return [f"header must be exactly {COLUMNS}, got {header}"]
+    if header not in (COLUMNS, COLUMNS + OPTIONAL):
+        return [f"header must be exactly {COLUMNS} (optionally + {OPTIONAL}), got {header}"]
 
     errors: list[str] = []
     seen_ids: set[str] = set()
@@ -94,6 +97,8 @@ def check(
             errors.append(f"{where}: nation {r['nation']!r} != {actors[r['actor']]['nation']!r}")
         if r["used_for"] not in USED_FOR:
             errors.append(f"{where}: used_for must be one of {sorted(USED_FOR)}")
+        if r["used_for"] == "excluded" and not (r.get("note") or "").strip():
+            errors.append(f"{where}: excluded row needs a reason in note")
         if r["cited_by_emulation_plan"] not in YES_NO:
             errors.append(f"{where}: cited_by_emulation_plan must be y or n")
         if not SHA256_RE.match(r["sha256"]):

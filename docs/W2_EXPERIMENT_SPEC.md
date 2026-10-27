@@ -102,6 +102,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 
 - Every actor gets the same pipeline: same injection procedure, same variants, same seeds, same extraction prompts.
 - DPRK check: open the 2024 DPRK plan in github.com/attackevals/ael. If its steps are macOS/Linux-only, use the report-split fallback and say so in the paper. Don't map macOS steps onto Windows hosts.
+- **menuPass priors cover the APT10 umbrella (2026-10-27, SPEC_ISSUES).** menuPass-P02 (Kaspersky, A41APT/Ecipekac) is the core APT10 report; P03–P06 describe LODEINFO / MirrorFace / Earth Kasha, which the vendors place under or alongside APT10. State this in T1 and the H4 discussion: the menuPass prior describes the umbrella, while the eval sequence is the CTID menuPass plan. menuPass-P01 (CISA TA18-276B) is kept in the manifest as `excluded` because it never names the actor.
 - Wherever this spec says "APT29," it now means "each core actor." APT29 is built first as the reference pipeline.
 - Optional extra source: the NUS APT29/APT17/APT32/APT41 emulation datasets. These are built from CTI reports, so check their source lists against the prior manifest before using them.
 - Record a public-coverage proxy per actor (count of ATT&CK group-page references and count of independent reports found) for H2b.
