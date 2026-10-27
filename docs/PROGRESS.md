@@ -82,3 +82,11 @@
   - F can't take temperature 0 (SPEC_ISSUES).
   - B6 raw eCAR download is on hold.
   - The rules behind the test-host PrivEsc/Discovery tags aren't broken down yet.
+
+## 2026-10-27: Part B, B6, prompts v1, WP6 extraction
+- Part B: 24 docs fetched (`scripts/fetch_cti.py`). menuPass-P01 is excluded (doesn't name APT10). Leakage passes with priors APT29 7, menuPass 5, OilRig 5, Sandworm 6.
+- B6: raw eCAR for the 29 targets (87 host-days) fetched and converted with pid. Test set: 4,428 windows, 46 positive. Diagnostic: C4's "mapper sees the intrusion" does not hold (the two C4 rules are a scripted xx01/xx51 job). Spec: H4 at the prior level, H1 as case studies.
+- Prompts v1 frozen (`bb526e5`). Extraction ran F ($11.92) and S/S-sampled (local). Report: `results/20261027T154811Z-extraction_report-2261148`. F refused 3 chunks, including the oracle (5/5); S refused none.
+- **Open:** schema retry is replayed from the response cache (SPEC_ISSUES, needs Jack). The private Ollama server on port 11435 has been stopped.
+- Tests: 106 passed, 3 skipped.
+- Next: Jack's call on the retry fix; then T2/T4 tables (WP6/WP7).
