@@ -24,6 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+fetch = ["trafilatura==2.0.0"]
 
 [tool.setuptools.packages.find]
 include = ["ctit*"]

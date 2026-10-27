@@ -14,7 +14,7 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "data" / "cti" / "manifest.csv"
-TEXT_DIR = REPO_ROOT / "data" / "cti" / "text"  # saved report text: <doc_id>.txt
+TEXT_DIR = REPO_ROOT / "data" / "cti" / "reports"  # saved report text: <doc_id>.txt
 ACTORS_PATH = REPO_ROOT / "configs" / "actors.yaml"
 CITED_DIR = REPO_ROOT / "data" / "eval" / "plans"  # <actor>_cited_sources.txt (written by WP5)
 

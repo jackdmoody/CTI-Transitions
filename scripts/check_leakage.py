@@ -17,7 +17,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--manifest", type=Path, default=manifest.MANIFEST_PATH)
     p.add_argument("--actors", type=Path, default=manifest.ACTORS_PATH)
     p.add_argument("--no-verify-text", action="store_true",
-                   help="skip checking sha256 against data/cti/text/<doc_id>.txt")
+                   help="skip checking sha256 against data/cti/reports/<doc_id>.txt")
     args = p.parse_args(argv)
 
     if not args.manifest.exists():
