@@ -43,3 +43,18 @@
 - `docs/API_SURFACE.md`: import paths, signatures and shapes for the frozen v2 mapper, the BRiMS mapper (via the adapter), the canonical loaders (Splunk XML, OTRF, OTRF atomic, ATLASv2), plan step access, the visibility CSV, and `wp5_gate` inputs.
 - OTRF atomic Windows host datasets: 112 archive links from 100 metadata files at the pinned commit (`data/otrf/atomic/SOURCES.txt`). 110 were downloaded; 1 link 404s at that commit (`SDWIN-230718150800` cmd_copy_ntds_from_volume_shadow_copy). All 110 were ingested to `data/otrf/atomic/canonical/` with all raw fields kept; formats handled: Mordor JSON, 2019 Winlogbeat, tar.gz, and stray macOS resource forks.
 - Coverage (`data/otrf/atomic/coverage.csv`): 56 techniques in OTRF atomic, 59 in the full-XML Splunk samples, 24 in both. Plan steps whose exact technique has a recording: APT29 46%, menuPass 53%, OilRig 72%, Sandworm 47%. At parent-technique level: 71% / 60% / 79% / 73%.
+
+## 2026-10-26: corpus check (BOTS v1/v2/v3, OpTC, ATLASv2)
+- Done: `docs/CORPUS_CHECK.md`.
+  - New `ctit/ingest/bots.py`: BOTSv1 JSON, plus a Splunk journal decoder verified against `Hosts.data` on every bucket (v3 17/17, v2 57/57, v2 attack-only 17/17), so no Splunk is needed.
+  - New `ctit/ingest/optc.py`: STRATA-E OpTC parquet → canonical, with per-host drive-letter and registry-hive normalization.
+  - Tests for both.
+- **Results:**
+  - **BOTSv1:** 3 real Sysmon hosts.
+  - **BOTSv2:** 8 Sysmon hosts; the benign background is one day replayed ~16×; every Windows host is in the attack-only subset.
+  - **BOTSv3:** 8 hosts, 6.5 h.
+  - **OpTC:** 446 clean hosts × 4 benign days, but eCAR artifacts (bare image names, remote threads) drive ~99% of benign tags even after the shared 719-rule subset and normalization.
+  - **ATLASv2:** real users, 15 scorable windows.
+- **Under the spec's window (DRIFT session, ≥2 tagged):** no corpus reaches 5,000 scorable benign windows; only OpTC reaches 500 (2,883 day-long sessions).
+- **Recommendation (Jack decides):** OpTC primary with three fixes; ATLASv2 for realism; no BOTS. A proposed SPEC_ISSUES entry on the window definition is in CORPUS_CHECK (not filed).
+- Data written only under `data/bots/`, `data/optc_check/`. External OpTC data untouched.
