@@ -3,7 +3,8 @@
 **Paper:** W2, "CTI Transitions" (working title: *Reading the Adversary: LLM-Compiled Threat Intelligence as Transition Priors for Endpoint Hunting*)
 **Venue:** AICS @ AAAI-27 — deadline 20 Nov 2026 AoE, full paper, ~7 pp + refs, AAAI-27 Author Kit, not anonymized
 **Repo:** new standalone repo `CTI-Transitions` (package `ctit`; rename freely). This is **not** developed inside DRIFT.
-**Dependency:** github.com/jackdmoody/DRIFT (SBP-BRiMS 2026 transition-deviation pipeline), consumed as a pinned, read-only dependency. See §8.
+**Framing (2026-10-26, Jack):** the paper is an **evaluation of LLM-compiled CTI as priors for sequence-based hunting**, not a DRIFT extension. The unconditioned baseline U is a DRIFT-style transition-based anomaly detector taken from prior work. The paper uses open data only (§2.1).
+**Dependency:** github.com/jackdmoody/DRIFT (SBP-BRiMS 2026 transition-deviation pipeline), consumed as a pinned, read-only dependency for the U scorer, sessionization and the BRiMS reference mapper. See §8.
 **Audience:** coding agents. Each section is a work package with inputs, outputs, and acceptance checks. Agents do not change hypotheses, conditions, or metrics without sign-off.
 
 ---
@@ -12,9 +13,11 @@
 
 **Thesis.** Threat-intelligence prose describing an adversary can be compiled by a language model into an ATT&CK tactic-transition prior. Conditioning transition-based endpoint hunting on that prior makes detection more sensitive to the described adversary than unconditioned behavioral-deviation hunting. A small open-weight model is enough to do this, so the benefit is available to defenders without frontier models.
 
+**U** throughout is *an unconditioned transition-based anomaly detector (DRIFT-style, from prior work)*. The paper evaluates CTI priors against it; it does not claim U is a new method or that W2 extends DRIFT.
+
 | ID | Hypothesis | Test | Supported if |
 |---|---|---|---|
-| H1 | CTI conditioning improves hunting | Conditioned vs. unconditioned DRIFT on injected sequences | Higher AUPRC / detection@FPR and earlier detection, CIs over seeds non-overlapping or paired test p<0.05 |
+| H1 | CTI conditioning improves hunting | Conditioned vs. unconditioned (U) transition-based hunting on injected sequences | Higher AUPRC / detection@FPR and earlier detection, CIs over seeds non-overlapping or paired test p<0.05 |
 | H2 | The report content matters, not just model memory | Report-conditioned prior vs. no-report (parametric-memory) prior | Report > no-report on transition recovery and hunting |
 | H3 | Small open-weight models are sufficient (special theme) | Open-weight vs. frontier extraction | Open-weight recovers ≥80% of frontier edge-F1 and ≥80% of its hunting lift |
 | H4 | The benefit is adversary-specific | 4×4 prior-actor × eval-actor matrix across the core actors APT29 (Russia), menuPass (China), OilRig (Iran), Sandworm (Russia); DPRK added as a 5th row/column if the stretch lands | Diagonal (same-actor) > off-diagonal in every row; off-diagonal ≥ unconditioned is acceptable (generic attack structure) |
@@ -41,14 +44,13 @@ Note for the paper: because frontier models were trained on public APT29 materia
 
 ## 2. Data
 
-### 2.1 Exercise-range corpus (benign background + injection target)
-- Source: Jack's exercise-range endpoint telemetry, already used in BRiMS. Release cleared.
-- Reuse the DRIFT preprocessing → per-host tactic sequences with host-role labels.
-- Record which hosts/segments are IT vs. OT/ICS-adjacent (`data/range/host_roles.csv`, column `segment {it|boundary|ot}`).
-- Split: benign baseline fit window / held-out test window, by time. No test-window data in baseline fitting.
-- **Telemetry:** Sysmon is the primary source (matches BRiMS and ATLASv2). If the range also collected Windows Security logs (4624/4625 logons, 4688, 4769 Kerberos) or PowerShell script-block logging (4104), ingest them through the same tactic mapper (the extended mapper, §2.5) as a secondary run. Report which sources were present in T1. Do not collect new data. If those sources are absent, it's a stated limitation.
-- **Zeek (network vantage, secondary source).** Jack is pulling the exercise-network Zeek logs. Use them as a second vantage point for visibility and tactic events. Do not build full host-network fusion for this paper.
-  - **Pre-flight checks (block Zeek work until both pass):** (a) Zeek sensors and Sysmon hosts time-synced: estimate clock offset from matched events (Sysmon event 3 vs. conn.log on the same 5-tuple) and require median |offset| ≤ 2 s, else correct per host or drop Zeek; (b) Zeek capture windows cover the Sysmon fit and test windows. Report both in T1.
+### 2.1 Benign corpus (open data only)
+- **Range data is out of scope for this paper (2026-10-26, Jack).** Every benign background, injection target and real-attack check comes from open datasets. The primary corpus is fixed in a separate decision (SPEC_ISSUES, 2026-10-26, corpus decision). No critical-infrastructure claim is made.
+- **Baseline:** a pooled benign baseline over all baseline-fit hosts is the default (§5). Role-indexed baselines are optional, used only where the corpus documents host roles.
+- **Split:** fit / validation / test with no test data in baseline fitting; the split unit is fixed with the corpus decision.
+- **Telemetry:** Sysmon (or an equivalent endpoint stream converted to Sysmon fields) is the primary source. Windows Security events, where the corpus has them, go through the same extended mapper (§2.5). Report which sources were present in T1. Do not collect new data.
+- **Zeek (network vantage, optional; T8).** Used only if the chosen corpus ships Zeek logs for the same hosts and time. Do not build full host-network fusion for this paper.
+  - **Pre-flight checks (block Zeek work until both pass):** (a) Zeek sensors and endpoint hosts time-synced: estimate clock offset from matched events (Sysmon event 3 vs. conn.log on the same 5-tuple) and require median |offset| ≤ 2 s, else correct per host or drop Zeek; (b) Zeek capture windows cover the fit and test data. Report both in T1.
   - **Logs and fields to ingest** (`ctit/ingest/zeek.py`):
     - conn: ts, uid, id.orig_h, id.orig_p, id.resp_h, id.resp_p, proto, service, duration, orig_bytes, resp_bytes, conn_state, history, orig_pkts, resp_pkts
     - dns: query, qtype_name, rcode_name, answers, TTLs
@@ -59,8 +61,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
     - dce_rpc: endpoint, operation
     - rdp / ssh: cookie; auth_success, auth_attempts
     - files: mime_type, sha1/sha256, source, total_bytes
-    - ICS: modbus (func, exception); dnp3 (fc_request, fc_reply, iin); ICSNPP logs if present (s7comm, enip/cip, bacnet)
-    - dhcp (or static asset inventory `data/range/ip_host_map.csv` with validity intervals): required for the IP→host join
+    - dhcp (or the corpus's asset inventory with validity intervals): required for the IP→host join
   - **Host attribution:** attribute each network event to the originating host via the IP→host map at event time. Unattributable events are dropped and counted.
   - **Zeek → tactic mapping** (`ctit/map/zeek_rules.yaml`, versioned, reviewed by Jack). Starting rules, not exhaustive:
     - kerberos TGS with RC4 cipher for service accounts → Credential Access (Kerberoasting)
@@ -68,9 +69,8 @@ Note for the paper: because frontier models were trained on public APT29 materia
     - dce_rpc `svcctl` CreateService* / `atsvc`/`ITaskSchedulerService` to remote host → Lateral Movement / Execution
     - smb_mapping to ADMIN$/C$ from workstation → Lateral Movement
     - rdp/ssh successful auth between internal workstations → Lateral Movement
-    - dns/conn patterns flagged by existing CADENCE logic, or long-lived low-volume external sessions → Command and Control
+    - long-lived low-volume external sessions → Command and Control
     - large outbound orig_bytes to external host after staging → Exfiltration
-    - ICS write/control function codes (modbus write funcs, dnp3 operate/direct-operate) from a non-engineering host → Impact / ICS-tactic flag
   - Report mapper coverage for Zeek separately from Sysmon.
 
 ### 2.2 Injected adversary sequences
@@ -81,11 +81,10 @@ Note for the paper: because frontier models were trained on public APT29 materia
   - `visible=n` → not injected (e.g., Kerberos ticket forgery with no Sysmon artifact). The step still counts in the ground-truth transition set for §6 recovery metrics, but not in the hunting ground truth.
   - Jack reviews the visibility CSV for APT29 before other actors are ported. Agents must not mark a step visible just to keep chains long.
   - Report per actor: steps in plan, visible, partial, dropped (T1).
-- Injection: splice the visibility-filtered sequence into a test-window host timeline. Match the host role to the step (workstation steps on workstation-role hosts). Inter-step gaps sampled from the plan's timing or a log-normal fit to range inter-event times. Interleave with real benign events, without replacing them.
+- Injection: splice the visibility-filtered sequence into a test host's timeline. Match the host role to the step (workstation steps on workstation-role hosts) only where the corpus documents roles. Inter-step gaps sampled from the plan's timing or a log-normal fit to the corpus's inter-event times. Interleave with real benign events, without replacing them.
 - **Injection level (decided 2026-10-25, replaces the recorded-event wording).** Injection happens at the tactic-sequence level, which is the scorer's input. Each plan step contributes the tactic subsequence that the frozen mapper (v2, and the BRiMS mapper for the reference runs) produced from a real public recording of the step's technique, chosen with a fixed seed and re-timed with that recording's relative timing. It is spliced into the benign host's tactic-token stream. Steps whose technique has no recording fall back to the process-creation draft (`source=process_only`). The visibility CSV records the step's `source` (`otrf_apt29 | splunk_attack_data | otrf_atomic | process_only`). Raw telemetry is never moved, copied or modified. Splunk Attack Data is also the mapper's recall set (§2.5); the mapper is frozen and not tuned on it.
 - Variants per actor: full (visibility-filtered) chain; truncated (first 50% of visible steps, measures early detection); noisy (beyond the visibility filter, drop a further 10–20% of `visible=y` steps at random and drop `partial` steps first, simulating sensor gaps and log loss).
 - Seeds: ≥10 injection placements per variant.
-- **CI framing check:** report how many injected steps land on `boundary` or `ot` hosts, and whether Zeek ICS logs (modbus, dnp3, ICSNPP) exist for those segments. The critical-infrastructure claim is earned only if both hold: (a) some injected steps land on boundary/OT hosts, and (b) ICS-protocol telemetry exists there and is mapped. Otherwise the paper says "an exercise range that includes ICS assets" and doesn't claim a CI result. The Sandworm stretch actor is the natural vehicle for OT-adjacent steps. Separately, report the benign ICS-protocol baseline (function-code mix by host role) in the appendix. It's cheap and shows the range is a real ICS environment.
 
 ### 2.3 Actor set (four nations)
 
@@ -94,7 +93,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 | Russia | APT29 | ATT&CK Evals Round 2 plan (scenarios 1–2) | Ready |
 | China | menuPass (APT10) | CTID Adversary Emulation Library plan | Ready |
 | Iran | OilRig (APT34) | CTID Adversary Emulation Library plan | Ready |
-| Russia | Sandworm | CTID plan (Windows steps 16–19 only) | **Core since 24 Oct** (Jack): within-nation comparison with APT29 + ICS relevance |
+| Russia | Sandworm | CTID plan (Windows steps 16–19 only) | **Core since 24 Oct** (Jack): within-nation comparison with APT29 |
 | DPRK (stretch) | Lazarus-family actor | Report-split fallback (§1). The ATT&CK Evals ER6 DPRK plan is macOS-targeted | **Stretch since 24 Oct** (Jack); decision after the WP5 rerun |
 
 - Every actor gets the same pipeline: same injection procedure, same variants, same seeds, same extraction prompts.
@@ -107,9 +106,9 @@ Note for the paper: because frontier models were trained on public APT29 materia
 - Purpose: show that synthetic injection gives scores comparable to a real emulated attack. This answers the "your attacks are synthetic" reviewer objection.
 - Source: OTRF Security-Datasets recordings of the ATT&CK Evaluations APT29 emulation (day 1 and day 2), with Sysmon, Security, and PowerShell logs. **First task: confirm the dataset is still hosted and downloadable, by 23 Oct.** If it's gone, drop this section and add the limitation.
 - Procedure:
-  1. Run the extended tactic mapper (§2.5) on the OTRF Sysmon logs only, to match the range corpus. Extract the attack hosts' tactic sequences using the dataset's attack timestamps.
+  1. Run the extended tactic mapper (§2.5) on the OTRF Sysmon logs only, to match the primary corpus's endpoint stream. Extract the attack hosts' tactic sequences using the dataset's attack timestamps.
   2. Compare against the synthetic visibility-filtered APT29 chain: tactic-sequence edit distance, and the fraction of plan steps that actually appear in the real Sysmon logs vs. the fraction your visibility CSV predicted (this checks the visibility filter itself).
-  3. Score the real sequences with U, R-F, R-S (role baseline fit on the OTRF benign hosts if enough benign data exists; otherwise on the range baseline, stated as cross-environment).
+  3. Score the real sequences with U, R-F, R-S (baseline fit on the OTRF benign hosts if enough benign data exists; otherwise on the primary corpus's pooled baseline, stated as cross-environment).
   4. Score the synthetic chain identically. Report the score distributions side by side.
 - Output: **T7** synthetic vs. real APT29: visibility agreement (predicted vs. observed visible steps), sequence edit distance, AUPRC/TTD under U, R-F, R-S. Fits in the main paper as a small table if space allows, otherwise in the appendix with one sentence in the main text.
 - Leakage note: OTRF data is an eval artifact only. It must not feed priors.
@@ -121,7 +120,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 - Map Sysmon events → ATT&CK tactics with the extended mapper (§2.5), and report mapper coverage.
 
 ### 2.5 Tactic mappers
-- **BRiMS mapper:** DRIFT's `sysmon_pipeline.mapping.build_tokens`, untouched. Used for the parity test and as the reference mapper in T1 and T4.
+- **BRiMS mapper:** DRIFT's `sysmon_pipeline.mapping.build_tokens`, untouched. Used as the reference mapper in T1 and T4, and for the optional BRiMS parity test (§8).
 - **Extended mapper** (`ctit/map/`, W2-side): SigmaHQ Windows rules (Sysmon and Security) pinned to one commit, with tactic taken from each rule's ATT&CK tags. No other gap-filling. No hand-written rules derived from emulation plans or eval data. Rules tagged with an ATT&CK group or software ID are excluded (leakage). Process-creation rules run on Sysmon EID 1 and Security 4688. Stealth and Defense Impairment (ATT&CK v19) fold into Defense Evasion. A deterministic primary-tactic policy for multi-tactic techniques is documented in `docs/MAPPER_POLICY.md`.
 - The extended mapper is frozen (committed) before any injection or scoring. Its report gives: the reachable tactic set K; the per-tactic benign tag rate on public data; and recall against OTRF APT29 ground truth.
 - All W2 conditions, U included, use the extended mapper.
@@ -140,7 +139,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 
 | Code | Prior | Purpose |
 |---|---|---|
-| U | None — unconditioned DRIFT (BRiMS method) | Baseline |
+| U | None — an unconditioned transition-based anomaly detector (DRIFT-style, from prior work) | Baseline |
 | Uni | Uniform transition prior over tactics | Sanity floor |
 | ATTK | Structured ATT&CK group mapping → technique set → tactic co-occurrence prior (no order) | Strong non-LLM baseline: "do you need an LLM at all?" |
 | B-F / B-S | No-report prior: model asked for the actor's tactic transitions from memory | Memorization bound (H2) |
@@ -171,14 +170,14 @@ Log all calls (model, prompt hash, tokens, latency, cost). Cost and latency tabl
 
 Default: **likelihood-ratio scoring.** For a host window with tactic sequence s = (s_1, …, s_n) over K:
 
-score(s) = (1/(n−1)) Σ_{t=2..n} [ log P_adv(s_t | s_{t−1}) − log P_role(s_t | s_{t−1}) ]
+score(s) = (1/(n−1)) Σ_{t=2..n} [ log P_adv(s_t | s_{t−1}) − log P_ben(s_t | s_{t−1}) ]
 
 that is, the mean log-LR per transition. The summed (unnormalized) version is reported in the appendix only.
 
-- **P_role** is built from DRIFT's role baseline. For each role r, sum the fit-window tactic-transition counts over role-r hosts (DRIFT ingest semantics, unmapped events skipped). Add α = 0.5 over a fixed K×K list of edges and normalize each row. Without row-normalization this equals DRIFT's role-mean edge vector.
-- **P_adv** is a first-order Markov model whose transition matrix is the CTI prior projected onto K. Unreachable tactics are skipped as DRIFT skips unmapped events: T_obs = T_KK + T_KU (I − T_UU)⁻¹ T_UK. It is optionally mixed with P_role, λ ∈ {0.1, 0.3, 0.5}, chosen on a validation split, never test.
+- **P_ben** (benign baseline) is **pooled by default**: sum the baseline-fit tactic-transition counts over all baseline-fit hosts (DRIFT ingest semantics, unmapped events skipped). Add α = 0.5 over a fixed K×K list of edges and normalize each row. **Role-indexed baselines are optional** (P_role: the same sum over role-r hosts only), used only where the corpus documents host roles; without row-normalization a role baseline equals DRIFT's role-mean edge vector.
+- **P_adv** is a first-order Markov model whose transition matrix is the CTI prior projected onto K. Unreachable tactics are skipped as DRIFT skips unmapped events: T_obs = T_KK + T_KU (I − T_UU)⁻¹ T_UK. It is optionally mixed with P_ben, λ ∈ {0.1, 0.3, 0.5}, chosen on a validation split, never test.
 - **Window** = a DRIFT session (`sessionize_host`, τ fitted per host on the fit window only). Windows with fewer than 2 tagged events are skipped and counted. The appendix sweeps fixed windows of 8, 16 and 32 tagged events.
-- **U** stays DRIFT's scorer: the JSD between a window's smoothed edge distribution and the role-r fit-window mean, over the same fixed edge list.
+- **U** is DRIFT's scorer (prior work): the JSD between a window's smoothed edge distribution and the pooled baseline-fit mean (or the role-r mean when role baselines are used), over the same fixed edge list.
 - **Uni** (likelihood ratio with a uniform P_adv) separates the scorer from the prior: R − Uni is reported as the CTI effect, Uni − U as the scorer effect.
 
 Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the projected P_adv on transitions with deviation above threshold. Keep whichever wins on validation. Report the other in the appendix.
@@ -207,7 +206,7 @@ Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the proj
 
 ## 7. Paper tables and figures (the agents produce exactly these)
 
-- **T1** Data summary: corpus hosts/roles/segments, events, telemetry sources present, injected chains per actor, eval-sequence source per actor (plan vs. report-split), steps visible/partial/dropped per actor, prior-doc count per actor, ATLASv2 splits, mapper coverage and reachable tactic set K under both the BRiMS and the extended mapper
+- **T1** Data summary: corpus hosts (and roles where documented), events, telemetry sources present, injected chains per actor, eval-sequence source per actor (plan vs. report-split), steps visible/partial/dropped per actor, prior-doc count per actor, ATLASv2 splits, mapper coverage and reachable tactic set K under both the BRiMS and the extended mapper
 - **T7** Synthetic vs. real APT29 (OTRF) validation, see §2.3b. OTRF is the primary public real-execution benchmark
 - **T8** Vantage ablation (Sysmon-only vs. Sysmon+Zeek), per actor: plan steps visible (count and %), AUPRC and TTD under U and R-S, with paired test. Headline sentence: "network vantage recovers X% of steps endpoint telemetry misses and changes CTI-conditioned AUPRC by Y."
 - **T2** Transition recovery: rows {B-F, B-S, R-F, R-S, ATTK}, cols {edge P, R, F1, JSD, hallucination rate}, one block per actor
@@ -228,9 +227,9 @@ Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the proj
 **Relationship to DRIFT**
 - W2 lives in its own repo. No W2 code is committed to DRIFT.
 - The exact DRIFT commit used for BRiMS is tagged `brims-2026` (`3517424e71a5ffb6f1d9be074f6a82b9e45e3f45`). W2 pins it as the git submodule `third_party/DRIFT`, not as a pip dependency. DRIFT has no package metadata and is never modified, not even to add packaging. `ctit/adapters/drift.py` puts DRIFT's packages on `sys.path` and refuses to load unless the submodule HEAD is that commit and its working tree is clean. DRIFT's `requirements.txt` defines the shared dependency pins.
-- Import from DRIFT only what W2 needs: preprocessing, the Sysmon tactic mapper, and role-baseline fitting/scoring. Wrap these in `ctit/adapters/drift.py` so the rest of W2 never imports DRIFT directly. If the DRIFT pin changes later, only the submodule pointer and the adapter's pinned hash move.
+- Import from DRIFT only what W2 needs: preprocessing, the Sysmon tactic mapper, and baseline fitting/scoring. Wrap these in `ctit/adapters/drift.py` so the rest of W2 never imports DRIFT directly. If the DRIFT pin changes later, only the submodule pointer and the adapter's pinned hash move.
 - Do not modify DRIFT internals from W2. If a DRIFT function needs different behavior, subclass or wrap it in the adapter, and log the reason in `docs/SPEC_ISSUES.md`.
-- Regression check: `tests/test_drift_parity.py` reproduces one BRiMS baseline number through the adapter, so the U condition is provably the published method.
+- Regression check (**optional since 2026-10-26**): `tests/test_drift_parity.py` reproduces one BRiMS baseline number through the adapter. It needs the BRiMS range parquet and is run only if range data is ever used; otherwise it skips. U is described as a DRIFT-style detector from prior work, not as the published BRiMS method.
 
 ```
 third_party/DRIFT/        (git submodule @ brims-2026, read-only)
@@ -239,7 +238,7 @@ ctit/map/                (extended Sigma-based tactic mapper)  docs/MAPPER_POLIC
 ctit/cti/extract.py      ctit/cti/prior.py       ctit/score/lr.py
 ctit/inject/emulation.py ctit/inject/splice.py   ctit/eval/metrics.py
 prompts/extract_v1.txt    prompts/memory_v1.txt
-data/cti/manifest.csv     data/range/host_roles.csv
+data/cti/manifest.csv
 configs/w2_grid.yaml      scripts/check_leakage.py scripts/make_tables.py
 results/<run_id>/{config.yaml, metrics.json, calls.jsonl}
 ```
@@ -263,21 +262,20 @@ results/<run_id>/{config.yaml, metrics.json, calls.jsonl}
 | 16–18 Nov | Revision, AAAI-27 formatting, page check (target ~7 pp + refs) | Compiles clean |
 | 19 Nov | Submit | — |
 
-**Cut order if behind (drop first → last):** DPRK stretch → appendix sweeps → secondary Security/PowerShell telemetry run → benign ICS-protocol baseline → Zeek vantage ablation T8 (main results stay Sysmon-only) → noisy variant → ~4B size-curve model → ATLASv2 → OTRF validation → Sandworm (fall back to a 3×3 matrix and say so). Never cut: leakage control, visibility filter, no-report baseline, open-weight run, ATTK baseline, the Russia/China/Iran matrix.
+**Cut order if behind (drop first → last):** DPRK stretch → appendix sweeps → secondary Security/PowerShell telemetry run → Zeek vantage ablation T8 (main results stay Sysmon-only) → noisy variant → ~4B size-curve model → ATLASv2 → OTRF validation → Sandworm (fall back to a 3×3 matrix and say so). Never cut: leakage control, visibility filter, no-report baseline, open-weight run, ATTK baseline, the Russia/China/Iran matrix.
 
 ---
 
 ## 9b. Reproducibility package (release with the paper)
 
-Goal: everything except raw range telemetry is public and runnable.
-- **Public track:** the full pipeline runs end-to-end on public data only (ATLASv2 + OTRF APT29 + CTID/attackevals emulation plans) via `configs/w2_public.yaml`. Build and test against this config first, then switch the data root to the range for final runs.
+Goal: everything is public and runnable; the paper uses open data only.
+- **Public track:** the full pipeline runs end-to-end on public data only (ATLASv2 + OTRF APT29 + CTID/attackevals emulation plans) via `configs/w2_public.yaml`. This is the only track.
 - **Released artifacts:** code; prompts; CTI manifest (URLs + hashes, not report text); extracted priors from F and S per actor; no-report priors; visibility CSVs; emulation-derived tactic sequences; `zeek_rules.yaml`; all `results/` configs and metrics; LLM call logs.
-- **Range data:** raw telemetry is not released. If release-approved, publish aggregated role-level tactic transition counts (no host identifiers or timestamps) so the role baselines can be reproduced.
-- Paper states plainly which tables reproduce fully from public data (T2, T5 extraction, T6, T7) and which depend on the range corpus.
+- Every table reproduces from public data.
 
 ## 10. Framing notes for the write-up
 
-- Fit: AICS "AI in cyber security" (threat detection, tools and metrics, critical infrastructure only if §2.2 supports it).
+- Fit: AICS "AI in cyber security" (threat detection, tools and metrics). No critical-infrastructure claim.
 - Special theme: offensive knowledge (attacker-behavior descriptions) repurposed as defensive priors, and small-model sufficiency (T5).
 - Related work: Khanna, Raff, Krasser et al., "Cybersecurity Detection Classification with Reasoning-enabled Language Models" (arXiv 2607.28460); the BRiMS DRIFT paper; CTI-to-ATT&CK extraction (TRAM-style mappers, LLM CTI extraction); ATLAS/ATLASv2; provenance/HIDS hunting.
 - Limitations to state: frontier-model memorization of public APT29 material (bounded by B); first-order Markov assumption; tactic-mapper coverage; ATLASv2 not actor-attributed; synthetic injection vs. live intrusions.

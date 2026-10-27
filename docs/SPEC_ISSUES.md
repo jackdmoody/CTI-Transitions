@@ -83,3 +83,9 @@ Spec §2, §4, §7 and §8 and CLAUDE.md are updated.
 - **menuPass:** keep the CTID plan (15 Windows steps). The ATT&CK Evals 2024 plan has 96 technique rows over 9 steps, but it is markdown only: no plan tactic labels and no per-row commands. Using it would need a table parser, tactics from ATT&CK technique lookups, and visibility drafts with no commands.
 - **Sandworm:** keep the CTID plan (15 Windows steps, steps 16–19).
 - **Turla (ATT&CK Evals 2023): not used.** Its YAML is operator-side (every ability runs from the attacker's Linux host, with `x` placeholders for tactic and technique), and its scenario markdown has no per-step technique IDs. Ground truth would need hand conversion (a §1 human gate).
+
+## 2026-10-26: reframing — evaluation of CTI priors, open data only (§0, §2.1, §3, §5, §8, §9b, §10; CLAUDE.md), decided by Jack
+- **A1.** The paper is an evaluation of LLM-compiled CTI as priors for sequence-based hunting, not a DRIFT extension. Thesis and H1–H4 are unchanged in substance. U is "an unconditioned transition-based anomaly detector (DRIFT-style, from prior work)" (§0, §3).
+- **A2.** A pooled benign baseline (P_ben, all baseline-fit hosts) is the default; role-indexed baselines are optional (§2.1, §5). BRiMS parity (WP1) is optional, run only if range data is ever used. "U is provably the published method" is removed from §8, and CLAUDE.md no longer requires parity.
+- **A3.** Range data is out of scope; open data only (§2.1, §9b). The critical-infrastructure framing is removed: IT/OT segment labels, the CI framing check, ICS Zeek logs and rules, and the benign ICS baseline (§2.1, §2.2, §2.3, §9 cut order, §10). Zeek/T8 stays optional, for corpora that ship Zeek logs (OpTC does).
+- WORKPLAN: WP1 parity and WP12 (range ingest) are optional.

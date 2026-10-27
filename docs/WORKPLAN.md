@@ -1,5 +1,7 @@
 # Work plan (approved 2026-10-24)
 
+**2026-10-26 (Jack):** range data is out of scope; open data only. WP1 BRiMS parity and WP12 (range ingest) are optional, run only if range data is ever used. Baselines are pooled by default.
+
 Dependency order. One WP per session; each WP ends with its acceptance check passing, its tests passing, and a `W2/<WP>: …` commit. The public track (configs/w2_public.yaml) comes before any range data.
 
 | WP | Scope | Acceptance check | Depends on |
