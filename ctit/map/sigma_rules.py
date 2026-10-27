@@ -1,6 +1,7 @@
 """Compile SigmaHQ Windows rules to SQLite queries with tactics (spec §2.5).
 
-    python -m ctit.map.sigma_rules   # writes ctit/map/compiled_rules.jsonl (committed = frozen)
+    python -m ctit.map.sigma_rules             # writes ctit/map/compiled_rules.jsonl (committed = frozen)
+    python -m ctit.map.sigma_rules --hunting   # writes compiled_rules_hunting.jsonl (v3h candidate)
 
 Rule selection and the tactic policy are documented in docs/MAPPER_POLICY.md.
 """
@@ -26,6 +27,9 @@ SIGMA_TAG = "r2026-07-01"
 SIGMA_COMMIT = "552f3fee420ef232a8e5790c4fae591847e32347"
 RULES_DIR = SIGMA_ROOT / "rules" / "windows"  # not rules-emerging-threats / -threat-hunting / -dfir
 COMPILED = Path(__file__).with_name("compiled_rules.jsonl")
+# Candidate v3h (SPEC_ISSUES 2026-10-26, Part C): rules-threat-hunting/windows, same release.
+HUNTING_DIR = SIGMA_ROOT / "rules-threat-hunting" / "windows"
+COMPILED_HUNTING = Path(__file__).with_name("compiled_rules_hunting.jsonl")
 MAPPER_VERSION = 2  # v1 (714f999): Sysmon EID 1 only; v2: process_creation also on Security 4688
 
 SYSMON_CATEGORIES = {
@@ -88,7 +92,7 @@ def select(rule) -> str | None:
     return None
 
 
-def compile_rules() -> tuple[list[dict], Counter]:
+def compile_rules(rules_dir: Path = RULES_DIR) -> tuple[list[dict], Counter]:
     _sigma_commit()
     backend = sqliteBackend(sysmon_pipeline() + windows_logsource_pipeline())
     # v2: process_creation rules also run on Security 4688, with pySigma's own audit mapping
@@ -96,7 +100,7 @@ def compile_rules() -> tuple[list[dict], Counter]:
     # through it; its 4657 registry items are not used.
     audit_backend = sqliteBackend(windows_audit_pipeline() + windows_logsource_pipeline())
     compiled, skipped = [], Counter()
-    for path in sorted(RULES_DIR.rglob("*.yml")):
+    for path in sorted(rules_dir.rglob("*.yml")):
         try:
             coll = SigmaCollection.from_yaml(path.read_text())
         except Exception as e:  # noqa: BLE001 - record and move on
@@ -146,12 +150,14 @@ def load_compiled(path: Path = COMPILED) -> list[dict]:
 
 
 def main() -> int:
-    compiled, skipped = compile_rules()
-    with COMPILED.open("w") as f:
+    hunting = "--hunting" in sys.argv[1:]
+    compiled, skipped = compile_rules(HUNTING_DIR if hunting else RULES_DIR)
+    out = COMPILED_HUNTING if hunting else COMPILED
+    with out.open("w") as f:
         for r in compiled:
             f.write(json.dumps(r, sort_keys=True) + "\n")
-    print(f"mapper v{MAPPER_VERSION}: compiled {len(compiled)} queries "
-          f"({len({r['id'] for r in compiled})} rules) -> {COMPILED}")
+    print(f"{'hunting' if hunting else f'mapper v{MAPPER_VERSION}'}: compiled {len(compiled)} queries "
+          f"({len({r['id'] for r in compiled})} rules) -> {out}")
     print("variants:", dict(Counter(r["variant"] for r in compiled)))
     print("tactic provenance:", dict(Counter(r["tactic_provenance"] for r in compiled)))
     print("skipped:", dict(skipped.most_common()))

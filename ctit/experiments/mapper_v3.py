@@ -136,7 +136,10 @@ def step_metrics(tagged: pd.DataFrame, weight: pd.Series, keep: set, by_id: dict
 
 
 def run(config: dict, calls=None) -> dict:
-    rules = load_compiled()
+    # Base = frozen v2 queries, plus extra compiled sets for a candidate (v3h: threat-hunting).
+    rules = load_compiled() + [r for p in config.get("extra_compiled", []) for r in load_compiled(REPO_ROOT / p)]
+    tagname = config.get("cache_tag", "")
+    rules_out = REPO_ROOT / config.get("rules_out", "ctit/map/rules_v3.json")
     by_id = {(r["id"], r["variant"]): r for r in rules}
     title = {r["id"]: r["title"] for r in rules}
     s0 = set(by_id)
@@ -158,9 +161,9 @@ def run(config: dict, calls=None) -> dict:
     split = optc_split.load_split()
     hosts = sorted(random.Random(config["sample_seed"]).sample(split["fit"], config["sample_hosts"]))
     sample, sample_stats = optc_sample(hosts, config["sample_day"])
-    t_opt = _cached_tag(f"optc_fit_{config['sample_day']}_{config['sample_seed']}_{len(hosts)}", sample, rules)
+    t_opt = _cached_tag(f"{tagname}optc_fit_{config['sample_day']}_{config['sample_seed']}_{len(hosts)}", sample, rules)
     w_opt = sample["_w"].astype(float).reset_index(drop=True)
-    rec_cache = CACHE / "recordings.tagged.parquet"
+    rec_cache = CACHE / f"{tagname}recordings.tagged.parquet"
     if rec_cache.exists():
         t_rec = pd.read_parquet(rec_cache)
     else:
@@ -215,11 +218,12 @@ def run(config: dict, calls=None) -> dict:
             "optc": step_metrics(t_opt, w_opt, keep, by_id, title),
             "recordings": step_metrics(t_rec, w_rec, keep, by_id, title),
         }
-    if config.get("freeze") and not v3.RULES_V3.exists():
-        v3.RULES_V3.write_text(json.dumps({
-            "version": v3.MAPPER_VERSION, "base": "ctit/map/compiled_rules.jsonl (v2, 7d36465)",
+    if config.get("freeze") and not rules_out.exists():
+        rules_out.write_text(json.dumps({
+            "version": config.get("version", v3.MAPPER_VERSION),
+            "base": ["ctit/map/compiled_rules.jsonl (v2, 7d36465)"] + config.get("extra_compiled", []),
             "sample": out["sample"], "dropped": out["dropped"],
             "keep": [{"id": i, "variant": v, "title": by_id[(i, v)]["title"]} for i, v in sorted(sc3)],
         }, indent=1) + "\n")
-        out["frozen"] = str(v3.RULES_V3.relative_to(REPO_ROOT))
+        out["frozen"] = str(rules_out.relative_to(REPO_ROOT))
     return out

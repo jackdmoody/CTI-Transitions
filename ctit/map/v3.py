@@ -21,6 +21,10 @@ from pathlib import Path
 from ctit.map.sigma_rules import load_compiled
 
 RULES_V3 = Path(__file__).with_name("rules_v3.json")
+# Candidate v3h (Part C, 2026-10-26): v3 filters over v2 + rules-threat-hunting. Not frozen
+# as the W2 mapper unless the pre-registered go/no-go passes.
+RULES_V3H = Path(__file__).with_name("rules_v3h.json")
+HUNTING = Path(__file__).with_name("compiled_rules_hunting.jsonl")
 MAPPER_VERSION = 3
 PATH_FIELDS = ("Image", "ParentImage", "SourceImage", "TargetImage", "NewProcessName", "ParentProcessName")
 REMOTE_THREAD = "rules/windows/create_remote_thread/"
@@ -73,3 +77,8 @@ def load_v3(path: Path = RULES_V3, base: list[dict] | None = None) -> list[dict]
     """The v3 rule list: v2 compiled queries whose (id, variant) is in the frozen keep list."""
     keep = {(k["id"], k["variant"]) for k in load_frozen(path)["keep"]}
     return [r for r in (base if base is not None else load_compiled()) if (r["id"], r["variant"]) in keep]
+
+
+def load_v3h(path: Path = RULES_V3H) -> list[dict]:
+    """Candidate v3h: the same filters over v2 + threat-hunting compiled queries."""
+    return load_v3(path, load_compiled() + load_compiled(HUNTING))

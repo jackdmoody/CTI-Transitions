@@ -1,0 +1,12 @@
+# Part C (SPEC_ISSUES 2026-10-26): candidate v3h = the B3 a/b/c filters over v2 plus SigmaHQ
+# rules-threat-hunting/windows from the same pinned release (r2026-07-01). Same fit-host sample.
+# Writes ctit/map/rules_v3h.json (a candidate; v3 stays the W2 mapper unless C5 passes).
+experiment: mapper_v3
+extra_compiled: [ctit/map/compiled_rules_hunting.jsonl]
+cache_tag: v3h_
+rules_out: ctit/map/rules_v3h.json
+version: 3h
+sample_day: '2019-09-22'
+sample_seed: 0
+sample_hosts: 50
+freeze: true
