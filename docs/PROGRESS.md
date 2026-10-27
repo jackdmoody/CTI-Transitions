@@ -58,3 +58,27 @@
 - **Under the spec's window (DRIFT session, ≥2 tagged):** no corpus reaches 5,000 scorable benign windows; only OpTC reaches 500 (2,883 day-long sessions).
 - **Recommendation (Jack decides):** OpTC primary with three fixes; ATLASv2 for realism; no BOTS. A proposed SPEC_ISSUES entry on the window definition is in CORPUS_CHECK (not filed).
 - Data written only under `data/bots/`, `data/optc_check/`. External OpTC data untouched.
+
+## 2026-10-26: reframing, OpTC corpus, mapper v3, Track 2 go/no-go, extraction build
+- **Reframing (docs, `3b81f46`):** the paper evaluates LLM-compiled CTI as hunting priors. The baseline is pooled. Open data only.
+- **OpTC corpus:**
+  - 446 clean hosts; host split 223 / 67 / 156 (`configs/optc_split.yaml`).
+  - Red-team targets: `configs/optc_redteam.yaml`.
+  - Converter restores bare images where it can; process creates can't be restored.
+- **Mapper v3:** frozen (`e3e96e8`). The OpTC fit-sample background collapses to K = {DE} at 3.0e-6. Signatures and gate were rerun under v3.
+- **B5 counts:**
+  - OpTC test: 3,912 windows, so Det@0.1%FPR is dropped.
+  - ATLASv2: 5 windows, so ATLASv2 is dropped.
+- **Track 2 (C):**
+  - Candidate v3h (threat-hunting rules) gives K = {Exec, DE} at 2.4e-5.
+  - Visible transitions are unchanged: 27 / 3 / 3 / 1.
+  - Pre-registered C5 failed, so the spec says "hunting = case study". Extraction leads.
+- **Extraction (WP6 build, `93736d0`):**
+  - Built `ctit/cti/extract.py`, covering both F and S, with replay tests.
+  - Prompt drafts are in `prompts/` and the REVIEW_QUEUE gate. They are uncommitted, and no extraction has been run.
+- **A2:** `data/optc_check/groundtruth/OpTCRedTeamGroundTruth.pdf` and its text are in place, for the oracle prior.
+- **Open:**
+  - The CTI manifest file wasn't found locally, so Part B (fetch) hasn't run.
+  - F can't take temperature 0 (SPEC_ISSUES).
+  - B6 raw eCAR download is on hold.
+  - The rules behind the test-host PrivEsc/Discovery tags aren't broken down yet.

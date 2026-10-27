@@ -25,6 +25,8 @@
 
 Report negative results honestly. If H2 fails, that is a finding about memorization and still goes in the paper.
 
+**Hunting = case study (2026-10-26, pre-registered rule C5 applied; SPEC_ISSUES).** The OpTC go/no-go failed under the candidate mapper v3h: on the 50-host fit sample benign K = 2 (needed ≥ 4) and benign tag rate 2.4e-5 (needed ≥ 1e-4), and visible transitions were APT29 27, OilRig 3, menuPass 3, Sandworm 1 (needed ≥ 10 for every actor). So the paper **leads with the extraction results**: T2 (transition recovery), T5 (small-model sufficiency and cost), H2, H2b and H3. **Hunting (H1, H4) is a case study**, shown on the OTRF APT29 recording (T7) and the OpTC red team (T9). The full injected-sequence OpTC hunting grid (T3, T4 as a 4×4 matrix, T8) is not run as a headline result; any hunting numbers are reported as case-study evidence with this scope stated.
+
 ---
 
 ## 1. Leakage rule (non-negotiable)

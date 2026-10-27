@@ -162,3 +162,31 @@ out = subprocess.run(["python", "-m", "ctit.run", "--config", "configs/wp5_gate.
 m = json.load(open(f"{out}/metrics.json"))
 print(m["jsd"]["alpha=0.0"]["visible_extended"]["n_transitions"])
 ```
+
+## 7. Added 2026-10-26
+
+**Mapper v3 and the v3h candidate** (`ctit/map/v3.py`):
+- `load_v3() -> list[dict]` returns the frozen v3 queries (`rules_v3.json`); `load_v3h()` returns the candidate.
+- Pass the result to `extended.tag(df, rules)`. Called without rules, `tag()` is still v2.
+- Helpers: `referenced_fields(where)`, `accepted_sources(where)`, `evaluable(rule, fields)`.
+
+**OpTC** (`ctit/ingest/optc.py`):
+- `to_frame(df, normalize=True, carry=(), restore_bare=False, stats=None, dmap=None)`.
+- `unique_rows(path, restore_bare=True, event_ids=None, stats=None) -> (frame with weight _w, drive map)`. Rows are de-duplicated without timestamps, which is exact for tagging.
+
+**OpTC split and red team** (`ctit/eval/`):
+- `optc_split`: `population()`, `redteam_hosts()`, `load_split() -> {fit, validation, test}`, `host_id(name)`.
+- `optc_redteam`: `load_labels()`, `label_events(events, labels)` (needs `ProcessId`), `windows(tagged, malicious_ts=None, size=8)`, `inventory()`.
+
+**Extraction** (`ctit/cti/extract.py`):
+- `chunk(text, tokens=2000, overlap=200)`.
+- `extract_report(model, template, text, doc_id, calls)` returns `[ChunkResult]`.
+- `memory_transitions(model, template, actor, calls)`.
+- `build_prior(results, alpha=0.5, require_evidence=False)` returns `{tactics, matrix, counts, meta}`.
+- Models: `AnthropicModel(pin)` (F) or `ctit.llm.ollama.OllamaModel(slot)` (S). Both expose `chat(prompt, calls, system=None)`.
+
+**Experiments** (`python -m ctit.run --config ...`):
+- `configs/mapper_v3.yaml` and `configs/mapper_v3h.yaml`: per-step K and tag rate.
+- `configs/benign_windows.yaml`: B5 window counts.
+- `configs/wp5_gate_v3.yaml` and `configs/wp5_gate_v3h.yaml`: the gate under each mapper.
+- `configs/redteam_day.yaml`: the C4 diagnostic.

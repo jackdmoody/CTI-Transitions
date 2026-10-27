@@ -166,3 +166,62 @@ Alternatives:
 - The BRiMS-mapper collapse (JSD ≈ 0) holds for all four actors.
 
 **Still needed from you:** an H4 decision once visibility is settled (the method choice above), and the DPRK stretch decision.
+
+## 2026-10-26: GATE: extraction prompts v1 (D2), approve before any extraction run
+Drafts, uncommitted, in `prompts/`. Code: `ctit/cti/extract.py` (`93736d0`). Placeholders: `<<TACTICS>>` = the 14 tactic names as a bulleted list; `<<TEXT>>` = one ~2k-token chunk (200 overlap); `<<ACTOR>>` = actor name (memory prompt only).
+Design choices to check:
+- The report prompt does **not** name the actor, so report-conditioned priors can't lean on the model's memory of that actor via the name (H2). The memory prompt must name it.
+- No system prompt; one user message per chunk. JSON list only; ```json fences are tolerated.
+- Evidence spans are checked against the chunk (whitespace-collapsed substring). Hallucinated spans are counted; `require_evidence` (default False, spec-literal) would drop them from the counts. Your call.
+- Counts are unweighted (confidence is recorded, not used), per spec §4.4.
+- F: Opus 5.5 rejects temperature, so no sampling parameters are sent and the spec's 5-sample rule applies (SPEC_ISSUES 2026-10-26). Effort to pin: proposed `high`.
+
+### prompts/extract_v1.txt
+```
+You are reading an excerpt from a cyber threat intelligence report. Extract the order in which the adversary moved between MITRE ATT&CK Enterprise tactics, as the excerpt describes it.
+
+A transition is a pair (from_tactic, to_tactic): the excerpt describes the adversary doing something in from_tactic and then, next in the operation, doing something in to_tactic. Use only what the excerpt states or directly implies about ordering. Do not add steps from your own knowledge of the adversary, of the malware, or of typical intrusions. If the excerpt describes no ordered behaviour, return [].
+
+Use only these tactic names, spelled exactly as written:
+<<TACTICS>>
+
+Return a JSON list and nothing else. Each element is an object with these keys:
+- "from_tactic": one tactic name from the list above
+- "to_tactic": one tactic name from the list above
+- "technique_from": the ATT&CK technique ID for the earlier behaviour if the excerpt makes it clear (for example "T1059.001"), otherwise null
+- "technique_to": the same for the later behaviour, otherwise null
+- "evidence_span": a short passage copied verbatim from the excerpt that supports this transition
+- "confidence": a number from 0 to 1 for how clearly the excerpt supports this ordering
+
+Report each distinct transition the excerpt supports once per place it is described.
+
+Excerpt:
+<<TEXT>>
+```
+
+### prompts/memory_v1.txt
+```
+From your own knowledge, describe the order in which the threat actor <<ACTOR>> typically moves between MITRE ATT&CK Enterprise tactics during its intrusions. No report is provided.
+
+A transition is a pair (from_tactic, to_tactic): the actor does something in from_tactic and then, next in the operation, does something in to_tactic. If you know nothing reliable about this actor's ordering, return [].
+
+Use only these tactic names, spelled exactly as written:
+<<TACTICS>>
+
+Return a JSON list and nothing else. Each element is an object with these keys:
+- "from_tactic": one tactic name from the list above
+- "to_tactic": one tactic name from the list above
+- "technique_from": the ATT&CK technique ID for the earlier behaviour if you know it (for example "T1059.001"), otherwise null
+- "technique_to": the same for the later behaviour, otherwise null
+- "evidence_span": one sentence on what you recall that supports this transition
+- "confidence": a number from 0 to 1 for how sure you are of this ordering
+
+List each distinct transition you believe the actor commonly makes once.
+```
+
+## 2026-10-26: v3 leaves the OpTC benign background nearly empty, and C5 failed (review)
+- Under v3 the 50-host fit sample has K = {Defense Evasion} at 3.0e-6; v3h adds threat-hunting rules and reaches K = {Execution, Defense Evasion} at 2.4e-5. Almost all v2 benign tags were eCAR artifacts (bare image names, remote threads).
+- Over 4 days, the 156 test hosts show K = 5 (PrivEsc 17,694, Discovery 8,126 tagged events), which the 22 Sep sample didn't. Which rules produce these isn't broken down yet.
+- Visible transitions under v3 and v3h: APT29 27, OilRig 3, menuPass 3, Sandworm 1. These are process-creation drafts; the signature library is not wired into the gate.
+- C5 failed on all three criteria, so the spec now says "hunting = case study". Please confirm.
+- B6 raw eCAR (≈17.5 GB) is on hold per your instruction. The case-study framing still uses T9, so it is still needed if T9 stays.

@@ -94,3 +94,51 @@ Spec §2, §4, §7 and §8 and CLAUDE.md are updated.
 - **Candidate mapper v3h** = the v3 filters (a: no informational; b: shared field subset; c: path-unevaluable and `create_remote_thread` excluded, c2 decided on fit hosts) applied to v2 plus SigmaHQ `rules-threat-hunting/windows` from the same pinned release `r2026-07-01` (105 rules, 162 queries; 6 actor/software-tagged rules excluded by the leakage policy). `rules-emerging-threats` stays excluded. Compiled: `ctit/map/compiled_rules_hunting.jsonl`; config `configs/mapper_v3h.yaml`.
 - **Rule (C5):** proceed with the full OpTC hunting evaluation under v3h only if, on the 50-host OpTC fit sample, benign K ≥ 4 **and** benign tag rate ≥ 1e-4, **and** every core actor has ≥ 10 visible transitions in the WP5 gate under v3h. Otherwise the spec says "hunting = case study": the paper leads with extraction (T2, T5, H2, H2b, H3), and hunting is shown on the OTRF APT29 recording and the OpTC red team.
 - Analysis only for this decision: no scoring and no detection metrics are computed.
+
+## 2026-10-26: corpus decision and pre-scoring changes (§2.1, §2.5, §5, §6, §7, §9, §10), decided by Jack (Part B of 26 Oct)
+- **B1, corpus:** DARPA OpTC is primary; BOTS is out. Host count resolved: OpTC ships 475 hosts on 19–25 Sep; the STRATA-E conversion has 473 (SysClient0213 and 0222 have zero-event files on 21 Sep). 27 of the 29 SysClient red-team targets are among the 473, so clean = 446. The other 2 (0005, 0010) are in the 0001–0025 block that OpTC ships only on 23–25 Sep (no benign days at all). DC1 is also a labelled target with no SysClient file. Red-team days in the local conversion: 23 Sep has all 29 targets; 24 Sep 17 of 29 (the STRATA-E fetch died on 24 Sep at host 0503, whose file holds 0501 records); 25 Sep none.
+- **B2, split:** by host, seed 20261026, drawn once (`configs/optc_split.yaml`, `scripts/draw_optc_split.py` refuses to redraw): fit 223, validation 67, test 156.
+- **B3, mapper v3** (frozen `e3e96e8`; run `20261027T021514Z-mapper_v3-ca50242`; OpTC numbers on 50 fit hosts, 22 Sep, 143.7M Sysmon-mapped events):
+
+  | step | queries dropped | queries left | OpTC Sysmon tag rate | OpTC K |
+  |---|---|---|---|---|
+  | v2 | — | 3,174 | 1.05e-3 (Security 9.1%, all "User Logoff Event") | 5: ResDev, Exec, PrivEsc, DE, Impact |
+  | a) no informational (8 rules incl. "User Logoff Event") | 9 | 3,165 | 1.05e-3 (Security 0) | 4: ResDev, Exec, PrivEsc, DE |
+  | b) shared subset (719 shared; 2 of them informational) | 2,448 | 717 | 1.04e-3 | 3: ResDev, PrivEsc, DE |
+  | c1) restore images (data only; 15,230 events restored, no tag changed) | 0 | 717 | 1.04e-3 | 3 |
+  | c2) path-unevaluable (Execution Of Non-Existing File; Rare Remote Thread Creation By Uncommon Source Image; 3 rules with 1–3 hits) | 5 | 712 | 3.0e-6 | 1: DE |
+  | c3) create_remote_thread category | 5 | 707 | 3.0e-6 | 1: DE |
+
+  Bare process-create images can't be restored: on raw eCAR samples the new process's GUID and pid never carry a path (0/2,020 and 2/1,799), and STRATA-E's `image_resolved` on EID 1 is the parent's image (not used). Recordings: K 13 → 11 (Collection, Exfiltration lost). Signatures rebuilt under v3: 77 techniques with an extended signature (v2: 89), 167 recordings; the v2 library is kept as `tactic_signatures_v2.parquet`. Gate under v3 (`20261027T021709Z-wp5_gate-e3e96e8`): visible transitions APT29 27, OilRig 3, menuPass 3, Sandworm 1 (v2: 68/14/7/5); pairwise JSD at α=0.5 0.036–0.046 for APT29 pairs, 0.003–0.005 among the others.
+- **B4, window:** primary = 8 consecutive tagged events per host; sessions to the appendix (§5).
+- **B5, pre-registered counts** (run `20261027T021709Z-benign_windows-e3e96e8`, v3): OpTC test hosts 3,912 windows (3,636 if windows can't span days) → **< 5,000, so Det@0.1%FPR is dropped**; hunting metrics are Det@1%FPR, AUPRC, P@k. ATLASv2 5 windows → **< 500, so ATLASv2 is dropped.** Over all 4 days the 156 test hosts carry 31,741 tagged events in K = 5 (PrivEsc 17,694, Discovery 8,126, DE 5,893, Impact 19, Exec 9), more than the 22 Sep fit sample showed; the rules behind them are not yet broken down (the run's `top_rules` field had a summing bug, fixed in `93736d0`).
+- **B6, real-attack set (T9):** red-team hosts never in a baseline; test set = their benign days + 23–25 Sep, window labels from the Inria corrected-release labels (`_updated` = `_new`; "Infinity" end = still running). Oracle prior from `OpTCRedTeamGroundTruth.pdf` (downloaded, sha256 5986d23b…, FiveDirections/OpTC-data commit b2673729), reported in its own row, never used for tuning. **Blocked:** event labels need each event's pid, which the STRATA-E conversion dropped; 24/25 Sep are incomplete. Needs raw eCAR for the 29 targets on 23–25 Sep (≈17.5 GB); held by Jack pending C5. Code: `ctit/eval/optc_redteam.py`.
+- **B7:** limitations added (scripted OpTC benign activity; Sysmon-recorded signatures vs eCAR background).
+- **B8:** cut order: truncated/noisy variants → ATLASv2 → T9 (last of these three).
+
+## 2026-10-26: F cannot run at temperature 0 (§3), needs Jack
+**Issue.** §3 says "Temperature 0 where supported; else 5 samples and report mean ± sd." `configs/models.yaml` pins F = `claude-opus-5-5` with `temperature: 0`, but Claude Opus 5.5 rejects sampling parameters (400) and can't disable thinking. So temperature 0 is not supported for F, and the spec's fallback (5 samples, mean ± sd) applies: 5× the F extraction cost.
+**Proposed fix.** Drop `temperature` from the F pin, pin `effort` explicitly (proposed `high`), and run 5 samples for F. `ctit/cti/extract.py` already sends no sampling parameters. No server-side refusal fallback is used: a fallback model answering would contaminate F; refusals are logged and skipped.
+
+## 2026-10-26: CTI manifest file not found (Part B of 27 Oct request)
+No `manifest_candidates*.csv` exists locally, so `data/cti/manifest.csv` is still header-only and nothing was fetched. Needs the file from Jack.
+
+## 2026-10-26: Track 2 results (C2–C5), analysis only; C5 = no-go → "hunting = case study" written into §0
+- **C2** (50 fit hosts, 22 Sep; runs `20261027T021514Z-mapper_v3-ca50242`, `20261027T023109Z-mapper_v3-33c4d7a`):
+  - **v3:** 707 queries; K = {DE}; tag rate 3.0e-6; DE 433 events.
+  - **v3h:** 736 queries (29 threat-hunting queries survive the a/b/c filters; c2 also drops "Remote Thread Created In Shell Application"); K = {Exec, DE}; tag rate 2.4e-5; Exec 2,960 events ("Suspicious New Instance Of An Office COM Object"), DE 436.
+- **C3:** v3h signatures (`data/eval/tactic_signatures_v3h.parquet`) have 77 techniques and 488 rows (v3: 77, 473). Gate under v3h (`20261027T023611Z-wp5_gate-a44d741`): visible transitions APT29 27, OilRig 3, menuPass 3, Sandworm 1, the same as v3. The gate's visible sequences come from process-creation drafts, and no threat-hunting rule changed them.
+- **C4** (23 Sep, 27 red-team targets vs 27 clean hosts drawn with seed 0; run `20261027T023611Z-redteam_day-a44d741`):
+
+  | mapper | group | tag rate | K | tagged events |
+  |---|---|---|---|---|
+  | v3 | red team | 6.6e-5 | Exec, PrivEsc, DE, Discovery | 4,896 |
+  | v3 | control | 4.1e-6 | DE | 304 |
+  | v3h | red team | 7.9e-5 | + Credential Access | 5,836 |
+  | v3h | control | 1.7e-5 | Exec, DE | 1,284 |
+
+  - **The mapper does see the intrusion:** about 16× the control rate and 4 tactics against 1.
+  - **Driven by two rules:** "Process Creation Using Sysnative Folder" (PrivEsc, 3,108) and "Recon Command Output Piped To Findstr" (Discovery, 1,405).
+  - **Inside labelled processes' time intervals:** 201 tagged events (v3), 230 (v3h). This is time overlap only (no pid), so it is an upper bound.
+  - **Caveat:** the same two rule ids lead the B5 test-host benign counts (PrivEsc 17,694 and Discovery 8,126 over 19–22 Sep). Whether those are scripted benign activity on clean hosts is not yet determined.
+- **C5:** fails on every criterion (K 2 < 4; 2.4e-5 < 1e-4; three actors < 10 visible transitions). Applied as pre-registered: spec §0 now says "hunting = case study".
