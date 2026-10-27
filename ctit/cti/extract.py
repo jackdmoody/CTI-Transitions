@@ -145,7 +145,7 @@ class AnthropicModel:
             self._client = anthropic.Anthropic(api_key=anthropic_api_key(), max_retries=8)
         return self._client
 
-    def chat(self, prompt: str, calls=None, *, system: str | None = None) -> str:
+    def chat(self, prompt: str, calls=None, *, system: str | None = None, attempt: int = 1) -> str:
         import time
         opts = dict(self.pin.get("options", {}))
         kwargs = {"model": self.name, "max_tokens": int(opts.get("max_tokens", 16000)),
@@ -165,7 +165,7 @@ class AnthropicModel:
             calls.log(model=self.name, prompt=(system or "") + prompt, input_tokens=u.input_tokens,
                       output_tokens=u.output_tokens, latency_s=latency, cost_usd=cost,
                       stop_reason=resp.stop_reason, request_id=getattr(resp, "_request_id", None),
-                      options=opts)
+                      options=opts, attempt=attempt)
         if resp.stop_reason == "refusal":
             raise Refusal(str(getattr(resp, "stop_details", None)))
         return "".join(b.text for b in resp.content if b.type == "text")
@@ -188,10 +188,12 @@ class ChunkResult:
 
 
 def ask(model, prompt: str, calls=None, retries: int = 1) -> tuple[list[dict] | None, int, str]:
-    """-> (items or None, attempts, status). Retries a schema failure `retries` times."""
+    """-> (items or None, attempts, status). Retries a schema failure `retries` times. Each attempt
+    is passed to the model, so a caching wrapper stores it separately and a retry is a fresh call
+    (SPEC_ISSUES 2026-10-27: the cache used to replay the failed response)."""
     for attempt in range(1, retries + 2):
         try:
-            text = model.chat(prompt, calls)
+            text = model.chat(prompt, calls, attempt=attempt)
         except Refusal:
             return None, attempt, "refused"
         try:

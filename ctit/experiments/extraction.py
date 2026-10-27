@@ -45,8 +45,11 @@ class Cached:
         (self.dir / "KEY.txt").write_text(key)
         self.hits = 0
 
-    def chat(self, prompt: str, calls=None, *, system: str | None = None) -> str:
-        path = self.dir / f"{hashlib.sha256(((system or '') + prompt).encode()).hexdigest()}.json"
+    def chat(self, prompt: str, calls=None, *, system: str | None = None, attempt: int = 1) -> str:
+        # keyed on the attempt too, so a schema retry is a fresh call, not a replay of the failure;
+        # attempt 1 keeps the original file name
+        h = hashlib.sha256(((system or '') + prompt).encode()).hexdigest()
+        path = self.dir / (f"{h}.json" if attempt == 1 else f"{h}.a{attempt}.json")
         if path.exists():
             self.hits += 1
             rec = json.loads(path.read_text())
@@ -54,7 +57,7 @@ class Cached:
                 raise extract.Refusal(rec["refusal"])
             return rec["text"]
         try:
-            text = self.model.chat(prompt, calls, system=system)
+            text = self.model.chat(prompt, calls, system=system, attempt=attempt)
         except extract.Refusal as e:
             path.write_text(json.dumps({"refusal": str(e)}))
             raise

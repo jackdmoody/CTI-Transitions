@@ -15,7 +15,7 @@ class Replay:
     def __init__(self, name, out):
         self.name, self.out, self.n = name, out, 0
 
-    def chat(self, prompt, calls=None, *, system=None):
+    def chat(self, prompt, calls=None, *, system=None, attempt=1):
         self.n += 1
         if isinstance(self.out, Exception):
             raise self.out
@@ -54,3 +54,32 @@ def test_run_builds_one_prior_per_sample(tmp_path, monkeypatch):
     assert pri["B/APT29"]["s0"]["hallucinated_span_rate"] is None
     assert pri["R/APT29"]["s0"]["edges"] == 1 and "recovery" in pri["R/APT29"]["s0"]
     assert (tmp_path / "priors" / "run1" / "F" / "R_APT29_s0.json").exists()
+
+
+class Seq:
+    """Returns its responses in order: a fresh call gets the next one."""
+    name = "seq"
+
+    def __init__(self, out):
+        self.out, self.n = list(out), 0
+
+    def chat(self, prompt, calls=None, *, system=None, attempt=1):
+        self.n += 1
+        return self.out.pop(0)
+
+
+def test_schema_retry_through_cache_is_a_fresh_call(tmp_path):
+    m = Seq(["```json\n[", RESP])
+    c = extraction.Cached(m, "k", root=tmp_path)
+    items, attempts, status = extract.ask(c, "p")
+    assert status == "ok" and attempts == 2 and m.n == 2
+    # a second run replays both attempts from the cache without calling the model
+    items, attempts, status = extract.ask(extraction.Cached(m, "k", root=tmp_path), "p")
+    assert status == "ok" and attempts == 2 and m.n == 2
+
+
+def test_attempt_one_keeps_the_original_cache_file(tmp_path):
+    import hashlib
+    c = extraction.Cached(Replay("x", RESP), "k", root=tmp_path)
+    c.chat("p")
+    assert (c.dir / f"{hashlib.sha256(b'p').hexdigest()}.json").exists()

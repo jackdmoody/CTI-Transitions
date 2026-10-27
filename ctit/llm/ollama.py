@@ -57,7 +57,7 @@ class OllamaModel:
         if got != self.pin["weights_sha256"]:
             raise DigestMismatch(f"{self.pin['tag']}: local weights {got} != pinned {self.pin['weights_sha256']}")
 
-    def chat(self, prompt: str, calls=None, *, system: str | None = None) -> str:
+    def chat(self, prompt: str, calls=None, *, system: str | None = None, attempt: int = 1) -> str:
         opts = dict(self.options)
         think = opts.pop("think", None)
         body = {
@@ -78,5 +78,5 @@ class OllamaModel:
                       input_tokens=int(out.get("prompt_eval_count", 0)),
                       output_tokens=int(out.get("eval_count", 0)),
                       latency_s=latency, cost_usd=0.0,
-                      weights_sha256=self.pin["weights_sha256"], options=opts)
+                      weights_sha256=self.pin["weights_sha256"], options=opts, attempt=attempt)
         return out["message"]["content"]

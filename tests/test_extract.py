@@ -22,7 +22,7 @@ class Replay:
         self.responses = list(responses)
         self.prompts = []
 
-    def chat(self, prompt, calls=None, *, system=None):
+    def chat(self, prompt, calls=None, *, system=None, attempt=1):
         self.prompts.append(prompt)
         r = self.responses.pop(0)
         if isinstance(r, Exception):
