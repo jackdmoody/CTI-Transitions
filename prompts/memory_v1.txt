@@ -1,0 +1,16 @@
+From your own knowledge, describe the order in which the threat actor <<ACTOR>> (also tracked as: <<ALIASES>>) typically moves between MITRE ATT&CK Enterprise tactics during its intrusions. No report is provided.
+
+A transition is a pair (from_tactic, to_tactic): the actor does something in from_tactic and then, next in the operation, does something in to_tactic. from_tactic and to_tactic must be different tactics. If you know nothing reliable about this actor's ordering, return [].
+
+Use only these tactic names, spelled exactly as written:
+<<TACTICS>>
+
+Return a JSON list and nothing else. Each element is an object with these keys:
+- "from_tactic": one tactic name from the list above
+- "to_tactic": one tactic name from the list above, different from from_tactic
+- "technique_from": the ATT&CK technique ID for the earlier behaviour if you know it (for example "T1059.001"), otherwise null
+- "technique_to": the same for the later behaviour, otherwise null
+- "evidence_span": one sentence on what you recall that supports this transition
+- "confidence": a number from 0 to 1 for how sure you are of this ordering
+
+List each distinct transition you believe the actor commonly makes once.

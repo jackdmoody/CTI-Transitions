@@ -168,6 +168,7 @@ Alternatives:
 **Still needed from you:** an H4 decision once visibility is settled (the method choice above), and the DPRK stretch decision.
 
 ## 2026-10-26: GATE: extraction prompts v1 (D2), approve before any extraction run
+**Resolved 2026-10-27: approved with changes by Jack.** The committed `prompts/extract_v1.txt` (sha256 d86d55cb…) and `prompts/memory_v1.txt` (sha256 10572f81…) are Jack's text verbatim and supersede the drafts below. They are frozen from here on: any change goes through this queue.
 Drafts, uncommitted, in `prompts/`. Code: `ctit/cti/extract.py` (`93736d0`). Placeholders: `<<TACTICS>>` = the 14 tactic names as a bulleted list; `<<TEXT>>` = one ~2k-token chunk (200 overlap); `<<ACTOR>>` = actor name (memory prompt only).
 Design choices to check:
 - The report prompt does **not** name the actor, so report-conditioned priors can't lean on the model's memory of that actor via the name (H2). The memory prompt must name it.
