@@ -5,7 +5,7 @@
 experiment: wp5_gate
 mapper_version: 3
 mapper_report: results/20261024T153421Z-mapper_report-7d36465/metrics.json  # BRiMS K
-mapper_v3_report: MAPPER_V3_RUN/metrics.json
+mapper_v3_report: results/20261027T021514Z-mapper_v3-ca50242/metrics.json
 visibility_out: visibility_apt29_v3.csv
 actors: [APT29, menuPass, OilRig, Sandworm]
 k_scope: public_all
