@@ -1,0 +1,6 @@
+# B6 real-attack test set (spec §7 T9): 29 OpTC red-team hosts, benign days 19-22 Sep
+# (STRATA-E conversion) + attack days 23-25 Sep (raw eCAR re-converted with pid,
+# scripts/convert_optc_redteam.py), frozen mapper v3, windows of 8 tagged events, Inria
+# corrected-release process labels. Builds data/eval/optc_redteam_windows.parquet. No scoring.
+experiment: redteam_testset
+workers: 3
