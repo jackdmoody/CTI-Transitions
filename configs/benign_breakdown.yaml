@@ -1,0 +1,12 @@
+# C4 follow-up (SPEC_ISSUES 2026-10-27): benign Privilege Escalation and Discovery tags on the
+# OpTC test hosts, 19-22 Sep, by rule and day, under v3 and v3h. Analysis only: no scoring.
+# redteam_rules: the two rules that drive the 23 Sep red-team tags (C4,
+# results/20261027T023611Z-redteam_day-a44d741): "Process Creation Using Sysnative Folder"
+# and "Recon Command Output Piped To Findstr".
+experiment: benign_breakdown
+split: test
+mappers: [v3, v3h]
+tactics: [Privilege Escalation, Discovery]
+redteam_rules: [3c1b5fb0-c72f-45ba-abd1-4d4c353144ab, ccb5742c-c248-4982-8c5c-5571b9275ad3]
+top: 10
+workers: 6

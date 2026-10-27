@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 
 from ctit.calls import CallLogger
-from ctit.experiments import baseline_priors, benign_windows, drift_parity, mapper_report, mapper_v3, redteam_day, wp5_gate
+from ctit.experiments import baseline_priors, benign_breakdown, benign_windows, drift_parity, mapper_report, mapper_v3, redteam_day, wp5_gate
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RESULTS_ROOT = REPO_ROOT / "results"
@@ -30,6 +30,7 @@ EXPERIMENTS = {
     "wp5_gate": wp5_gate.run,
     "mapper_v3": mapper_v3.run,
     "benign_windows": benign_windows.run,
+    "benign_breakdown": benign_breakdown.run,
     "redteam_day": redteam_day.run,
 }
 
