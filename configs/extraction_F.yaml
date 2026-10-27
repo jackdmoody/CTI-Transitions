@@ -1,0 +1,12 @@
+# WP6 extraction (spec §3, §4), mode(s) below. Prompts v1 (approved 2026-10-27, frozen).
+# R = 23 prior reports (menuPass-P01 excluded), B = no-report per actor, oracle = OpTC red-team
+# ground-truth PDF text (T9 upper bound only; never used for tuning).
+experiment: extraction
+actors: [APT29, menuPass, OilRig, Sandworm]
+conditions: [R, B, oracle]
+oracle_text: data/optc_check/groundtruth/OpTCRedTeamGroundTruth.txt
+prompts: {report: extract_v1.txt, memory: memory_v1.txt}
+chunk: {tokens: 6000, overlap: 300}
+alpha: 0.5
+modes: [F]
+workers: {F: 4}

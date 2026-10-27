@@ -1,15 +1,22 @@
 """CTI -> tactic-transition prior (spec §4). One code path for F (Anthropic API) and S (Ollama).
 
-1. chunk(): ~2k tokens with 200 overlap. No tokenizer is pinned, so token counts are
-   approximated as characters / 4 and chunk edges snap to whitespace (deterministic).
+1. chunk(): ~6k tokens with 300 overlap, identical for F and S (2026-10-27). No tokenizer is
+   pinned, so token counts are approximated as characters / 4 and chunk edges snap to
+   whitespace (deterministic).
 2. The prompt template (prompts/extract_v1.txt) is filled with <<TACTICS>> and <<TEXT>>;
-   memory_v1.txt (no-report condition, §4.6) gets <<TACTICS>> and <<ACTOR>>.
-3. The response is parsed and validated with ctit.cti.schema (14 tactics only). A response
-   that isn't a JSON list of objects is retried once, then logged and skipped.
+   memory_v1.txt (no-report condition, §4.6) gets <<TACTICS>>, <<ACTOR>> and <<ALIASES>>
+   (configs/actor_aliases.yaml).
+3. The response is parsed and validated with ctit.cti.schema (14 tactics only, no
+   self-transitions). A response that isn't a JSON list of objects is retried once, then
+   logged and skipped.
 4. Evidence check (§4.5): an evidence_span must be a substring of the chunk it came from,
    after collapsing whitespace. Unsupported spans are counted (hallucinated-span rate) and,
    with require_evidence=True, left out of the counts.
-5. Aggregation: count matrix C over the 14 tactics, prior = row-normalized (C + alpha).
+5. Aggregation (2026-10-27): one count per (document, edge): an edge seen in several chunks
+   or places of one report counts once for that report, and a no-report sample is one
+   document. Prior = row-normalized (C + alpha), so each report weighs the same whatever
+   its length. The raw per-mention counts are kept as an appendix variant. One prior is
+   built per model sample; F and S-sampled report mean ± sd over their 5 samples.
 
 Models are anything with .name and .chat(prompt, calls, system=None) -> str. AnthropicModel
 wraps the pinned frontier model; ctit.llm.ollama.OllamaModel already has that shape.
@@ -18,6 +25,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -34,7 +42,10 @@ _WS = re.compile(r"\s+")
 
 # ----------------------------------------------------------------------------- chunking
 
-def chunk(text: str, tokens: int = 2000, overlap: int = 200,
+CHUNK_TOKENS, CHUNK_OVERLAP = 6000, 300
+
+
+def chunk(text: str, tokens: int = CHUNK_TOKENS, overlap: int = CHUNK_OVERLAP,
           chars_per_token: int = CHARS_PER_TOKEN) -> list[str]:
     size, step = tokens * chars_per_token, (tokens - overlap) * chars_per_token
     if len(text) <= size:
@@ -102,7 +113,7 @@ class AnthropicModel:
             import anthropic
 
             from ctit.env import anthropic_api_key
-            self._client = anthropic.Anthropic(api_key=anthropic_api_key())
+            self._client = anthropic.Anthropic(api_key=anthropic_api_key(), max_retries=8)
         return self._client
 
     def chat(self, prompt: str, calls=None, *, system: str | None = None) -> str:
@@ -178,24 +189,34 @@ def extract_report(model, template: str, text: str, doc_id: str, calls=None, **c
     return [extract_chunk(model, template, c, doc_id, i, calls) for i, c in enumerate(chunk(text, **chunk_kw))]
 
 
-def memory_transitions(model, template: str, actor: str, calls=None) -> ChunkResult:
-    """No-report condition (§4.6): one call, same output schema, no source text to check."""
-    items, attempts, status = ask(model, render(template, tactics=tactic_list(), actor=actor), calls)
-    res = ChunkResult(f"memory:{actor}", 0, status, attempts)
+def memory_transitions(model, template: str, actor: str, calls=None, aliases: list[str] = (),
+                       sample: int | None = None) -> ChunkResult:
+    """No-report condition (§4.6): one call per sample, same output schema, no source text to
+    check. Each sample is its own document for aggregation."""
+    prompt = render(template, tactics=tactic_list(), actor=actor, aliases=", ".join(aliases))
+    items, attempts, status = ask(model, prompt, calls)
+    res = ChunkResult(f"memory:{actor}" + ("" if sample is None else f"#s{sample}"), 0, status, attempts)
     if items is not None:
         res.transitions, res.rejected = schema.validate(items)
         for t in res.transitions:
             t["evidence_ok"] = None
+            t["doc_id"], t["chunk"] = res.doc_id, 0
     return res
 
 
 # ----------------------------------------------------------------------------- aggregation
 
-def counts(transitions: list[dict], require_evidence: bool = False) -> np.ndarray:
+def counts(transitions: list[dict], require_evidence: bool = False, per_document: bool = True) -> np.ndarray:
+    """per_document=True: one count per (doc_id, edge) (primary). False: every mention counts."""
     C = np.zeros((len(TACTICS), len(TACTICS)))
+    seen = set()
     for t in transitions:
         if require_evidence and t.get("evidence_ok") is False:
             continue
+        key = (t.get("doc_id"), t["from_tactic"], t["to_tactic"])
+        if per_document and key in seen:
+            continue
+        seen.add(key)
         C[prior.INDEX[t["from_tactic"]], prior.INDEX[t["to_tactic"]]] += 1
     return C
 
@@ -209,16 +230,27 @@ def summarize(results: list[ChunkResult]) -> dict:
         "retried": sum(r.attempts > 1 for r in results),
         "transitions": len(trans),
         "rejected_items": sum(len(r.rejected) for r in results),
+        "rejected_by_reason": dict(Counter(_reason(why) for r in results for _, why in r.rejected)),
+        "chunks_per_doc": dict(Counter(r.doc_id for r in results)),
         "hallucinated_span_rate": (sum(not t["evidence_ok"] for t in checked) / len(checked)) if checked else None,
     }
 
 
+def _reason(why: str) -> str:
+    return why.split(":")[0].split(" (")[0]
+
+
 def build_prior(results: list[ChunkResult], alpha: float = prior.ALPHA, require_evidence: bool = False,
                 meta: dict | None = None) -> dict:
-    C = counts([t for r in results for t in r.transitions], require_evidence)
-    P = prior.from_counts(C, alpha)
-    return {"tactics": list(TACTICS), "matrix": P.tolist(), "counts": C.astype(int).tolist(),
-            "meta": {"alpha": alpha, "require_evidence": require_evidence, **summarize(results), **(meta or {})}}
+    """Primary prior from per-document counts; the per-mention counts and their prior are the
+    appendix variant."""
+    trans = [t for r in results for t in r.transitions]
+    C = counts(trans, require_evidence)
+    M = counts(trans, require_evidence, per_document=False)
+    return {"tactics": list(TACTICS), "matrix": prior.from_counts(C, alpha).tolist(), "counts": C.astype(int).tolist(),
+            "matrix_mentions": prior.from_counts(M, alpha).tolist(), "counts_mentions": M.astype(int).tolist(),
+            "meta": {"alpha": alpha, "require_evidence": require_evidence, "aggregation": "per_document",
+                     **summarize(results), **(meta or {})}}
 
 
 def template_sha256(template: str) -> str:

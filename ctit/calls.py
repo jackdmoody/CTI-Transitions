@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 import time
 from pathlib import Path
 
@@ -15,6 +16,7 @@ class CallLogger:
     def __init__(self, path: Path):
         self.path = Path(path)
         self.path.touch()
+        self._lock = threading.Lock()  # extraction calls F from several threads
 
     def log(
         self,
@@ -37,6 +39,6 @@ class CallLogger:
             "cost_usd": cost_usd,
             **extra,
         }
-        with self.path.open("a") as f:
+        with self._lock, self.path.open("a") as f:
             f.write(json.dumps(record, sort_keys=True) + "\n")
         return record

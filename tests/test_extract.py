@@ -161,3 +161,51 @@ def test_anthropic_model_logs_and_detects_refusal(tmp_path):
     assert rec["cost_usd"] == pytest.approx((1000 * 4 + 200 * 20) / 1e6) and "UNIQUE-PROMPT-TEXT" not in json.dumps(rec)
     with pytest.raises(extract.Refusal):
         m.chat("again", calls)
+
+
+def test_self_transitions_rejected_and_counted_by_reason():
+    bad = json.dumps([_t("Execution", "Execution", "a PowerShell loader ran"),
+                      _t("Initial Access", "Execution", "a PowerShell loader ran")])
+    r = extract.extract_chunk(Replay([bad]), TEMPLATE, REPORT, "d1", 0)
+    assert len(r.transitions) == 1 and "self-transition" in r.rejected[0][1]
+    assert extract.summarize([r])["rejected_by_reason"] == {"self-transition": 1}
+
+
+def test_default_chunking_is_6k_with_300_overlap():
+    assert (extract.CHUNK_TOKENS, extract.CHUNK_OVERLAP) == (6000, 300)
+    text = " ".join(f"w{i}" for i in range(12000))  # 76,889 chars
+    chunks = extract.chunk(text)
+    assert all(len(c) <= 24000 for c in chunks) and len(chunks) == -(-(len(text) - 24000) // 22800) + 1
+
+
+def test_one_count_per_report_and_edge_with_mentions_kept():
+    one = json.dumps([_t("Initial Access", "Execution", "a PowerShell loader ran")])
+    r_a0 = extract.extract_chunk(Replay([one]), TEMPLATE, REPORT, "a", 0)
+    r_a1 = extract.extract_chunk(Replay([one]), TEMPLATE, REPORT, "a", 1)   # same report, next chunk
+    r_b0 = extract.extract_chunk(Replay([one]), TEMPLATE, REPORT, "b", 0)   # another report
+    out = extract.build_prior([r_a0, r_a1, r_b0], alpha=0.5)
+    ia, ex = prior.INDEX["Initial Access"], prior.INDEX["Execution"]
+    assert np.array(out["counts"])[ia, ex] == 2
+    assert np.array(out["counts_mentions"])[ia, ex] == 3
+    assert out["meta"]["chunks_per_doc"] == {"a": 2, "b": 1}
+
+
+def test_memory_prompt_gets_aliases_and_samples_are_separate_documents():
+    tmpl = "Actor: <<ACTOR>> (<<ALIASES>>)\n<<TACTICS>>"
+    resp = json.dumps([_t("Initial Access", "Execution", "Recalled."), _t("Initial Access", "Execution", "Again.")])
+    m = Replay([resp, resp])
+    r0 = extract.memory_transitions(m, tmpl, "APT29", aliases=["Cozy Bear", "NOBELIUM"], sample=0)
+    r1 = extract.memory_transitions(m, tmpl, "APT29", aliases=["Cozy Bear", "NOBELIUM"], sample=1)
+    assert "Actor: APT29 (Cozy Bear, NOBELIUM)" in m.prompts[0]
+    assert {r0.doc_id, r1.doc_id} == {"memory:APT29#s0", "memory:APT29#s1"}
+    C = np.array(extract.build_prior([r0])["counts"])
+    assert C[prior.INDEX["Initial Access"], prior.INDEX["Execution"]] == 1  # one count per sample
+
+
+def test_approved_prompts_render():
+    rep = extract.load_prompt("extract_v1.txt")
+    mem = extract.load_prompt("memory_v1.txt")
+    p = extract.render(rep, tactics=extract.tactic_list(), text="EXCERPT")
+    assert "<excerpt>\nEXCERPT\n</excerpt>" in p and "different tactics" in p
+    q = extract.render(mem, tactics=extract.tactic_list(), actor="APT29", aliases="Cozy Bear")
+    assert "APT29 (also tracked as: Cozy Bear)" in q

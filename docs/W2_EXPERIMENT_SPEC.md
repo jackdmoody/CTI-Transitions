@@ -162,12 +162,12 @@ Compute note: priors are extracted once per actor per model condition, with F an
 ## 4. Extraction pipeline
 
 `ctit/cti/extract.py`
-1. Chunk the report (~2k tokens, overlap 200).
-2. Prompt (fixed, versioned in `prompts/extract_v1.txt`): return JSON list of `{from_tactic, to_tactic, technique_from?, technique_to?, evidence_span, confidence}`. Tactics restricted to the 14 Enterprise ATT&CK tactics; reject other labels.
+1. Chunk the report (~6k tokens, overlap 300, identical for F and S; 2026-10-27, was ~2k/200). Token counts are approximated as characters / 4. Record the chunk count per report. S runs with `num_ctx` 16384.
+2. Prompt (fixed, versioned in `prompts/extract_v1.txt`): return JSON list of `{from_tactic, to_tactic, technique_from?, technique_to?, evidence_span, confidence}`. Tactics restricted to the 14 Enterprise ATT&CK tactics; reject other labels, and reject self-transitions (from_tactic == to_tactic), counting rejections per model.
 3. Validate the JSON schema. Retry once on failure, then log and skip.
-4. Aggregate across chunks and reports → count matrix C[i,j] over the 14 tactics. Prior P = row-normalized (C + α), α = 0.5 (sweep {0.1, 0.5, 1} in the appendix). For scoring, P is projected onto the mapper-reachable set K (§2.5, §5). Transition-recovery metrics (§6) are reported both on the 14 tactics and on K.
+4. Aggregate across chunks and reports → count matrix C[i,j] over the 14 tactics, **one count per (report, edge)** for R (an edge in several chunks or places of one report counts once) and one count per (sample, edge) for B (2026-10-27), so each report weighs the same regardless of length. The raw per-mention counts are kept as an appendix variant. One prior per model sample (F and S-sampled: mean ± sd over 5). Prior P = row-normalized (C + α), α = 0.5 (sweep {0.1, 0.5, 1} in the appendix). For scoring, P is projected onto the mapper-reachable set K (§2.5, §5). Transition-recovery metrics (§6) are reported both on the 14 tactics and on K.
 5. Evidence check: `evidence_span` must be a substring of the source text. Report the hallucinated-span rate per model. Cheap, and it gives you a citable faithfulness metric.
-6. No-report condition uses `prompts/memory_v1.txt` with the same output schema.
+6. No-report condition uses `prompts/memory_v1.txt` with the same output schema; `<<ALIASES>>` is the actor's ATT&CK group alias list from the same ATT&CK version as the ATTK priors (`configs/actor_aliases.yaml`).
 
 Log all calls (model, prompt hash, tokens, latency, cost). Cost and latency tables support the special theme.
 
@@ -194,9 +194,10 @@ Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the proj
 ## 6. Metrics
 
 **Transition recovery (extraction quality), vs. emulation-plan ground-truth transitions**
+- **Ground truth (2026-10-27):** each plan scenario's tactic sequence with consecutive repeated tactics collapsed (D, D, E → D, E) before counting transitions, so neither side has self-transitions; metrics use the 14 × 14 off-diagonal cells (`ctit/eval/recovery.py`)
 - Edge precision / recall / F1 (binary edges)
-- Weighted: Jensen–Shannon divergence between the prior and the empirical ground-truth transition matrix
-- Hallucinated-evidence rate (§4.5)
+- Weighted: Jensen–Shannon divergence between the prior and the empirical ground-truth transition matrix (as implemented: JSD between the two joint edge distributions over the off-diagonal cells, each (counts + α) normalized to sum 1, natural log)
+- Hallucinated-evidence rate (§4.5), **for report-conditioned priors (R, oracle) only**: B's evidence_span is recalled from memory, not quoted, so it can't be checked
 - H3 quantity: S-to-F ratio of edge-F1
 - H4 quantity (2026-10-27): the 4×4 prior-actor × plan-actor matrix of edge-F1 and JSD; per row, diagonal minus best off-diagonal
 

@@ -164,3 +164,14 @@ No `manifest_candidates*.csv` existed locally. On 27 Oct Jack wrote `data/cti/ma
 - **F** (claude-opus-5-5) takes no temperature, so F = 5 samples per extraction, reported as mean ± sd. `configs/models.yaml` pins `effort: high` and `max_tokens: 16000` explicitly, and the price used for the cost column ($4 / $20 per MTok in/out).
 - **S** runs twice: temperature 0 (primary, unchanged) and 5 samples at the model's default sampling, seeds 0–4, like-for-like with F. Default sampling = the digest's Modelfile params (temperature 0.6, top_k 20, top_p 0.95, repeat_penalty 1), so no temperature is sent. `ctit.llm.ollama.OllamaModel(..., sample=i)`.
 - **Asymmetry stated in the spec:** F's reasoning can't be disabled, while S runs with thinking off in both modes.
+
+## 2026-10-27: prompts v1 approved; extraction changes (§4, §6), decided by Jack
+- **Prompts:** `prompts/extract_v1.txt` and `prompts/memory_v1.txt` committed verbatim from Jack's review (bb526e5) and frozen; later changes go through REVIEW_QUEUE. Changes from the drafts: from ≠ to stated in both; the excerpt is fenced in `<excerpt>` tags and marked as data; the memory prompt adds `<<ALIASES>>`.
+- **Aliases:** `configs/actor_aliases.yaml` from mitreattack-python 6.3.1 over the pinned ATT&CK 18.1 bundle (same as ATTK priors; `scripts/actor_aliases.py`). The actor's own name is left out of its list (Sandworm's list starts with ATT&CK's name "Sandworm Team").
+- **Schema:** self-transitions rejected; rejections counted per model and reason.
+- **Aggregation:** one count per (report, edge) for R and per (sample, edge) for B; per-mention counts kept as the appendix variant (`counts_mentions`). One prior per model sample.
+- **Chunking:** ~6,000 tokens, 300 overlap, for F and S; chunk count per report recorded. S `num_ctx` 16384.
+- **Ground truth:** consecutive repeated tactics collapsed in plan sequences before edge P/R/F1 and JSD (`ctit/eval/recovery.py`). After collapsing, the plans give few transitions: menuPass 6, OilRig 7, Sandworm 10 (9 distinct edges). Edge recall per actor therefore moves in steps of 1/6–1/9.
+- **JSD as implemented** (spec §6 said "between the prior and the empirical ground-truth transition matrix" without fixing the form): JSD of the two joint edge distributions over the 182 off-diagonal cells, each (counts + α) normalized to sum 1, as `ctit.eval.actor_jsd` does for the WP5 gate. Flagged so Jack can object before T2 is written.
+- **Hallucination rate:** R and oracle only (§6).
+- **S server:** qwen3:14b at `num_ctx` 16384 does not fit on the GPU under the desktop Ollama server (`OLLAMA_NUM_PARALLEL=4`: 20 GB, 15% CPU / 85% GPU). On a private server with one slot (port 11435, flash attention on, as the desktop server) it is 11 GB, 100% GPU. S runs there; the desktop server's config is untouched. Pinned in `configs/models.yaml` (`ollama_server`).

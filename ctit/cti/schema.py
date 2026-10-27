@@ -2,7 +2,8 @@
 
 A model returns a JSON list of
   {from_tactic, to_tactic, technique_from?, technique_to?, evidence_span, confidence}.
-Tactics must be one of the 14 Enterprise tactics (exact names); other labels are rejected.
+Tactics must be one of the 14 Enterprise tactics (exact names); other labels are rejected, and so
+are self-transitions (from_tactic == to_tactic; prompts v1 forbid them).
 """
 from __future__ import annotations
 
@@ -44,6 +45,9 @@ def validate(items: list[dict]) -> tuple[list[dict], list[tuple[dict, str]]]:
         bad = [k for k in ("from_tactic", "to_tactic") if it[k] not in TACTICS]
         if bad:
             rejected.append((it, f"not an Enterprise tactic: {[it[k] for k in bad]}"))
+            continue
+        if it["from_tactic"] == it["to_tactic"]:
+            rejected.append((it, "self-transition (from_tactic == to_tactic)"))
             continue
         try:
             conf = float(it["confidence"])
