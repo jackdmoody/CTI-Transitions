@@ -1,0 +1,8 @@
+# B6 diagnostic (SPEC_ISSUES 2026-10-27): where do v3 tags on the 29 red-team hosts fall on
+# 23-25 Sep relative to the Inria labels? Analysis only: no scoring. Open-ended label rows
+# ("Infinity") count as attack time for at most open_end_cap after their start.
+# c4_rules: "Process Creation Using Sysnative Folder", "Recon Command Output Piped To Findstr.EXE".
+experiment: redteam_diag
+open_end_cap: 4h
+c4_rules: [3c1b5fb0-c72f-45ba-abd1-4d4c353144ab, ccb5742c-c248-4982-8c5c-5571b9275ad3]
+workers: 3
