@@ -45,3 +45,15 @@ def test_ground_truth_has_no_self_transitions():
 def test_ground_truth_all_platforms_default_with_windows_variant():
     for actor in ("OilRig", "Sandworm"):
         assert recovery.ground_truth_counts(actor).sum() > recovery.ground_truth_counts(actor, all_platforms=False).sum()
+
+
+def test_chance_control_matches_hypergeometric_mean():
+    rng = np.random.default_rng(0)
+    # E[F1] = 2 E[tp] / (k + g), E[tp] = k g / 182
+    k, g = 30, 20
+    c = recovery.chance_f1(k, g, 20000, rng)
+    assert c.mean() == pytest.approx(2 * (k * g / 182) / (k + g), rel=0.02)
+    truth = _m(("Initial Access", "Execution"), ("Execution", "Persistence"))
+    r = recovery.chance_control(truth, truth, 1000, rng)
+    assert r["f1"] == 1.0 and r["percentile"] > 99 and r["f1_over_chance"] > 10
+    assert recovery.chance_control(np.zeros_like(truth), truth, 10, rng)["f1_over_chance"] is None

@@ -1,0 +1,13 @@
+# Case study B (spec §5, §7 T9; SPEC_ISSUES 2026-10-27): U, Uni, ATTK, R (F, S, S-sampled) per actor,
+# oracle (S only; F refused 5/5), on the 4,428-window OpTC red-team test set. P_ben pooled over the
+# fit hosts; lambda = 0; host-cluster bootstrap CIs.
+experiment: redteam_scoring
+actors: [APT29, menuPass, OilRig, Sandworm]
+alpha: 0.5
+oracle_modes: [S, S-sampled]
+bootstrap: {n: 1000, seed: 20261027}
+workers: 6
+runs:
+  F: 20261027T223842Z-extraction-a686409
+  S: 20261027T223928Z-extraction-a686409
+  S-sampled: 20261027T223928Z-extraction-a686409

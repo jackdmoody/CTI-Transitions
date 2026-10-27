@@ -43,3 +43,19 @@ def test_report(tmp_path, monkeypatch):
     assert "recovery_all" in r and "recovery_windows" in r
     sens = out["h3_sensitivity"]["S"]
     assert sens["dropped_chunks"] == ["APT29-P01#0"] and sens["R"]["APT29"]["f1"]["mean"] == 0.0
+
+
+def test_post_hoc_chance_and_baselines(tmp_path, monkeypatch):
+    import numpy as np
+    from ctit.eval import recovery
+    G = {"APT29": recovery.ground_truth_counts("APT29")}
+    C = (G["APT29"] > 0).astype(int)
+    loaded = {"F": {("R", "APT29"): {"s0": {"counts": C.tolist()}}, ("B", "APT29"): {"s0": {"counts": (C * 0).tolist()}}}}
+    cfg = {"actors": ["APT29"], "post_hoc": {"draws": 500, "seed": 1, "h4_alphas": [0.1]}}
+    out = rep.post_hoc(cfg, loaded, G)
+    r = out["chance"]["F/R/APT29"]
+    assert r["f1"]["mean"] == 1.0 and r["percentile"]["mean"] > 99
+    assert out["chance"]["baseline/Uni/APT29"]["recall"]["mean"] == 1.0
+    assert out["chance"]["baseline/Uni/APT29"]["edges_extracted"]["mean"] == 182
+    assert out["h4"]["F"]["f1_over_chance"]["APT29"]["APT29"] > 1
+    assert "jsd_alpha_0.1" in out["h4"]["F"] and out["r_minus_b"]["F"]["APT29"]["f1_gap"] == 1.0

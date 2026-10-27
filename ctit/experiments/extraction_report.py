@@ -10,6 +10,13 @@ and the response cache, and reports per mode and prior:
   Windows-only (appendix), and JSD of the per-mention variant; mean ± sd over samples;
 - H4 at the prior level: the 4×4 prior-actor × plan-actor matrix per mode (R priors);
 - H3 sensitivity: S and S-sampled with the chunks F refused (in any sample) removed.
+Post hoc (2026-10-27, added after the results were seen; SPEC_ISSUES), under "post_hoc":
+- edge-count chance control for every prior and for the ATTK and Uni baselines (edge-F1 of a
+  random set of the same number of distinct off-diagonal edges; ctit.eval.recovery), with
+  precision and recall;
+- R - B on the chance-normalized edge-F1 (F1 / chance mean), and H2b (that gap vs. the
+  actor's ATT&CK group-page reference count, descriptive);
+- H4: JSD at the extra alphas, and the 4x4 matrix of chance-normalized edge-F1.
 """
 from __future__ import annotations
 
@@ -19,9 +26,11 @@ from pathlib import Path
 
 import numpy as np
 
-from ctit.cti import extract
+from ctit.cti import extract, prior
+from ctit.cti.manifest import load_actors
 from ctit.eval import recovery
 from ctit.experiments.extraction import PRIORS, jobs
+from ctit.map import attack
 from ctit.map.attack import TACTICS
 
 
@@ -136,6 +145,76 @@ def run(config: dict, calls=None) -> dict:
             res[actor] = {k: {"mean": float(np.mean([x[k] for x in vals])), "sd": _sd([x[k] for x in vals])}
                           for k in ("f1", "jsd")}
         out["h3_sensitivity"][mode] = {"dropped_chunks": sorted(f"{d}#{i}" for d, i in drop), "R": res}
+    if "post_hoc" in config:
+        out["post_hoc"] = post_hoc(config, loaded, truth["all"])
     out["tactics"] = list(TACTICS)
     out["alpha"] = alpha
+    return out
+
+
+CHANCE_KEYS = ("f1", "precision", "recall", "edges_extracted", "chance_mean", "f1_over_chance", "percentile")
+
+
+def _summ(vals: list[dict]) -> dict:
+    out = {}
+    for k in CHANCE_KEYS:
+        x = [v[k] for v in vals if v[k] is not None]
+        out[k] = {"mean": float(np.mean(x)), "sd": _sd(x)} if x else None
+    return out
+
+
+def reference_count(group_id: str, version: str = "18.1") -> int:
+    """H2b public-coverage proxy: references on the ATT&CK group page (the mitre-attack ID excluded)."""
+    g = next(o for o in attack._bundle(version) if o["type"] == "intrusion-set" and attack._ext_id(o) == group_id)
+    return sum(r.get("source_name") != "mitre-attack" for r in g.get("external_references", []))
+
+
+def post_hoc(config: dict, loaded: dict, G: dict) -> dict:
+    ph = config["post_hoc"]
+    draws, rng = ph["draws"], np.random.default_rng(ph["seed"])
+    groups = {a: v["attack_group"] for a, v in load_actors().items()}
+    out: dict = {"note": "post hoc: added 2026-10-27 after the results were seen (SPEC_ISSUES)",
+                 "draws": draws, "seed": ph["seed"], "chance": {}, "r_minus_b": {}, "h4": {}}
+    ch = out["chance"]
+    for mode, priors in sorted(loaded.items()):
+        for (cond, actor), by_s in sorted(priors.items()):
+            if actor in G:
+                ch[f"{mode}/{cond}/{actor}"] = _summ([recovery.chance_control(np.array(by_s[s]["counts"]), G[actor], draws, rng)
+                                                      for s in sorted(by_s)])
+    for actor in config["actors"]:
+        ch[f"baseline/ATTK/{actor}"] = _summ([recovery.chance_control(prior.attk_counts(groups[actor])[0], G[actor], draws, rng)])
+        ch[f"baseline/Uni/{actor}"] = _summ([recovery.chance_control(np.ones((len(TACTICS),) * 2), G[actor], draws, rng)])
+    refs = {a: reference_count(groups[a]) for a in config["actors"]}
+    for mode in loaded:
+        gap = {}
+        for a in config["actors"]:
+            r, b = ch.get(f"{mode}/R/{a}"), ch.get(f"{mode}/B/{a}")
+            if r and b:
+                gap[a] = {"f1_gap": r["f1"]["mean"] - b["f1"]["mean"],
+                          "ratio_gap": (r["f1_over_chance"]["mean"] - b["f1_over_chance"]["mean"]
+                                        if r["f1_over_chance"] and b["f1_over_chance"] else None),
+                          "attack_references": refs[a]}
+        if len(gap) > 2 and all(v["ratio_gap"] is not None for v in gap.values()):
+            ranks = lambda xs: np.argsort(np.argsort(xs))
+            a = list(gap)
+            rho = np.corrcoef(ranks([gap[x]["ratio_gap"] for x in a]), ranks([-gap[x]["attack_references"] for x in a]))[0, 1]
+            gap["_spearman_ratio_gap_vs_fewer_references"] = float(rho)
+        out["r_minus_b"][mode] = gap
+    for mode, priors in sorted(loaded.items()):
+        rp = {a: by_s for (c, a), by_s in priors.items() if c == "R" and a in G}
+        if not rp:
+            continue
+        samples = sorted(next(iter(rp.values())))
+        h = {}
+        for al in ph["h4_alphas"]:
+            mats = [recovery.matrix({a: np.array(by_s[s]["counts"]) for a, by_s in rp.items()}, G, al) for s in samples]
+            h[f"jsd_alpha_{al}"] = {ra: {ca: float(np.mean([m["jsd"][ra][ca] for m in mats])) for ca in G} for ra in rp}
+            if len(G) > 1:
+                h[f"jsd_alpha_{al}_margin"] = {ra: float(np.mean([m["diag_margin"][ra]["jsd"] for m in mats])) for ra in rp}
+        ratio = {ra: {ca: float(np.mean([recovery.chance_control(np.array(rp[ra][s]["counts"]), G[ca], draws, rng)["f1_over_chance"] or 0.0
+                                          for s in samples])) for ca in G} for ra in rp}
+        h["f1_over_chance"] = ratio
+        if len(G) > 1:
+            h["f1_over_chance_margin"] = {ra: ratio[ra][ra] - max(ratio[ra][c] for c in G if c != ra) for ra in rp}
+        out["h4"][mode] = h
     return out

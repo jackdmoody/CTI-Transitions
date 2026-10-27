@@ -106,6 +106,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 - Wherever this spec says "APT29," it now means "each core actor." APT29 is built first as the reference pipeline.
 - Optional extra source: the NUS APT29/APT17/APT32/APT41 emulation datasets. These are built from CTI reports, so check their source lists against the prior manifest before using them.
 - Record a public-coverage proxy per actor (count of ATT&CK group-page references and count of independent reports found) for H2b.
+- **Sandworm-P04 and P05 (2026-10-27, SPEC_ISSUES):** P04 is a blog summary of a PDF report and P05 a landing page (492 words). Both are kept as fetched for the primary analysis and listed as a limitation (§10).
 
 ### 2.3b Real-execution validation (APT29, OTRF Security-Datasets)
 - Purpose: show that synthetic injection gives scores comparable to a real emulated attack. This answers the "your attacks are synthetic" reviewer objection.
@@ -164,7 +165,7 @@ Compute note: priors are extracted once per actor per model condition, with F an
 `ctit/cti/extract.py`
 1. Chunk the report (~6k tokens, overlap 300, identical for F and S; 2026-10-27, was ~2k/200). Token counts are approximated as characters / 4. Record the chunk count per report. S runs with `num_ctx` 16384.
 2. Prompt (fixed, versioned in `prompts/extract_v1.txt`): return JSON list of `{from_tactic, to_tactic, technique_from?, technique_to?, evidence_span, confidence}`. Tactics restricted to the 14 Enterprise ATT&CK tactics; reject other labels, and reject self-transitions (from_tactic == to_tactic), counting rejections per model.
-3. Validate the JSON schema. Retry once on failure, then log and skip.
+3. Validate the JSON schema. Retry once on failure, then log and skip. The retry is a fresh model call: the response cache is keyed on the attempt number (2026-10-27 fix; before it, the cache replayed the failed response, SPEC_ISSUES). Post-fix numbers are primary; pre-fix numbers are reported alongside.
 4. Aggregate across chunks and reports → count matrix C[i,j] over the 14 tactics, **one count per (report, edge)** for R (an edge in several chunks or places of one report counts once) and one count per (sample, edge) for B (2026-10-27), so each report weighs the same regardless of length. The raw per-mention counts are kept as an appendix variant. One prior per model sample (F and S-sampled: mean ± sd over 5). Prior P = row-normalized (C + α), α = 0.5 (sweep {0.1, 0.5, 1} in the appendix). For scoring, P is projected onto the mapper-reachable set K (§2.5, §5). Transition-recovery metrics (§6) are reported both on the 14 tactics and on K.
 5. Evidence check: `evidence_span` must be a substring of the source text (strict). **Fragment-aware variant (pre-registered 2026-10-27, before any recovery metric or R-vs-B comparison was computed under it):** split the span on "..." and "…"; normalize whitespace, curly quotes and dashes on both sides; every fragment of ≥ 8 characters must appear verbatim in the source chunk, in order; a span with no such fragment fails. Report both the strict and the fragment-aware hallucinated-span rate per model. No further changes to either rule after results are seen.
 7. Refusals (2026-10-27): a refused chunk is logged and skipped. It is never reworded, retried, or sent to another model. Refusal counts per report and chunk are reported as a result, for F and S. For H3, S metrics are also reported with the F-refused chunks excluded (sensitivity variant: a chunk F refused in any of its samples is dropped from S).
@@ -201,6 +202,10 @@ Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the proj
 - Hallucinated-evidence rate (§4.5), **for report-conditioned priors (R, oracle) only**: B's evidence_span is recalled from memory, not quoted, so it can't be checked
 - H3 quantity: S-to-F ratio of edge-F1
 - H4 quantity (2026-10-27): the 4×4 prior-actor × plan-actor matrix of edge-F1 and JSD; per row, diagonal minus best off-diagonal
+- **Post hoc (added 2026-10-27 after results were seen; SPEC_ISSUES; labelled "post hoc" in tables and in `metrics.json`):**
+  - *Edge-count chance control*, for every prior and for ATTK and Uni: edge-F1 of a random set of the same number of distinct edges drawn from the 182 off-diagonal cells (10,000 draws; the true positives of a draw are hypergeometric). Report observed F1, chance mean, F1 ÷ chance, the percentile of the observed F1 in the chance distribution (ties count half), and precision and recall separately. The R − B comparison (H2) and H2b are recomputed on F1 ÷ chance.
+  - *H2b coverage proxy as computed:* the number of references on the actor's ATT&CK 18.1 group page (the independent-report count was never collected).
+  - *H4:* JSD also at α ∈ {0.01, 0.1}, because at α = 0.5 the sparse plan ground truths (menuPass: 6 transitions) are close to uniform, so diffuse priors score low JSD in every column; plus the 4×4 matrix of chance-normalized edge-F1. The pre-registered H4 result (edge-F1 and JSD at α = 0.5) is reported as is.
 
 **Hunting**
 - AUPRC (primary — heavy class imbalance) and AUROC
@@ -208,6 +213,7 @@ Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the proj
 - Precision@k for k = 10, 50 (analyst-queue framing)
 - Time-to-detect: index of the first injected step at which the score crosses the threshold (fixed at 1% FPR), as a fraction of chain length. Truncated variants test this directly.
 - Uncertainty: mean ± 95% bootstrap CI over seeds. Paired Wilcoxon for R vs. U, R vs. B, S vs. F.
+- **Case study B as run (2026-10-27, SPEC_ISSUES):** 95% CIs from a host-cluster bootstrap (the 29 hosts resampled, 1,000 resamples); λ = 0 (no mixing), because the validation hosts have no attack windows to tune λ on; Det@1%FPR threshold from the test set's negative windows; TTD per attacked host = position of the first detected positive window among its positive windows (1 if none), mean over hosts; F and S-sampled metrics averaged over their 5 sample priors.
 
 **Cost**
 - Extraction $/report, latency, GPU memory for S
@@ -289,4 +295,4 @@ Goal: everything is public and runnable; the paper uses open data only.
 - Fit: AICS "AI in cyber security" (threat detection, tools and metrics). No critical-infrastructure claim.
 - Special theme: offensive knowledge (attacker-behavior descriptions) repurposed as defensive priors, and small-model sufficiency (T5).
 - Related work: Khanna, Raff, Krasser et al., "Cybersecurity Detection Classification with Reasoning-enabled Language Models" (arXiv 2607.28460); the BRiMS DRIFT paper; CTI-to-ATT&CK extraction (TRAM-style mappers, LLM CTI extraction); ATLAS/ATLASv2; provenance/HIDS hunting.
-- Limitations to state: frontier-model memorization of public APT29 material (bounded by B); first-order Markov assumption; tactic-mapper coverage; ATLASv2 not actor-attributed; synthetic injection vs. live intrusions; **OpTC's benign activity is partly scripted** (range-management jobs); **menuPass's emulation plan is short** (15 steps, 6 transitions after collapsing repeats), so its edge recall moves in steps of 1/6 and its row of the H4 matrix is the noisiest; **injected signatures come from Sysmon recordings while the background is eCAR** (mitigated by mapper v3's shared rule subset, applied identically to both sides, and the eCAR-quirk exclusions, §2.5).
+- Limitations to state: frontier-model memorization of public APT29 material (bounded by B); first-order Markov assumption; tactic-mapper coverage; ATLASv2 not actor-attributed; synthetic injection vs. live intrusions; **OpTC's benign activity is partly scripted** (range-management jobs); **menuPass's emulation plan is short** (15 steps, 6 transitions after collapsing repeats), so its edge recall moves in steps of 1/6 and its row of the H4 matrix is the noisiest; **two Sandworm prior documents are thin** (2026-10-27): Sandworm-P04 is a blog summary of a longer PDF report and Sandworm-P05 is a landing page (492 words); both are kept as fetched (primary analysis), so the Sandworm R prior rests mostly on P01–P03 and P06; **injected signatures come from Sysmon recordings while the background is eCAR** (mitigated by mapper v3's shared rule subset, applied identically to both sides, and the eCAR-quirk exclusions, §2.5).

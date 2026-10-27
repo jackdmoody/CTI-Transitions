@@ -1,0 +1,10 @@
+# Case study A (spec §2.3b, T7; SPEC_ISSUES 2026-10-27): v3 tactic sequence on the real OTRF APT29
+# recording (Sysmon only) vs. the APT29 plan, and each prior's edge-F1 against it (chance control).
+experiment: otrf_case
+actors: [APT29, menuPass, OilRig, Sandworm]
+draws: 10000
+seed: 20261027
+runs:
+  F: 20261027T223842Z-extraction-a686409
+  S: 20261027T223928Z-extraction-a686409
+  S-sampled: 20261027T223928Z-extraction-a686409

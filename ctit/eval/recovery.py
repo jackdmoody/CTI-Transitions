@@ -11,6 +11,10 @@ the 14 x 14 off-diagonal cells.
 - JSD: between the two joint edge distributions over the off-diagonal cells, each
   (counts + alpha) normalized to sum 1 (natural log, in [0, ln 2]), as in ctit.eval.actor_jsd.
 - Hallucinated-evidence rate is reported for report-conditioned priors only (ctit.cti.extract).
+- Edge-count chance control (post hoc, 2026-10-27, SPEC_ISSUES): edge-F1 of a random set of the
+  same number of distinct edges drawn from the 182 off-diagonal cells. The true positives of
+  such a draw are hypergeometric(N = 182, K = truth edges, n = extracted edges), so each draw
+  is one hypergeometric sample. Percentile = 100 x (P(chance < observed) + P(chance = observed)/2).
 """
 from __future__ import annotations
 
@@ -61,3 +65,24 @@ def matrix(priors: dict[str, np.ndarray], truths: dict[str, np.ndarray], alpha: 
                 "jsd": min(out["jsd"][ra][c] for c in others) - out["jsd"][ra][ra],  # > 0: diagonal closer
             }
     return out
+
+
+N_OFF = int(OFF_DIAG.sum())  # 182
+
+
+def chance_f1(k: int, g: int, draws: int, rng: np.random.Generator) -> np.ndarray:
+    """Edge-F1 of `draws` random k-edge sets against g ground-truth edges (post hoc control)."""
+    if k == 0 or g == 0:
+        return np.zeros(draws)
+    tp = rng.hypergeometric(g, N_OFF - g, k, size=draws)
+    return 2 * tp / (k + g)
+
+
+def chance_control(extracted: np.ndarray, truth: np.ndarray, draws: int, rng: np.random.Generator) -> dict:
+    r = edge_prf(extracted, truth)
+    c = chance_f1(r["edges_extracted"], r["edges_truth"], draws, rng)
+    mean = float(c.mean())
+    return {"f1": r["f1"], "precision": r["precision"], "recall": r["recall"],
+            "edges_extracted": r["edges_extracted"], "chance_mean": mean,
+            "f1_over_chance": r["f1"] / mean if mean > 0 else None,
+            "percentile": float(100 * ((c < r["f1"]).mean() + 0.5 * (c == r["f1"]).mean()))}
