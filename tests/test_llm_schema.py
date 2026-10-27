@@ -66,3 +66,33 @@ def test_chat_sends_pinned_options_and_logs(tmp_path, monkeypatch):
     assert sent["think"] is False and sent["options"] == {"temperature": 0, "num_ctx": 8192}
     rec = json.loads((tmp_path / "calls.jsonl").read_text())
     assert rec["input_tokens"] == 12 and rec["weights_sha256"] == "abc" and "hello" not in json.dumps(rec)
+
+
+def test_sampled_mode_sends_seed_and_no_temperature(tmp_path, monkeypatch):
+    models, man = _setup(tmp_path)
+    cfg = yaml.safe_load(models.read_text())
+    cfg["open_weight"]["S"]["sampled"] = {"options": {"num_ctx": 8192, "think": False}, "seeds": [0, 1, 2, 3, 4]}
+    models.write_text(yaml.safe_dump(cfg))
+    sent = {}
+
+    def fake_urlopen(req, timeout):
+        sent.update(json.loads(req.data))
+        return io.BytesIO(json.dumps({"message": {"content": "[]"}}).encode())
+
+    monkeypatch.setattr(ollama.urllib.request, "urlopen", fake_urlopen)
+    m = ollama.OllamaModel("S", models_path=models, manifests=man, sample=3)
+    m.chat("hello")
+    assert sent["options"] == {"num_ctx": 8192, "seed": 3} and sent["think"] is False
+    assert m.name.endswith("#sample3")
+
+
+def test_pinned_sampling_matches_spec():
+    """Spec §3 (2026-10-27): F sends no sampling parameters, effort pinned, 5 samples;
+    S primary at temperature 0, S sampled at default sampling with 5 seeds, thinking off."""
+    cfg = yaml.safe_load(ollama.MODELS.read_text())
+    f = cfg["frontier"]["F"]
+    assert "temperature" not in f["options"] and f["options"]["effort"] and f["samples"] == 5
+    s = cfg["open_weight"]["S"]
+    assert s["options"]["temperature"] == 0 and s["options"]["think"] is False
+    assert "temperature" not in s["sampled"]["options"] and s["sampled"]["options"]["think"] is False
+    assert len(s["sampled"]["seeds"]) == 5

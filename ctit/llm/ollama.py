@@ -36,12 +36,21 @@ def local_weights_digest(tag: str, manifests: Path = MANIFESTS) -> str:
 
 
 class OllamaModel:
+    """sample=None runs the pinned `options` (temperature 0). sample=i runs the pinned
+    `sampled` mode (the model's default sampling) with seed `sampled.seeds[i]` (spec §3)."""
+
     def __init__(self, slot: str, *, url: str = OLLAMA_URL, models_path: Path = MODELS,
-                 manifests: Path = MANIFESTS):
+                 manifests: Path = MANIFESTS, sample: int | None = None):
         self.slot = slot
         self.pin = pinned(slot, models_path)
         self.url = url
         self.manifests = manifests
+        if sample is None:
+            self.options = dict(self.pin.get("options", {}))
+        else:
+            sampled = self.pin["sampled"]
+            self.options = {**sampled["options"], "seed": sampled["seeds"][sample]}
+        self.name = self.pin["tag"] if sample is None else f"{self.pin['tag']}#sample{sample}"
 
     def verify(self) -> None:
         got = local_weights_digest(self.pin["tag"], self.manifests)
@@ -49,7 +58,7 @@ class OllamaModel:
             raise DigestMismatch(f"{self.pin['tag']}: local weights {got} != pinned {self.pin['weights_sha256']}")
 
     def chat(self, prompt: str, calls=None, *, system: str | None = None) -> str:
-        opts = dict(self.pin.get("options", {}))
+        opts = dict(self.options)
         think = opts.pop("think", None)
         body = {
             "model": self.pin["tag"], "stream": False, "options": opts,

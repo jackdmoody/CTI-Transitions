@@ -116,12 +116,12 @@ Spec §2, §4, §7 and §8 and CLAUDE.md are updated.
 - **B7:** limitations added (scripted OpTC benign activity; Sysmon-recorded signatures vs eCAR background).
 - **B8:** cut order: truncated/noisy variants → ATLASv2 → T9 (last of these three).
 
-## 2026-10-26: F cannot run at temperature 0 (§3), needs Jack
+## 2026-10-26: F cannot run at temperature 0 (§3) — resolved 2026-10-27, see below
 **Issue.** §3 says "Temperature 0 where supported; else 5 samples and report mean ± sd." `configs/models.yaml` pins F = `claude-opus-5-5` with `temperature: 0`, but Claude Opus 5.5 rejects sampling parameters (400) and can't disable thinking. So temperature 0 is not supported for F, and the spec's fallback (5 samples, mean ± sd) applies: 5× the F extraction cost.
 **Proposed fix.** Drop `temperature` from the F pin, pin `effort` explicitly (proposed `high`), and run 5 samples for F. `ctit/cti/extract.py` already sends no sampling parameters. No server-side refusal fallback is used: a fallback model answering would contaminate F; refusals are logged and skipped.
 
-## 2026-10-26: CTI manifest file not found (Part B of 27 Oct request)
-No `manifest_candidates*.csv` exists locally, so `data/cti/manifest.csv` is still header-only and nothing was fetched. Needs the file from Jack.
+## 2026-10-26: CTI manifest file not found (Part B of 27 Oct request) — resolved 2026-10-27
+No `manifest_candidates*.csv` existed locally. On 27 Oct Jack wrote `data/cti/manifest.csv` (header + 24 rows) directly; Part B ran on that file.
 
 ## 2026-10-26: Track 2 results (C2–C5), analysis only; C5 = no-go → "hunting = case study" written into §0
 - **C2** (50 fit hosts, 22 Sep; runs `20261027T021514Z-mapper_v3-ca50242`, `20261027T023109Z-mapper_v3-33c4d7a`):
@@ -142,3 +142,25 @@ No `manifest_candidates*.csv` exists locally, so `data/cti/manifest.csv` is stil
   - **Inside labelled processes' time intervals:** 201 tagged events (v3), 230 (v3h). This is time overlap only (no pid), so it is an upper bound.
   - **Caveat:** the same two rule ids lead the B5 test-host benign counts (PrivEsc 17,694 and Discovery 8,126 over 19–22 Sep). Whether those are scripted benign activity on clean hosts is not yet determined.
 - **C5:** fails on every criterion (K 2 < 4; 2.4e-5 < 1e-4; three actors < 10 visible transitions). Applied as pre-registered: spec §0 now says "hunting = case study".
+
+## 2026-10-27: CTI fetch (Part B, B1–B6), no extraction or API calls
+- **Fetch:** `scripts/fetch_cti.py` (requests + trafilatura 2.0.0 for readable HTML text; pdftotext for PDFs). All 24 URLs returned 200 and readable text; texts are in `data/cti/reports/<doc_id>.txt` (manifest `TEXT_DIR` moved there from `data/cti/text/`), raw responses in `data/cti/raw/`, and the sha256 column is filled. Fetch log: `data/cti/fetch_report.json`.
+- **Redirects:** three final URLs differ from the manifest: menuPass-P01 (CISA TA18-276B → the `news-events/alerts/2018/10/03/…` archive page), OilRig-P05 (Trend Micro `…earth-simnavaz-cyberattacks-uae-gulf-regions.html` → `…earth-simnavaz-cyberattacks.html`), Sandworm-P05 (labs.withsecure.com → withsecure.com `resources-hub/w-labs/kapeka/`). Manifest URLs are left as given.
+- **Dates (B2):** three corrected, all month-only before: menuPass-P05 2024-11 → 2024-11-19, menuPass-P06 2025-03 → 2025-03-18, OilRig-P05 2024-10 → 2024-10-11. The other 21 dates match the page's own `datePublished` (the cloud.google.com Mandiant pages carry a 2024-03-25 `article:published_time` from the site migration; their `datePublished` matches the manifest).
+- **Citations (B3):** final URLs, redirect targets and manifest URLs, normalized, against all four `*_cited_sources.txt` (194 URLs): no match, and no loose slug match. No `cited_by_emulation_plan` changes.
+- **menuPass-P01 (B4): does not name APT10 or menuPass.** TA18-276B says only "APT actors" (and no China attribution) in its saved text and raw HTML. Flagged, not deleted. Without it menuPass still has 5 prior docs. Its attribution to menuPass rests on outside reporting (the alert is widely read as the Cloud Hopper follow-up), which the extraction prompt never sees, so it is a weak prior source: Jack to decide whether to keep it.
+- **Thin texts:** Sandworm-P05 (WithSecure Kapeka) is a 492-word landing page; the full report is a PDF linked from it (`withsecure.com/wp-content/uploads/2026/05/WithSecure-Research-Kapeka.pdf`). Sandworm-P04 (APT44) is the 1,253-word blog summary of a PDF report (`services.google.com/fh/files/misc/apt44-unearthing-sandworm.pdf`). Not substituted: needs Jack.
+- **Embedded ATT&CK tables:** several texts end in ATT&CK technique tables (e.g. APT29-P01, APT29-P04, OilRig-P01, OilRig-P03, menuPass-P06). These are the vendors' own mappings, not ATT&CK group pages, so the leakage rule allows them, but extraction may read tactic labels off them rather than infer order from prose. Noted for the T2 discussion.
+- **Leakage (B5):** `scripts/check_leakage.py` exit 0, "OK: 24 docs, leakage rules pass". Prior docs: APT29 7, menuPass 6, Sandworm 6, OilRig 5.
+
+## 2026-10-27: H4 at the prior level, H1 through case studies (§0, §3, §6, §7), decided by Jack
+**Change.** Follows from C5 (hunting = case study).
+- **H4** is now tested at the prior level: a 4×4 matrix, extracted report-conditioned prior per actor (rows, separately for F and S) × each actor's emulation-plan ground-truth transition matrix (columns), cells = edge-F1 and JSD on the 14-tactic space. Supported if the diagonal beats the off-diagonal in every row. Telemetry-level H4 is dropped, so T4 no longer depends on a mapper.
+- **H1** is evidenced through the case studies only: OTRF APT29 (T7) and the OpTC red team with off-target priors and the oracle (T9).
+- **§7:** T3 dropped; T4 redefined as above; T5's hunting column is the case-study lift; T7 marked as an H1 case study.
+- **Consequence flagged for Jack:** F4 (H2b) plotted the report-minus-no-report *AUPRC* gap, which needed the dropped T3 grid. It now plots the *edge-F1* gap. H2's and H3's "and hunting" clauses stay, read as case-study evidence.
+
+## 2026-10-27: F and S sampling (§3), decided by Jack; resolves the 2026-10-26 F issue
+- **F** (claude-opus-5-5) takes no temperature, so F = 5 samples per extraction, reported as mean ± sd. `configs/models.yaml` pins `effort: high` and `max_tokens: 16000` explicitly, and the price used for the cost column ($4 / $20 per MTok in/out).
+- **S** runs twice: temperature 0 (primary, unchanged) and 5 samples at the model's default sampling, seeds 0–4, like-for-like with F. Default sampling = the digest's Modelfile params (temperature 0.6, top_k 20, top_p 0.95, repeat_penalty 1), so no temperature is sent. `ctit.llm.ollama.OllamaModel(..., sample=i)`.
+- **Asymmetry stated in the spec:** F's reasoning can't be disabled, while S runs with thinking off in both modes.

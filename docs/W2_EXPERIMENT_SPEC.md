@@ -17,15 +17,15 @@
 
 | ID | Hypothesis | Test | Supported if |
 |---|---|---|---|
-| H1 | CTI conditioning improves hunting | Conditioned vs. unconditioned (U) transition-based hunting on injected sequences | Higher AUPRC / detection@FPR and earlier detection, CIs over seeds non-overlapping or paired test p<0.05 |
+| H1 | CTI conditioning improves hunting | **Case studies only (2026-10-27):** conditioned vs. unconditioned (U) transition-based hunting on the OTRF APT29 recording (T7) and the OpTC red team with off-target priors and the oracle (T9). No injected-sequence hunting grid | Higher AUPRC / detection@FPR and earlier detection than U on the case studies; reported as case-study evidence with its scope stated, not as a general result |
 | H2 | The report content matters, not just model memory | Report-conditioned prior vs. no-report (parametric-memory) prior | Report > no-report on transition recovery and hunting |
 | H3 | Small open-weight models are sufficient (special theme) | Open-weight vs. frontier extraction | Open-weight recovers ≥80% of frontier edge-F1 and ≥80% of its hunting lift |
-| H4 | The benefit is adversary-specific | 4×4 prior-actor × eval-actor matrix across the core actors APT29 (Russia), menuPass (China), OilRig (Iran), Sandworm (Russia); DPRK added as a 5th row/column if the stretch lands | Diagonal (same-actor) > off-diagonal in every row; off-diagonal ≥ unconditioned is acceptable (generic attack structure) |
+| H4 | The extracted prior is adversary-specific | **Prior level (2026-10-27):** 4×4 matrix over the core actors APT29 (Russia), menuPass (China), OilRig (Iran), Sandworm (Russia): rows = extracted report-conditioned prior per actor, separately for F and S; columns = each actor's emulation-plan ground-truth transition matrix; cells = edge-F1 and JSD on the 14-tactic space. DPRK added as a 5th row/column if the stretch lands. Telemetry-level H4 is dropped | Diagonal beats off-diagonal in every row: higher edge-F1 and lower JSD for the same actor's plan than for any other actor's plan |
 | H2b | The report matters most where memory is thinnest | Report-minus-no-report gap vs. actor public-coverage rank | Gap increases as coverage decreases (APT29 smallest gap; OilRig/DPRK largest). Secondary, reported descriptively with n=4 |
 
 Report negative results honestly. If H2 fails, that is a finding about memorization and still goes in the paper.
 
-**Hunting = case study (2026-10-26, pre-registered rule C5 applied; SPEC_ISSUES).** The OpTC go/no-go failed under the candidate mapper v3h: on the 50-host fit sample benign K = 2 (needed ≥ 4) and benign tag rate 2.4e-5 (needed ≥ 1e-4), and visible transitions were APT29 27, OilRig 3, menuPass 3, Sandworm 1 (needed ≥ 10 for every actor). So the paper **leads with the extraction results**: T2 (transition recovery), T5 (small-model sufficiency and cost), H2, H2b and H3. **Hunting (H1, H4) is a case study**, shown on the OTRF APT29 recording (T7) and the OpTC red team (T9). The full injected-sequence OpTC hunting grid (T3, T4 as a 4×4 matrix, T8) is not run as a headline result; any hunting numbers are reported as case-study evidence with this scope stated.
+**Hunting = case study (2026-10-26, pre-registered rule C5 applied; SPEC_ISSUES).** The OpTC go/no-go failed under the candidate mapper v3h: on the 50-host fit sample benign K = 2 (needed ≥ 4) and benign tag rate 2.4e-5 (needed ≥ 1e-4), and visible transitions were APT29 27, OilRig 3, menuPass 3, Sandworm 1 (needed ≥ 10 for every actor). So the paper **leads with the extraction results**: T2 (transition recovery), T5 (small-model sufficiency and cost), H2, H2b and H3. **Hunting (H1) is a case study**, shown on the OTRF APT29 recording (T7) and the OpTC red team (T9). The full injected-sequence OpTC hunting grid (T3, T8) is not run as a headline result; any hunting numbers are reported as case-study evidence with this scope stated. **H4 is tested at the prior level (2026-10-27, SPEC_ISSUES):** extracted priors against emulation-plan transition matrices (T4), not on telemetry.
 
 ---
 
@@ -139,6 +139,7 @@ Note for the paper: because frontier models were trained on public APT29 materia
 - F = frontier model (one; pin version string and date)
 - S = open-weight small model, run locally under Ollama. Primary: `qwen3:14b` (thinking off, `num_ctx` ≥ 8192). A second, ~4B model in the same family gives a size curve. Pin the weights digest.
 - Temperature 0 where supported; else 5 samples and report mean ± sd.
+- **Sampling as run (2026-10-27, SPEC_ISSUES).** F (Claude Opus 5.5) accepts no temperature or other sampling parameter, so every F extraction is 5 samples, reported as mean ± sd, with `effort` pinned explicitly in `configs/models.yaml`. S runs twice: temperature 0 (primary) and 5 samples at the model's default sampling (seeded; like-for-like with F). F's reasoning can't be disabled, while S runs with thinking off in both modes; state this asymmetry in the paper wherever F and S are compared (H3, T5).
 
 **Prior conditions**
 
@@ -149,11 +150,11 @@ Note for the paper: because frontier models were trained on public APT29 materia
 | ATTK | Structured ATT&CK group mapping → technique set → tactic co-occurrence prior (no order) | Strong non-LLM baseline: "do you need an LLM at all?" |
 | B-F / B-S | No-report prior: model asked for the actor's tactic transitions from memory | Memorization bound (H2) |
 | R-F / R-S | Report-conditioned prior, same actor | Main method (H1, H3) |
-| X-F / X-S | Report-conditioned prior from each of the **other three** actors | Specificity (H4 matrix off-diagonal) |
+| X-F / X-S | Report-conditioned prior from each of the **other three** actors | Specificity (H4 prior-level matrix off-diagonal, T4; off-target rows in T9) |
 
 Full grid: {U, Uni, ATTK, B-F, B-S, R-F, R-S} × {4 core actors} × {full, truncated, noisy} × seeds, plus the 4×4 prior-actor × eval-actor matrix for R-F and R-S (full chain). ATLASv2 runs {U, Uni, R-F, R-S}.
 
-Compute note: priors are extracted once per actor per model (8 extractions + 8 no-report runs); the matrix reuses them, so the 4×4 grid costs only scoring time.
+Compute note: priors are extracted once per actor per model condition, with F and S-sampled ×5 samples (2026-10-27); the H4 matrix reuses them and costs no extra extraction.
 
 ---
 
@@ -196,6 +197,7 @@ Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the proj
 - Weighted: Jensen–Shannon divergence between the prior and the empirical ground-truth transition matrix
 - Hallucinated-evidence rate (§4.5)
 - H3 quantity: S-to-F ratio of edge-F1
+- H4 quantity (2026-10-27): the 4×4 prior-actor × plan-actor matrix of edge-F1 and JSD; per row, diagonal minus best off-diagonal
 
 **Hunting**
 - AUPRC (primary — heavy class imbalance) and AUROC
@@ -212,13 +214,13 @@ Alternative (ablation): DRIFT's per-edge JSD contribution reweighted by the proj
 ## 7. Paper tables and figures (the agents produce exactly these)
 
 - **T1** Data summary: corpus hosts (and roles where documented), events, telemetry sources present, injected chains per actor, eval-sequence source per actor (plan vs. report-split), steps visible/partial/dropped per actor, prior-doc count per actor, ATLASv2 splits, mapper coverage and reachable tactic set K under both the BRiMS and the extended mapper
-- **T7** Synthetic vs. real APT29 (OTRF) validation, see §2.3b. OTRF is the primary public real-execution benchmark
+- **T7** Synthetic vs. real APT29 (OTRF) validation, see §2.3b. OTRF is the primary public real-execution benchmark and one of the two H1 case studies
 - **T8** Vantage ablation (Sysmon-only vs. Sysmon+Zeek), per actor: plan steps visible (count and %), AUPRC and TTD under U and R-S, with paired test. Headline sentence: "network vantage recovers X% of steps endpoint telemetry misses and changes CTI-conditioned AUPRC by Y."
 - **T2** Transition recovery: rows {B-F, B-S, R-F, R-S, ATTK}, cols {edge P, R, F1, JSD, hallucination rate}, one block per actor
-- **T3** Hunting (main): rows {U, Uni, ATTK, B-F, B-S, R-F, R-S}, cols {AUPRC, AUROC, Det@1%FPR, P@10, TTD}, full chain, macro-averaged over the 4 actors with per-actor values in the appendix
-- **T4** Specificity (H4): 4×4 heatmap, prior actor (rows) × eval actor (cols), cell = AUPRC lift over U, R-S (R-F in appendix). Reported under both the extended mapper (main) and the BRiMS mapper. This is the paper's headline figure-table
-- **F4** H2b: report-minus-no-report AUPRC gap vs. actor public-coverage proxy (4 points, labeled; descriptive only)
-- **T5** Small-model sufficiency + cost: F vs. S on edge-F1, hunting lift over U, $/report, latency
+- **T3** ~~Hunting (main) on injected sequences~~ **Dropped (2026-10-27):** H1 is evidenced through the case studies only (T7, T9)
+- **T4** Specificity (H4, prior level, 2026-10-27): 4×4 heatmap, extracted prior actor (rows; R-S main, R-F alongside or in the appendix) × emulation-plan actor (cols), cells = edge-F1 and JSD on the 14-tactic space, F mean ± sd over its 5 samples. Diagonal vs. off-diagonal per row. No telemetry, so no mapper dependence
+- **F4** H2b: report-minus-no-report edge-F1 gap (2026-10-27; was AUPRC, which needed the dropped T3 grid) vs. actor public-coverage proxy (4 points, labeled; descriptive only)
+- **T5** Small-model sufficiency + cost: F vs. S (temperature 0, and sampled ×5) on edge-F1, case-study hunting lift over U (T7/T9), $/report, latency; caption states F reasons and S doesn't
 - **T9** Real intrusion (OpTC red team, B6): rows U / Uni / ATTK / R per actor (F, S) / oracle (F, S); columns AUPRC, Det@1%FPR, TTD. The OpTC red team is not a named APT, so no matched prior exists: the R rows are an off-target check (does mismatched intel help, do nothing, or hurt?). The **oracle** rows use a prior extracted from `OpTCRedTeamGroundTruth.pdf` with the same prompts and pipeline (F and S), labelled "oracle (answer key) — upper bound, not a method result". The oracle never influences α, λ or any other tuning (validation hosts only). Test set: the 29 red-team hosts' benign days plus attack days (23–25 Sep), window labels from the Inria corrected-release labels (a window is positive if it contains a labelled malicious event). Red-team hosts are never in a baseline.
 - **T6** ATLASv2 robustness check (only if ATLASv2 passes the ≥500-window rule, §2.1): {U, Uni, R-F, R-S}, with its limits stated in the caption (Sysmon EIDs 1/5 only; provenance-style ground truth; not actor-attributed)
 - **F1** Method diagram (separate deliverable)
