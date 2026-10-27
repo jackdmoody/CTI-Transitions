@@ -1,6 +1,15 @@
 # Extended tactic mapper: policy (spec §2.5)
 
-**Current version: v2.** v1 (`714f999`) ran process_creation rules on Sysmon EID 1 only. v2 also runs them on Security 4688 (Jack, 2026-10-24, before any injection or scoring).
+**Current version: v3** (frozen `e3e96e8`, 2026-10-26, pre-scoring; SPEC_ISSUES B3). v1 (`714f999`) ran process_creation rules on Sysmon EID 1 only. v2 also runs them on Security 4688 (Jack, 2026-10-24, before any injection or scoring). v3 is a subset of the v2 compiled queries; everything below about v2 still describes how each kept rule is compiled and applied.
+
+## v3 (OpTC primary corpus)
+`ctit/map/v3.py`, frozen keep list `ctit/map/rules_v3.json` (707 queries = 707 rules, all Sysmon variant). Load with `ctit.map.v3.load_v3()` and pass to `ctit.map.extended.tag(df, rules)`; `tag()` without rules is still v2. Report run: `results/20261027T021514Z-mapper_v3-ca50242`. Exclusions, in order, applied identically to benign (OpTC) and injected (recording) events:
+1. **a) `level: informational`** (general policy): 8 rules / 9 queries, incl. "User Logoff Event".
+2. **b) shared subset:** keep a query only if it is field-evaluable on both the OpTC conversion (`ctit.ingest.optc.FIELDS`) and the technique recordings: for some (Channel, EventID) it accepts, every field it references is a non-null column there. 719 queries are shared (all Sysmon variant: OpTC has no 4688); 717 after (a).
+3. **c1) image restoration (data, not rules):** `optc.to_frame(restore_bare=True)` fills bare non-process-create images from STRATA-E's actor-GUID resolution. Process-create bare names can't be restored (the new process's GUID and pid never carry a path in raw eCAR).
+4. **c2) path-unevaluable:** a query is dropped if, on the fit-host sample (50 fit hosts, 22 Sep, seed 0), it matched an event through a path field (Image, ParentImage, SourceImage, TargetImage) holding a bare name: 5 queries.
+5. **c3) `create_remote_thread` category:** 5 queries (eCAR remote-thread semantics differ from Sysmon EID 8).
+Rules that only *fail* to match bare names (e.g. `Image|endswith: '\x.exe'`) are kept: they under-match, which is conservative, as with missing fields.
 
 Code: `ctit/map/` (`sigma_rules.py` compiles, `extended.py` applies). The frozen rule set is
 `ctit/map/compiled_rules.jsonl`, and `tests/test_extended_mapper.py` checks that it rebuilds
