@@ -1,0 +1,6 @@
+# C4 diagnostic (SPEC_ISSUES 2026-10-26): OpTC 23 Sep, red-team targets in the population vs a
+# seeded sample of clean hosts of the same size, under v3 and candidate v3h. Analysis only.
+experiment: redteam_day
+day: '2019-09-23'
+seed: 0
+mappers: [v3, v3h]
