@@ -90,3 +90,10 @@
 - **Open:** schema retry is replayed from the response cache (SPEC_ISSUES, needs Jack). The private Ollama server on port 11435 has been stopped.
 - Tests: 106 passed, 3 skipped.
 - Next: Jack's call on the retry fix; then T2/T4 tables (WP6/WP7).
+
+## 2026-10-27 (later): Jack's decisions on the WP6 report
+- Retry fix (`a686409`): the cache is keyed on attempt. The failed calls were re-run. F B/Sandworm s4 recovered; the 8 S retries reproduced their output, so those chunks stay skipped. Post-fix runs: F `20261027T223842Z`, S `20261027T223928Z`.
+- Post-hoc chance control, ATTK/Uni baselines, R−B and H2b on F1÷chance, H4 α-sensitivity and chance-normalized matrix. Results: `results/20261027T225638Z-extraction_report-5715a18` (post-fix, primary) and `…225644Z…` (pre-fix).
+- Case study A (OTRF APT29): `results/20261027T225650Z-otrf_case-5715a18`. Case study B (OpTC red team): `results/20261027T235002Z-redteam_scoring-5715a18`. Fit-host transitions cached at `data/eval/optc_fit_transitions_v3.json` (~60 min to build).
+- Tests: 115 passed, 3 skipped.
+- **Open:** why ATTK beats every extracted prior in case study B; whether to adopt the column-wise H4 reading (post hoc, Jack).
