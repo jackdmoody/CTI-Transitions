@@ -81,9 +81,9 @@ def optc_counts(hosts: list[str], rules: list[dict], workers: int) -> dict:
         "tagged_per_host_quantiles": {q: float(pd.Series(list(per_host.values()) + [0] * (len(hosts) - len(per_host))).quantile(q))
                                       for q in (0.1, 0.5, 0.9)},
         "windows": windows(per_host), "windows_within_day": windows(per_host_day),
-        "top_rules": Counter({r: int(w) for r, w in zip(
-            df.loc[df["tactic"] != "", "_key"].map(dict(zip(distinct["_key"], t["rule_id"]))),
-            df.loc[df["tactic"] != "", "_w"])}).most_common(5),
+        "top_rules": [(r, int(w)) for r, w in hit["_w"].groupby(
+            hit["_key"].map(dict(zip(distinct["_key"], t["rule_id"])))).sum()
+            .sort_values(ascending=False).head(5).items()],
     }
 
 
