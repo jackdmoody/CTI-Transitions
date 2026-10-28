@@ -13,3 +13,4 @@ runs:
   Q5: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled}
   M: {run: 20261028T005130Z-extraction-5528fd6, mode: S}
   M5: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled}
+  M3: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B}  # Ministral 3 3B, temperature 0 (paper table b, 2026-10-28)

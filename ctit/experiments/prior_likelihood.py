@@ -7,7 +7,8 @@ P: the prior's counts + alpha over the 14 tactics, self-transition cell dropped,
 the other 13 (so Uni scores exactly 0). ATTK counts are n n^T (prior.attk_counts).
 95% CI: bootstrap of transitions within each plan; multi-sample priors use the mean over samples,
 with the same resampled transitions for every sample. Also: the 4x4 R-prior actor x plan matrix
-per model (which actor's chain gives each plan the highest likelihood), alpha sensitivity, and
+per model (which actor's chain gives each plan the highest likelihood; every prior family with all four actors, not
+only R, since 2026-10-28), alpha sensitivity, and
 case study A (the executed OTRF APT29 sequence, ctit.experiments.otrf_case).
 """
 from __future__ import annotations
@@ -88,7 +89,7 @@ def run(config: dict, calls=None) -> dict:
                                 for name, by_a in pri.items()}
         out["matrix"][key] = {name: {ra: {ca: score(Cs, plan_pairs[ca], al, boot[ca])["bits"] for ca in actors}
                                      for ra, Cs in by_a.items()}
-                              for name, by_a in pri.items() if name.startswith("R-") and len(by_a) == len(actors)}
+                              for name, by_a in pri.items() if name != "Uni" and len(by_a) == len(actors)}
         out["column_best"][key] = {name: {ca: max(m, key=lambda ra: m[ra][ca]) for ca in actors}
                                    for name, m in out["matrix"][key].items()}
         out["case_a"][key] = {f"{name}/{a}": score(Cs, executed, al, boot_exec)

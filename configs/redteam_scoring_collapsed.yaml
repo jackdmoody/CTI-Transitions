@@ -9,6 +9,7 @@ version: collapsed
 actors: [APT29, menuPass, OilRig, Sandworm]
 alpha: 0.5
 oracle_modes: [Q, Q5, M, M5]
+all_groups: true  # ATTK-all: the all-groups ATT&CK prior as a condition (2026-10-28, paper table e)
 bootstrap: {n: 1000, seed: 20261027}
 workers: 6
 runs:

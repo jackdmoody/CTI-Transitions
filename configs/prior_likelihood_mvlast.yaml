@@ -16,3 +16,4 @@ runs:
   Q5: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled__mvlast}
   M: {run: 20261028T005130Z-extraction-5528fd6, mode: S__mvlast}
   M5: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled__mvlast}
+  M3: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B__mvlast}

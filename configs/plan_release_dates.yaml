@@ -1,0 +1,16 @@
+# Public release date of each emulation plan (table g; 2026-10-28). Earliest public release of the plan.
+# Sources: the plan's CHANGE_LOG.md where it has one; otherwise the date of the commit that added the plan
+# to center-for-threat-informed-defense/adversary_emulation_library (GitHub commit history, looked up 2026-10-28).
+plans:
+  APT29:
+    release_date: "2020-04-21"
+    source: "CHANGE_LOG.md v0.1, ATT&CK Evaluations release (Adversary Emulation Library v1.0: 2021-01-21)"
+  menuPass:
+    release_date: "2021-02-04"
+    source: "CHANGE_LOG.md v1.0, Adversary Emulation Library release (commit 'Add menuPass into Adversary Emulation Library (#58)', 2021-02-04)"
+  OilRig:
+    release_date: "2022-11-09"
+    source: "no CHANGE_LOG.md; commit 'ATT&CK Evaluations Managed Services Round 1 - OilRig', 2022-11-09"
+  Sandworm:
+    release_date: "2022-04-11"
+    source: "no CHANGE_LOG.md; commit 'ATT&CK Evaluations Round 4: Wizard Spider & Sandworm', 2022-04-11"

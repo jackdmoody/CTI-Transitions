@@ -1,0 +1,56 @@
+# Paper tables as CSV (POST HOC packaging, 2026-10-28; Jack's request). No model calls.
+# Reads saved priors (table a), the response cache (d), calls.jsonl (f), the manifest (g) and the results
+# below, each of which must come from a clean commit at or after min_commit. Output: results/paper_tables/.
+experiment: paper_tables
+min_commit: 6f321e7
+out_dir: results/paper_tables
+actors: [APT29, menuPass, OilRig, Sandworm]
+conditions: [R, B, oracle]
+oracle_text: data/optc_check/groundtruth/OpTCRedTeamGroundTruth.txt
+prompts: {report: extract_v1.txt, memory: memory_v1.txt}
+chunk: {tokens: 6000, overlap: 300}
+sources:
+  extraction: SET_ME
+  likelihood: SET_ME
+  case_b_as_run: SET_ME
+  case_b_collapsed: SET_ME
+# as-run priors (primary)
+priors:
+  F: {run: 20261027T223842Z-extraction-a686409, mode: F}
+  Q: {run: 20261027T223928Z-extraction-a686409, mode: S}
+  Q5: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled}
+  M: {run: 20261028T005130Z-extraction-5528fd6, mode: S}
+  M5: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled}
+  M3: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B}
+# (a) one shared chance draw: `draws` orderings of the 182 off-diagonal cells, same seed as the report
+chance: {draws: 10000, seed: 20261027}
+table_a:
+  R-F: [F, R]
+  R-Q: [Q, R]
+  R-Q5: [Q5, R]
+  R-M: [M, R]
+  R-M5: [M5, R]
+  R-M3: [M3, R]
+  B-F: [F, B]
+  B-Q: [Q, B]
+  B-M: [M, B]
+  B-M5: [M5, B]
+table_b: [R-F, R-Q, R-Q5, R-M, R-M5, R-M3, B-F, B-Q, B-M, B-M5, ATTK, Uni]
+# (c) model label -> extraction-report mode
+table_c: {F: F, Q: S-Q, Q5: S-Q-sampled, M: S-M, M5: S-M-sampled, M3: S-M3}
+# (d) model label -> cache label (extraction_report._caches)
+ollama_labels:
+  qwen3:14b: S-Q
+  ministral-3-nosys:14b-instruct-2512-q4_K_M: S-M
+  ministral-3-nosys:3b-instruct-2512-q4_K_M: S-M3
+refusal_models: {F: F, Q: S-Q, Q5: S-Q-sampled, M: S-M, M5: S-M-sampled, M3: S-M3, M35: S-M3-sampled}
+# (f) runs whose calls.jsonl hold the calls as sent (original F and Qwen runs, post-fix retries, Ministral)
+model_runs: [20261027T121723Z-extraction-a53c21c, 20261027T121707Z-extraction-a53c21c,
+             20261027T223842Z-extraction-a686409, 20261027T223928Z-extraction-a686409,
+             20261028T005130Z-extraction-5528fd6, 20261028T040137Z-extraction-d032eae]
+model_labels:
+  claude-opus-5-5: F
+  qwen3:14b: Q
+  ministral-3-nosys:14b-instruct-2512-q4_K_M: M
+  ministral-3-nosys:3b-instruct-2512-q4_K_M: M3
+plan_release_dates: configs/plan_release_dates.yaml

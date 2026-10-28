@@ -160,12 +160,21 @@ def tie_report(score: np.ndarray, y: np.ndarray) -> dict:
     return out
 
 
+def all_groups_counts() -> np.ndarray:
+    """n n^T with n summed over every ATT&CK group (redteam_diagnosis.attk_all_tactic_counts)."""
+    from ctit.experiments.redteam_diagnosis import attk_all_tactic_counts  # imports this module
+    n = attk_all_tactic_counts()
+    return np.outer(n, n)
+
+
 def prior_counts(config: dict) -> dict[str, list[np.ndarray]]:
     """condition -> raw 14 x 14 count matrices per sample (Uni: zeros; ATTK: n n^T)."""
     groups = {a: v["attack_group"] for a, v in load_actors().items()}
     out = {"Uni": [np.zeros((len(TACTICS),) * 2)]}
     for a in config["actors"]:
         out[f"ATTK/{a}"] = [prior.attk_counts(groups[a])[0]]
+    if config.get("all_groups"):
+        out["ATTK-all"] = [all_groups_counts()]
     for label, spec in config["runs"].items():
         run, sub = run_dir(spec)
         for cond, actors in (("R", config["actors"]), ("oracle", ["OpTC-redteam"])):
@@ -200,6 +209,8 @@ def _priors(config: dict, K: list[str]) -> dict[str, list[np.ndarray]]:
     out = {"Uni": [prior.project(prior.uniform(), K)]}
     for a in config["actors"]:
         out[f"ATTK/{a}"] = [prior.project(prior.load(PRIORS / a / "ATTK.json")[0], K)]
+    if config.get("all_groups"):  # actor-agnostic ATT&CK prior, as the diagnosis's c3 control (2026-10-28)
+        out["ATTK-all"] = [prior.project(prior.from_counts(all_groups_counts(), config["alpha"]), K)]
     for label, spec in config["runs"].items():
         run, sub = run_dir(spec)
         for cond, actors in (("R", config["actors"]), ("oracle", ["OpTC-redteam"])):
