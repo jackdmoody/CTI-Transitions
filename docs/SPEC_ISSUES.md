@@ -480,9 +480,9 @@ Applies to replies of class *multiple_values* (01:06 entry): two or more JSON va
 - **Replay:** `results/20261028T122317Z-schema_failures-6b29976`. Variants: `__mv` (identical values parsed), `__mvfirst`, `__mvlast`. All three include the wrapping-only fix. As run stays primary.
 - **Identical values** (21 S-M t0/sampled replies, both attempts where retried; 2 S-M3 sampled): counted as parsed, and no prior's counts change, confirmed.
   - One S-M3 case (s1 R/Sandworm-P01) was a first attempt with identical `[]` whose retry had succeeded as run. Under the rule the first attempt stands and no retry is made. The retry had yielded no valid transitions, so counts and rejections are unchanged.
-  - Chunk statuses change (skipped_schema → ok), so the schema-failure counts under the rule are S-M 40 → 17 first attempts and S-M3 14 → 12.
+  - Chunk statuses change (skipped_schema → ok), so the schema-failure counts under the rule are S-M 40 → 18 first attempts (12 wrapping, 1 multiple values that differ, 5 malformed) and S-M3 14 → 12.
 - **Values differ, S-M t0 R/OilRig-P01 chunk 0** (a list of 25, then a list of 9):
-  - First and last both add the same new edge (Execution → Discovery not in the plan, i.e. a false positive) and differ in 2 count cells.
+  - First and last both add the same new edge (Persistence → Command and Control, not in the plan, i.e. a false positive) and differ in 2 count cells.
   - Extraction: edge-F1 .375 → .367; F1/chance 3.31 → 3.20.
   - H3 S-M/OilRig: .946 → .927 (dropping F-refused chunks: 1.009 → .988).
   - R−B (S-M, ratio) OilRig: 3.31 → 3.20; H2b Spearman unchanged (−0.8).
