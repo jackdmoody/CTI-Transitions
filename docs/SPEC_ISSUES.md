@@ -421,3 +421,14 @@ Runs: diagnosis `results/20261028T031006Z-redteam_diagnosis-1c54232`; collapsed 
   - Negative windows are mostly the PrivEsc/Discovery cycle (the baseline has 2.5% each), so they sit far from it.
   - With the xx01/xx51 hosts dropped, U's AUROC is .84; with the rules' tags dropped, .85. Neither is inverted.
 - **Per host:** sysclient0501 (an xx01 host) has 10 of the 46 positive windows. Leave-one-host-out AUPRC ranges are narrow (e.g. ATTK/OilRig as run .34–.46; U .015–.037).
+
+## 2026-10-27 23:18 EDT: prior log-likelihood results, F and Q (POST HOC; `results/20261028T031747Z-prior_likelihood-31bc352`)
+Units are bits over uniform per plan transition at α = 0.5, with [95% CI]; Uni = 0. Ministral is added once its runs finish.
+- **Own plan:**
+  - R-F: APT29 .11 [−.14, .37], OilRig .62 [.17, 1.04], Sandworm .31 [−.04, .69], menuPass .91 [.32, 1.49].
+  - R-Q: .12, −.17, .17, 1.00. R-Q5: .10, −.21, −.02, .86.
+  - B-F: .06, .01, −.02, 1.01. B-Q: .10, −.11, −.07, .32.
+  - ATTK: −.61, −.05, −.30, −.92 (worse than uniform for every plan).
+- **4×4, best actor's chain per plan (column):** R-F 3/4 (OilRig, Sandworm, menuPass; the APT29 plan is best explained by the menuPass prior), R-Q 1/4 (Sandworm), R-Q5 1/4 (menuPass). The R-F column-best pattern is the same at α 0.01 and 0.1.
+- **α sensitivity:** at α 0.01 most priors drop well below uniform (sparse chains give near-zero probability to plan transitions they lack). Exceptions: R-F OilRig .24, R-F/R-Q/B-F on menuPass. At α 0.1 the pattern is in between.
+- **Case A (executed OTRF APT29, 37 transitions):** ATTK .76 [.50, .98]; R-F −.12, R-Q −.06, R-Q5 −.05, B-F −.05, B-Q .01. ATTK's tactic-frequency profile fits the mapper-visible executed sequence better than any extracted chain.
