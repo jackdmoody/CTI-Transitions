@@ -73,3 +73,28 @@ def test_replay_refusal_and_no_calls(tmp_path):
         sf.Replay(tmp_path, True).chat("r")
     with pytest.raises(FileNotFoundError):  # never calls a model
         sf.Replay(tmp_path, True).chat("missing")
+
+
+@pytest.mark.parametrize("text, multi, want", [
+    ("[]\n```json\n[]\n```", "identical", "[]"),                      # identical: parsed
+    ("[]\n```json\n[]\n```", None, None),                             # as run: failure
+    (f"[{ITEM}]\n```json\n[]\n```", "identical", None),               # differ: failure in primary
+    (f"[{ITEM}]\n```json\n[]\n```", "first", f"[{ITEM}]"),
+    (f"[{ITEM}]\n```json\n[]\n```", "last", "[]"),
+    ('[]\n[{"a": "C:\\x"}]', "last", None),                           # a value that does not decode
+])
+def test_pick(text, multi, want):
+    got = sf.pick(text, multi)
+    assert got == want
+    if got is not None:
+        assert got in text
+
+
+def test_replay_multi_any_attempt(tmp_path):
+    p = "prompt"
+    _write(tmp_path, p, 1, {"text": "not json"})
+    _write(tmp_path, p, 2, {"text": f"[]\n```json\n[{ITEM}]\n```"})
+    assert extract.ask(sf.Replay(tmp_path, True, "identical"), p)[1:] == (2, "skipped_schema")
+    m = sf.Replay(tmp_path, True, "last")
+    items, attempts, status = extract.ask(m, p)
+    assert (len(items), attempts, status, m.used_multi[0][1]) == (1, 2, "ok", 2)

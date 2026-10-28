@@ -18,6 +18,12 @@
    attempt of class `wrapping` is handed to the parser as its JSON substring; every other response is
    replayed as cached, so all other chunks keep their as-run outcome. The priors go to
    data/priors/<run>/<mode>__unwrap/. The as-run replay (no fix) must reproduce the saved priors exactly.
+3. Multiple-JSON-value replies (POST HOC; SPEC_ISSUES 2026-10-28 08:21 EDT, Jack's rule), any attempt:
+   - every value identical (e.g. `[]` twice): the reply counts as parsed (variant `__mv`, the new primary
+     reading; it must leave every prior's counts unchanged);
+   - values differ: a failure as run; sensitivity variants `__mvfirst` / `__mvlast` hand the parser the
+     first / last value. All three variants include the wrapping-only fix. The value handed over is a
+     substring of the reply, so content is never changed.
 """
 from __future__ import annotations
 
@@ -36,6 +42,11 @@ from ctit.experiments.redteam_scoring import run_dir
 
 FENCE_ONLY = re.compile(r"^\s*(```[A-Za-z]*\s*)*$")
 SUFFIX = "__unwrap"
+# variant suffix -> Replay options
+VARIANTS = {"__unwrap": {"unwrap": True},
+            "__mv": {"unwrap": True, "multi": "identical"},
+            "__mvfirst": {"unwrap": True, "multi": "first"},
+            "__mvlast": {"unwrap": True, "multi": "last"}}
 
 
 def _next_value(s: str, start: int = 0):
@@ -77,6 +88,35 @@ def classify(text: str) -> dict:
     return out | {"class": "wrapping", "detail": "; ".join(where), "json": text[i:end]}
 
 
+def values(text: str) -> list[tuple[int, int, object]] | None:
+    """-> [(start, end, value)] for every JSON value in the text in order, or None if one fails to decode."""
+    out, k = [], 0
+    while True:
+        i, v, end, err = _next_value(text, k)
+        if i is None:
+            return out
+        if err is not None:
+            return None
+        out.append((i, end, v))
+        k = end
+
+
+def pick(text: str, multi: str | None) -> str | None:
+    """For a multiple_values reply: the substring to parse under `multi`, or None (stays a failure)."""
+    vs = values(text) if multi else None
+    if not vs or len(vs) < 2:
+        return None
+    if all(v == vs[0][2] for _, _, v in vs):
+        i, end, _ = vs[0]
+    elif multi == "first":
+        i, end, _ = vs[0]
+    elif multi == "last":
+        i, end, _ = vs[-1]
+    else:
+        return None
+    return text[i:end]
+
+
 def _shape(v) -> str:
     if isinstance(v, list):
         return f"list of {len(v)}" + ("" if all(isinstance(x, dict) for x in v) else " (not all objects)")
@@ -85,21 +125,27 @@ def _shape(v) -> str:
 
 class Replay:
     """A model that only reads the cache (no calls). unwrap=True hands the parser the JSON substring of
-    a first attempt whose class is `wrapping`."""
+    a first attempt whose class is `wrapping`; multi ("identical", "first", "last") does the same for a
+    multiple_values reply at any attempt (see the module docstring)."""
 
-    def __init__(self, d: Path, unwrap: bool):
-        self.dir, self.unwrap, self.name, self.used = d, unwrap, d.name, []
+    def __init__(self, d: Path, unwrap: bool, multi: str | None = None):
+        self.dir, self.unwrap, self.multi, self.name = d, unwrap, multi, d.name
+        self.used, self.used_multi = [], []
 
     def chat(self, prompt: str, calls=None, *, system: str | None = None, attempt: int = 1) -> str:
         h = hashlib.sha256(((system or "") + prompt).encode()).hexdigest()
         rec = json.loads((self.dir / (f"{h}.json" if attempt == 1 else f"{h}.a{attempt}.json")).read_text())
         if "refusal" in rec:
             raise extract.Refusal(rec["refusal"])
-        if self.unwrap and attempt == 1:
-            c = classify(rec["text"])
-            if c["class"] == "wrapping":
-                self.used.append(h)
-                return c["json"]
+        c = classify(rec["text"]) if self.unwrap or self.multi else {"class": None}
+        if self.unwrap and attempt == 1 and c["class"] == "wrapping":
+            self.used.append(h)
+            return c["json"]
+        if self.multi and c["class"] == "multiple_values":
+            v = pick(rec["text"], self.multi)
+            if v is not None:
+                self.used_multi.append((h, attempt))
+                return v
         return rec["text"]
 
 
@@ -153,15 +199,19 @@ def run(config: dict, calls=None) -> dict:
                 C0 = extract.build_prior(plain, config["alpha"])["counts"]
                 if C0 != saved["counts"]:
                     raise RuntimeError(f"replay does not reproduce {asrun}")
-                m = Replay(d, True)
-                res = [r for j in group for r in _run_job(j, m, templates, aliases, None, ck)]
-                p = write_prior(PRIORS / run_id / f"{sub or mode}{SUFFIX}" / asrun.name, res, config["alpha"],
-                                meta | {"variant": "wrapping-only fix (post hoc)"})
-                if m.used:
-                    C1 = np.array(p["counts"])
-                    fix[f"{cond}/{actor}/{s}"] = {
-                        "chunks_fixed": len(m.used), "edges_as_run": int((np.array(C0) > 0).sum()),
-                        "edges_fixed": int((C1 > 0).sum()), "counts_changed": p["counts"] != C0}
+                for suffix, opts in VARIANTS.items():
+                    m = Replay(d, **opts)
+                    res = [r for j in group for r in _run_job(j, m, templates, aliases, None, ck)]
+                    p = write_prior(PRIORS / run_id / f"{sub or mode}{suffix}" / asrun.name, res, config["alpha"],
+                                    meta | {"variant": f"{suffix} (post hoc)"})
+                    if m.used or m.used_multi:
+                        C1 = np.array(p["counts"])
+                        fix.setdefault(suffix, {})[f"{cond}/{actor}/{s}"] = {
+                            "chunks_fixed": len(m.used), "multi_replies_parsed": len(m.used_multi),
+                            "edges_as_run": int((np.array(C0) > 0).sum()), "edges_fixed": int((C1 > 0).sum()),
+                            "counts_changed": p["counts"] != C0,
+                            "chunk_status": dict(sorted(p["meta"]["chunk_status"].items())),
+                            "rejected_items": p["meta"]["rejected_items"]}
         out["failures"][mode] = rows
         cnt: dict = {}
         for r in rows:
@@ -169,7 +219,11 @@ def run(config: dict, calls=None) -> dict:
             cnt.setdefault(k, {}).setdefault(r["class"], 0)
             cnt[k][r["class"]] += 1
         out["counts"][mode] = cnt
-        out["fix"][mode] = {"priors_dir": f"{run_id}/{sub or mode}{SUFFIX}", "changed": fix,
-                            "first_attempts_fixed": sum(v["chunks_fixed"] for v in fix.values()),
-                            "priors_with_changed_counts": sum(v["counts_changed"] for v in fix.values())}
+        out["fix"][mode] = {suffix: {"priors_dir": f"{run_id}/{sub or mode}{suffix}", "changed": fix.get(suffix, {}),
+                                     "first_attempts_fixed": sum(v["chunks_fixed"] for v in fix.get(suffix, {}).values()),
+                                     "multi_replies_parsed": sum(v["multi_replies_parsed"]
+                                                                 for v in fix.get(suffix, {}).values()),
+                                     "priors_with_changed_counts": sum(v["counts_changed"]
+                                                                       for v in fix.get(suffix, {}).values())}
+                            for suffix in VARIANTS}
     return out

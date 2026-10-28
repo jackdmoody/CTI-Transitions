@@ -469,3 +469,9 @@ Units are bits over uniform per plan transition at α = 0.5, with [95% CI]; Uni 
   - case B as run `…T044524Z-redteam_scoring-ce77e76` and collapsed `…T044720Z-redteam_scoring-ce77e76`;
   - likelihood `…T044436Z-prior_likelihood-ce77e76`;
   - diagnosis with S parts (Q, Q5, M, M5) `…T044917Z-redteam_diagnosis-ce77e76`.
+
+## 2026-10-28 08:21 EDT: multiple-JSON-value replies, Jack's rule (POST HOC; logged before computing anything)
+Applies to replies of class *multiple_values* (01:06 entry): two or more JSON values in one reply.
+- **Identical values** (every JSON value in the reply equal, including `[]` twice): the reply counts as parsed, using that value. Nothing changes numerically (all such cases are `[]`).
+- **Values differ:** the reply stays a failure in the primary (as-run) numbers. A sensitivity is reported for the two content-bearing cases (S-M t0 R/OilRig-P01 chunk 0; S-M3 s1 B/menuPass), taking (a) the first value and (b) the last value, for every affected table: extraction, H3, R−B, H4, likelihood, and case A/B if affected.
+- As with the wrapping fix, the value taken goes through the run-time parser and validation unchanged; no content is repaired. The wrapping-only fix (21:14 rule) is applied in the same replays, so the variants are as-run + wrapping fix + this rule.
