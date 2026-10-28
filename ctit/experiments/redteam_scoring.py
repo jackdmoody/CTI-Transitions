@@ -49,27 +49,30 @@ def reachable(rules: list[dict]) -> list[str]:
     return [t for t in TACTICS if t in emitted]
 
 
-def _fit_host(host: str) -> tuple[str, dict]:
+def _fit_host(args) -> tuple[str, dict]:
+    host, drop = args if isinstance(args, tuple) else (args, ())
     labels0 = optc_redteam.load_labels().iloc[:0]
     parts = []
     for day in optc_split.BENIGN_DAYS:
         if redteam_testset._path(day, host).exists():
             _, t, _ = redteam_testset._host_day((day, host, labels0))
-            parts.append(t[["_timestamp", "tactic"]])
+            parts.append(t.loc[~t["rule_id"].isin(drop), ["_timestamp", "tactic"]])
     seq = pd.concat(parts).sort_values("_timestamp", kind="stable")["tactic"].tolist() if parts else []
     return host, {f"{a}|{b}": n for (a, b), n in Counter(zip(seq, seq[1:])).items()}
 
 
-def fit_counts(hosts: list[str], workers: int) -> dict[str, dict]:
-    """host -> {"from|to": count}, cached for this host list and the frozen v3 rule file."""
-    key = hashlib.sha256((v3.RULES_V3.read_bytes() + ",".join(hosts).encode())).hexdigest()
-    if FIT_CACHE.exists():
-        c = json.loads(FIT_CACHE.read_text())
+def fit_counts(hosts: list[str], workers: int, drop: tuple[str, ...] = (), cache: Path = FIT_CACHE) -> dict[str, dict]:
+    """host -> {"from|to": count}, cached for this host list and the frozen v3 rule file. `drop`:
+    rule ids whose tags are removed before transitions are counted (diagnosis, post hoc)."""
+    key = hashlib.sha256((v3.RULES_V3.read_bytes() + ",".join(hosts).encode()
+                          + (("|drop:" + ",".join(drop)).encode() if drop else b""))).hexdigest()
+    if cache.exists():
+        c = json.loads(cache.read_text())
         if c["key"] == key:
             return c["hosts"]
     with ProcessPoolExecutor(workers) as ex:
-        out = dict(ex.map(_fit_host, hosts))
-    FIT_CACHE.write_text(json.dumps({"key": key, "hosts": out}))
+        out = dict(ex.map(_fit_host, [(h, tuple(drop)) for h in hosts]))
+    cache.write_text(json.dumps({"key": key, "hosts": out}))
     return out
 
 
@@ -125,25 +128,18 @@ def _priors(config: dict, K: list[str]) -> dict[str, list[np.ndarray]]:
     return out
 
 
-def run(config: dict, calls=None) -> dict:
-    alpha, rng = config["alpha"], np.random.default_rng(config["bootstrap"]["seed"])
-    K = reachable(v3.load_v3())
-    ki = {t: i for i, t in enumerate(K)}
-    win = pd.read_parquet(WINDOWS).sort_values(["host", "start"], kind="stable").reset_index(drop=True)
-    seqs = np.array([[ki[t] for t in ts] for ts in win["tactics"]])
-    y, host = win["positive"].to_numpy(bool), win["host"].to_numpy()
-
-    fit = fit_counts(optc_split.load_split()["fit"], config.get("workers", 4))
+def baseline(fit: dict[str, dict], K: list[str], alpha: float) -> dict:
+    """P_ben (pooled, row-normalized) and U's baseline mean edge distribution from fit-host counts."""
     pooled = sum((matrix(c, K) for c in fit.values()), np.zeros((len(K), len(K))))
-    P_ben = (pooled + alpha) / (pooled + alpha).sum(axis=1, keepdims=True)
     vecs = [(m + alpha) / (m + alpha).sum() for m in (matrix(c, K).ravel() for c in fit.values())
             if m.sum() >= BRIMS_MIN_TRANSITIONS]
-    base = np.mean(vecs, axis=0)
+    return {"P_ben": (pooled + alpha) / (pooled + alpha).sum(axis=1, keepdims=True),
+            "base": np.mean(vecs, axis=0), "pooled": pooled, "u_hosts": len(vecs)}
 
-    scores = {"U": [u_scores(seqs, base, alpha)]}
-    for name, Ps in _priors(config, K).items():
-        scores[name] = [lr_scores(seqs, P, P_ben) for P in Ps]
 
+def evaluate(scores: dict[str, list[np.ndarray]], y: np.ndarray, host: np.ndarray, n_boot: int,
+             rng: np.random.Generator) -> tuple[dict, int]:
+    """Point metrics (mean over a condition's samples) and host-cluster bootstrap 95% CIs."""
     point = {c: {k: float(np.mean([metrics(s, y, host)[k] for s in ss])) for k in
                  ("auprc", "auroc", "det_1fpr", "fpr_actual", "ttd")} for c, ss in scores.items()}
     per_sample = {c: [metrics(s, y, host) for s in ss] for c, ss in scores.items() if len(ss) > 1}
@@ -151,7 +147,7 @@ def run(config: dict, calls=None) -> dict:
     rows = {h: np.flatnonzero(host == h) for h in hosts}
     boot: dict[str, list[dict]] = {c: [] for c in scores}
     skipped = 0
-    for _ in range(config["bootstrap"]["n"]):
+    for _ in range(n_boot):
         pick = rng.choice(hosts, size=len(hosts), replace=True)
         idx = np.concatenate([rows[h] for h in pick])
         # a host drawn twice is relabelled so its windows count as a separate cluster in TTD
@@ -164,12 +160,29 @@ def run(config: dict, calls=None) -> dict:
             boot[c].append({k: np.mean([m[k] for m in ms]) for k in ms[0]})
     ci = {c: {k: [float(np.percentile([b[k] for b in bs], 2.5)), float(np.percentile([b[k] for b in bs], 97.5))]
               for k in ("auprc", "auroc", "det_1fpr", "ttd")} for c, bs in boot.items()}
+    return {c: {"point": point[c], "ci95": ci[c], "samples": len(scores[c]),
+                **({"per_sample": per_sample[c]} if c in per_sample else {})} for c in scores}, skipped
+
+
+def run(config: dict, calls=None) -> dict:
+    alpha, rng = config["alpha"], np.random.default_rng(config["bootstrap"]["seed"])
+    K = reachable(v3.load_v3())
+    ki = {t: i for i, t in enumerate(K)}
+    win = pd.read_parquet(WINDOWS).sort_values(["host", "start"], kind="stable").reset_index(drop=True)
+    seqs = np.array([[ki[t] for t in ts] for ts in win["tactics"]])
+    y, host = win["positive"].to_numpy(bool), win["host"].to_numpy()
+
+    fit = fit_counts(optc_split.load_split()["fit"], config.get("workers", 4))
+    b = baseline(fit, K, alpha)
+    scores = {"U": [u_scores(seqs, b["base"], alpha)]}
+    for name, Ps in _priors(config, K).items():
+        scores[name] = [lr_scores(seqs, P, b["P_ben"]) for P in Ps]
+    conditions, skipped = evaluate(scores, y, host, config["bootstrap"]["n"], rng)
     return {
         "K": K, "alpha": alpha, "lambda": 0.0, "windows": int(len(win)), "positive": int(y.sum()),
-        "base_rate": float(y.mean()), "hosts": int(len(hosts)), "attacked_hosts": int(len(np.unique(host[y]))),
-        "fit_hosts": len(fit), "fit_transitions": int(pooled.sum()), "u_baseline_hosts": len(vecs),
+        "base_rate": float(y.mean()), "hosts": int(len(np.unique(host))), "attacked_hosts": int(len(np.unique(host[y]))),
+        "fit_hosts": len(fit), "fit_transitions": int(b["pooled"].sum()), "u_baseline_hosts": b["u_hosts"],
         "bootstrap": {**config["bootstrap"], "skipped_resamples": skipped},
-        "conditions": {c: {"point": point[c], "ci95": ci[c], "samples": len(scores[c]),
-                           **({"per_sample": per_sample[c]} if c in per_sample else {})} for c in scores},
+        "conditions": conditions,
         "oracle_F": "refused (5/5)",
     }

@@ -16,7 +16,9 @@ Post hoc (2026-10-27, added after the results were seen; SPEC_ISSUES), under "po
   precision and recall;
 - R - B on the chance-normalized edge-F1 (F1 / chance mean), and H2b (that gap vs. the
   actor's ATT&CK group-page reference count, descriptive);
-- H4: JSD at the extra alphas, and the 4x4 matrix of chance-normalized edge-F1.
+- H4: JSD at the extra alphas, and the 4x4 matrix of chance-normalized edge-F1;
+- H4 column-wise (secondary, approved 2026-10-27): per plan actor, matched prior minus the best
+  other actor's prior, read from the pre-registered matrix; reported next to the row-wise result.
 """
 from __future__ import annotations
 
@@ -147,9 +149,19 @@ def run(config: dict, calls=None) -> dict:
         out["h3_sensitivity"][mode] = {"dropped_chunks": sorted(f"{d}#{i}" for d, i in drop), "R": res}
     if "post_hoc" in config:
         out["post_hoc"] = post_hoc(config, loaded, truth["all"])
+        # H4 column-wise (post hoc secondary, approved by Jack 2026-10-27): per plan actor (column),
+        # the matched prior minus the best other actor's prior, from the pre-registered matrix
+        out["post_hoc"]["h4_colwise"] = {mode: h4_colwise(h) for mode, h in out["h4"].items() if len(h["f1"]) > 1}
     out["tactics"] = list(TACTICS)
     out["alpha"] = alpha
     return out
+
+
+def h4_colwise(h: dict) -> dict:
+    """Per column (plan actor): matched prior minus the best other prior (edge-F1); for JSD the
+    best other prior's JSD minus the matched one's, so > 0 means the matched prior is closer."""
+    return {"f1": {ca: h["f1"][ca][ca] - max(h["f1"][ra][ca] for ra in h["f1"] if ra != ca) for ca in h["f1"]},
+            "jsd": {ca: min(h["jsd"][ra][ca] for ra in h["jsd"] if ra != ca) - h["jsd"][ca][ca] for ca in h["jsd"]}}
 
 
 CHANCE_KEYS = ("f1", "precision", "recall", "edges_extracted", "chance_mean", "f1_over_chance", "percentile")

@@ -2,6 +2,8 @@
 import hashlib
 import json
 
+import pytest
+
 from ctit.cti import extract
 from ctit.experiments import extraction_report as rep
 
@@ -59,3 +61,11 @@ def test_post_hoc_chance_and_baselines(tmp_path, monkeypatch):
     assert out["chance"]["baseline/Uni/APT29"]["edges_extracted"]["mean"] == 182
     assert out["h4"]["F"]["f1_over_chance"]["APT29"]["APT29"] > 1
     assert "jsd_alpha_0.1" in out["h4"]["F"] and out["r_minus_b"]["F"]["APT29"]["f1_gap"] == 1.0
+
+
+def test_h4_colwise_reads_the_preregistered_matrix():
+    h = {"f1": {"A": {"A": .4, "B": .1}, "B": {"A": .5, "B": .3}},
+         "jsd": {"A": {"A": .1, "B": .2}, "B": {"A": .05, "B": .1}}}
+    col = rep.h4_colwise(h)
+    assert col["f1"] == pytest.approx({"A": -0.1, "B": 0.2})
+    assert col["jsd"] == pytest.approx({"A": -0.05, "B": 0.1})
