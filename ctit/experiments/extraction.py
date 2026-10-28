@@ -108,6 +108,17 @@ def jobs(config: dict) -> list[dict]:
     return out
 
 
+def write_prior(dest: Path, res: list, alpha: float, meta: dict) -> dict:
+    """Prior, raw transitions, chunk outcomes and rejections for one (mode, cond, actor, sample)."""
+    p = extract.build_prior(res, alpha, meta=meta)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(json.dumps({**p, "transitions": [t for r in res for t in r.transitions],
+                                "chunks": [{"doc_id": r.doc_id, "index": r.index, "status": r.status,
+                                            "attempts": r.attempts} for r in res],
+                                "rejected": [[it, why] for r in res for it, why in r.rejected]}, indent=1))
+    return p
+
+
 def _run_job(job, model, templates, aliases, calls, ck):
     if job["cond"] == "B":
         return [extract.memory_transitions(model, templates["memory"], job["actor"], calls,
@@ -140,14 +151,8 @@ def run(config: dict, calls=None) -> dict:
                 results.setdefault((j["cond"], j["actor"], s), []).extend(f.result())
         mo = {"hits_cached": sum(m.hits for _, m in samples), "priors": {}}
         for (cond, actor, s), res in sorted(results.items()):
-            p = extract.build_prior(res, alpha, meta={"mode": mode, "cond": cond, "actor": actor, "sample": s})
-            trans = [t for r in res for t in r.transitions]
-            dest = run_dir / mode / f"{cond}_{actor}_{s}.json"
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_text(json.dumps({**p, "transitions": trans,
-                                        "chunks": [{"doc_id": r.doc_id, "index": r.index, "status": r.status,
-                                                    "attempts": r.attempts} for r in res],
-                                        "rejected": [[it, why] for r in res for it, why in r.rejected]}, indent=1))
+            p = write_prior(run_dir / mode / f"{cond}_{actor}_{s}.json", res, alpha,
+                            {"mode": mode, "cond": cond, "actor": actor, "sample": s})
             C = np.array(p["counts"])
             entry = {k: p["meta"][k] for k in ("chunks", "chunk_status", "retried", "transitions", "rejected_items",
                                                "rejected_by_reason", "hallucinated_span_rate",

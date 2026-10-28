@@ -1,0 +1,23 @@
+# Schema failures per model and mode, and the wrapping-only fix (POST HOC; SPEC_ISSUES 2026-10-27
+# 21:14 EDT rule and 21:15 clarification). Cache replay only, no model calls. Fixed priors go to
+# data/priors/<run>/<mode>__unwrap/; as-run priors stay primary.
+# Modes: F = Opus 5.5; S-Q = Qwen3-14B (pre-registered S); S-M = Ministral 3 14B; S-M3 = Ministral 3 3B.
+experiment: schema_failures
+actors: [APT29, menuPass, OilRig, Sandworm]
+conditions: [R, B, oracle]
+oracle_text: data/optc_check/groundtruth/OpTCRedTeamGroundTruth.txt
+prompts: {report: extract_v1.txt, memory: memory_v1.txt}
+chunk: {tokens: 6000, overlap: 300}
+alpha: 0.5
+ollama_labels:
+  qwen3:14b: S-Q
+  ministral-3-nosys:14b-instruct-2512-q4_K_M: S-M
+  ministral-3-nosys:3b-instruct-2512-q4_K_M: S-M3
+runs:
+  F: 20261027T223842Z-extraction-a686409
+  S-Q: {run: 20261027T223928Z-extraction-a686409, mode: S}
+  S-Q-sampled: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled}
+  S-M: {run: 20261028T005130Z-extraction-5528fd6, mode: S}
+  S-M-sampled: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled}
+  S-M3: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B}
+  S-M3-sampled: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B-sampled}

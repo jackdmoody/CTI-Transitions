@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 
 from ctit.calls import CallLogger
-from ctit.experiments import baseline_priors, benign_breakdown, benign_windows, drift_parity, extraction, extraction_report, mapper_report, mapper_v3, otrf_case, prior_likelihood, redteam_day, redteam_diag, redteam_diagnosis, redteam_scoring, redteam_testset, wp5_gate
+from ctit.experiments import baseline_priors, benign_breakdown, benign_windows, drift_parity, extraction, extraction_report, mapper_report, mapper_v3, otrf_case, prior_likelihood, redteam_day, redteam_diag, redteam_diagnosis, redteam_scoring, redteam_testset, schema_failures, wp5_gate
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RESULTS_ROOT = REPO_ROOT / "results"
@@ -40,6 +40,7 @@ EXPERIMENTS = {
     "otrf_case": otrf_case.run,
     "redteam_diagnosis": redteam_diagnosis.run,
     "prior_likelihood": prior_likelihood.run,
+    "schema_failures": schema_failures.run,
 }
 
 
