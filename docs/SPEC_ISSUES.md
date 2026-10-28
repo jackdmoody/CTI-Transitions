@@ -398,3 +398,26 @@ Always prioritize using tools to provide the most accurate and helpful response.
     - AUROC: a tied positive-negative pair counts 1/2.
     - Det and TTD: detected only if strictly above the threshold.
   - If the 1% point falls inside a tie block (some value v with P(neg > v) < 1% < P(neg ≥ v)), that is flagged, with whether it is the zero block, and detection is reported at the achievable FPR on each side (score > v and score ≥ v).
+
+## 2026-10-27 23:17 EDT: case B diagnosis (F parts) and collapsed case B: results (POST HOC; nothing selected)
+Runs: diagnosis `results/20261028T031006Z-redteam_diagnosis-1c54232`; collapsed case B `results/20261028T031454Z-redteam_scoring-1c54232`.
+- **The negative set is mostly the scripted job.** Of the 4,382 negative windows, 4,009 sit on the five xx01/xx51 targets. Dropping those hosts leaves 402 windows (29 positive); dropping the two scripted-job rules' tags leaves 499 (45 positive). Negative-window tactics: Privilege Escalation 62%, Discovery 28%, Defense Evasion 10%. Sysnative (21,662) and Findstr (9,757) are the top rules in negative windows. Positive windows are 77% Defense Evasion tokens (PSScriptPolicyTest, System File Execution Location Anomaly) and 77% Defense Evasion → Defense Evasion transitions.
+- **ATTK's as-run lead is its weight on staying in Defense Evasion, not actor knowledge or edges:**
+  - ATTK's projected P(DE → DE) is 0.11–0.22, against Uni 0.077 and R-F about 0.04.
+  - Most of the ATTK − Uni gap (positive minus negative, per window) comes from the self part (+0.25 to +0.62).
+  - Controls: destination-tactic frequency only reproduces ATTK (AUPRC .19–.35); actor-agnostic all-groups ATTK gives .306; ATTK's edge set with uniform weights equals Uni (.14–.15).
+  - R-F's self part is negative (−0.28 to −0.35) and its off-diagonal part positive (+0.20 to +0.33), so as run it nets to about Uni.
+- **Collapsed scoring:**
+  - R-F: AUPRC .28–.43 (OilRig .420 [.323, .606], Sandworm .432 [.343, .603]), Det@1% .39–.63.
+  - Uni .178, ATTK .19–.29, R-Q and R-Q5 .14–.18, oracle-Q .178.
+  - Ties: 11 of 46 positive and 439 of 4,382 negative windows have no off-diagonal transition (score 0). The 1% point falls inside a tie block for every LR condition: the realized FPR is about 0.25–0.3%, and the next achievable FPR is about 1.2% (non-zero blocks) or about 10.3% (zero block).
+- **What contradicts a clean story:**
+  - Much of R-F's collapsed advantage comes from scoring the scripted PrivEsc ↔ Discovery cycle as unlikely (Discovery → PrivEsc log ratio −0.68 against Uni), not only from the attack's transitions.
+  - All four off-target R-F priors help.
+  - With the scripted rules' tags dropped (collapsed), R-F (.15–.19) is about Uni (.146) and below ATTK (.21–.28).
+  - The scripted job also drives most as-run ATTK and U differences; once it is removed, every condition is .59–.72 (as run).
+- **U's inversion is the scripted job:**
+  - The fit baseline's mean edge distribution is dominated by DE → DE (0.33), and positive windows are mostly DE → DE, so they sit close to the baseline.
+  - Negative windows are mostly the PrivEsc/Discovery cycle (the baseline has 2.5% each), so they sit far from it.
+  - With the xx01/xx51 hosts dropped, U's AUROC is .84; with the rules' tags dropped, .85. Neither is inverted.
+- **Per host:** sysclient0501 (an xx01 host) has 10 of the 46 positive windows. Leave-one-host-out AUPRC ranges are narrow (e.g. ATTK/OilRig as run .34–.46; U .015–.037).
