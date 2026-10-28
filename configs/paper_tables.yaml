@@ -10,10 +10,10 @@ oracle_text: data/optc_check/groundtruth/OpTCRedTeamGroundTruth.txt
 prompts: {report: extract_v1.txt, memory: memory_v1.txt}
 chunk: {tokens: 6000, overlap: 300}
 sources:
-  extraction: SET_ME
-  likelihood: SET_ME
-  case_b_as_run: SET_ME
-  case_b_collapsed: SET_ME
+  extraction: 20261028T123410Z-extraction_report-ecf227b
+  likelihood: 20261028T123417Z-prior_likelihood-ecf227b
+  case_b_as_run: 20261028T123535Z-redteam_scoring-ecf227b
+  case_b_collapsed: 20261028T123734Z-redteam_scoring-ecf227b
 # as-run priors (primary)
 priors:
   F: {run: 20261027T223842Z-extraction-a686409, mode: F}
