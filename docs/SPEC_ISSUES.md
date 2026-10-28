@@ -332,6 +332,10 @@ Always prioritize using tools to provide the most accurate and helpful response.
 3. **After the runs, a wrapping-only fix is applied uniformly** to every model's cached first attempts (F, Ministral 14B and 3B, Qwen superseded), with no new calls.
    - Every affected table is reported both ways: as run, and with the wrapping fix. **Primary numbers stay as run** unless Jack decides otherwise after seeing both.
    - Operational rule (mine, fixed now, before any new failure is seen): in the fix variant, a chunk whose first attempt parses once the wrapping is stripped uses that first attempt. Otherwise it keeps its as-run outcome (retry result or skip). Validation (tactic names, self-transitions) and the evidence checks are unchanged.
+   - **Clarification (2026-10-27 21:15 EDT, Jack):** a first attempt is used only if, once the wrapping is stripped, it passes everything that would have triggered a retry at run time. Otherwise the as-run outcome stands.
+     - In the code as run (`ctit.cti.extract.ask`), the only retry trigger is `schema.parse`: JSON decoding, and "a JSON list of objects".
+     - Item-level validation (`schema.validate`: unknown tactic, self-transition, missing fields) drops single items and never triggered a retry. In the fix variant it is applied to the first attempt exactly as at run time.
+     - A first attempt that decodes but isn't a list of objects keeps its as-run outcome.
 4. **The schema-failure table** gives, per model and mode, every failure with its parser message and its class under rule 1 (wrapping gap or malformed output), for first attempts and retries.
 - Known so far:
   - F has 1 failure, B/Sandworm s4, first attempt: an unclosed ```json fence with complete JSON inside, i.e. a wrapping gap.
