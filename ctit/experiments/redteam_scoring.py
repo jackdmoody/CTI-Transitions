@@ -110,18 +110,23 @@ def metrics(score: np.ndarray, y: np.ndarray, host: np.ndarray) -> dict:
             "det_1fpr": float(det[y].mean()), "fpr_actual": float(det[~y].mean()), "ttd": float(np.mean(ttd))}
 
 
+def run_dir(spec) -> tuple[str, str | None]:
+    """A `runs` value: a run id (priors under <run>/<label>) or {run, mode} (under <run>/<mode>)."""
+    return (spec, None) if isinstance(spec, str) else (spec["run"], spec["mode"])
+
+
 def _priors(config: dict, K: list[str]) -> dict[str, list[np.ndarray]]:
     """condition -> P_adv per sample, projected onto K."""
     out = {"Uni": [prior.project(prior.uniform(), K)]}
     for a in config["actors"]:
         out[f"ATTK/{a}"] = [prior.project(prior.load(PRIORS / a / "ATTK.json")[0], K)]
-    for mode, run in config["runs"].items():
-        label = {"F": "F", "S": "S", "S-sampled": "S-sampled"}[mode]
+    for label, spec in config["runs"].items():
+        run, sub = run_dir(spec)
         for cond, actors in (("R", config["actors"]), ("oracle", ["OpTC-redteam"])):
-            if cond == "oracle" and mode not in config["oracle_modes"]:
+            if cond == "oracle" and label not in config["oracle_modes"]:
                 continue
             for a in actors:
-                files = sorted((PRIORS / run / mode).glob(f"{cond}_{a}_*.json"))
+                files = sorted((PRIORS / run / (sub or label)).glob(f"{cond}_{a}_*.json"))
                 if files:
                     name = f"{cond}-{label}" + ("" if cond == "oracle" else f"/{a}")
                     out[name] = [prior.project(np.array(json.loads(f.read_text())["matrix"]), K) for f in files]

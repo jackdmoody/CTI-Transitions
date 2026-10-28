@@ -69,3 +69,15 @@ def test_h4_colwise_reads_the_preregistered_matrix():
     col = rep.h4_colwise(h)
     assert col["f1"] == pytest.approx({"A": -0.1, "B": 0.2})
     assert col["jsd"] == pytest.approx({"A": -0.05, "B": 0.1})
+
+
+def test_caches_map_ollama_tags_to_labels(tmp_path):
+    for name, key in (("a", {"tag": "ministral-3:14b", "w": "x", "o": {"temperature": 0}}),
+                      ("b", {"tag": "ministral-3:14b", "w": "x", "o": {"temperature": 0.15, "seed": 2}}),
+                      ("c", {"tag": "qwen3:14b", "w": "y", "o": {"temperature": 0}}),
+                      ("d", {"tag": "other", "w": "z", "o": {}})):
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "KEY.txt").write_text(json.dumps(key))
+    got = rep._caches(tmp_path, {"ministral-3:14b": "S", "qwen3:14b": "qwen3-14b"})
+    assert set(got) == {("S", "t0"), ("S-sampled", "s2"), ("qwen3-14b", "t0")}
+    assert rep.run_dir("r1") == ("r1", None) and rep.run_dir({"run": "r1", "mode": "S"}) == ("r1", "S")

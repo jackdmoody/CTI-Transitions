@@ -31,21 +31,42 @@ import numpy as np
 from ctit.cti import extract, prior
 from ctit.cti.manifest import load_actors
 from ctit.eval import recovery
-from ctit.experiments.extraction import PRIORS, jobs
+from ctit.experiments.extraction import PRIORS, REPO_ROOT, jobs
+from ctit.experiments.redteam_scoring import run_dir
 from ctit.map import attack
 from ctit.map.attack import TACTICS
 
 
-def _caches(root: Path) -> dict[tuple[str, str], Path]:
-    """(mode, sample) -> cache dir, from each dir's KEY.txt."""
+def _caches(root: Path, ollama_labels: dict[str, str] | None = None) -> dict[tuple[str, str], Path]:
+    """(label, sample) -> cache dir, from each dir's KEY.txt. ollama_labels: Ollama tag -> label
+    (its sampled runs get "<label>-sampled"); tags not listed are ignored."""
+    labels = ollama_labels if ollama_labels is not None else {"qwen3:14b": "S"}
     out = {}
     for d in root.iterdir():
         k = (d / "KEY.txt").read_text() if (d / "KEY.txt").exists() else ""
         if k.startswith('{"model": "claude'):
             out[("F", "s" + k.rsplit("#s", 1)[1])] = d
         elif '"tag"' in k:
-            o = json.loads(k)["o"]
-            out[("S", "t0") if "seed" not in o else ("S-sampled", f"s{o['seed']}")] = d
+            key = json.loads(k)
+            if key["tag"] in labels:
+                base, o = labels[key["tag"]], key["o"]
+                out[(base, "t0") if "seed" not in o else (f"{base}-sampled", f"s{o['seed']}")] = d
+    return out
+
+
+def timing(run_ids: list[str]) -> dict:
+    """sec/call and tokens/call per model (sampled calls apart) from each run's calls.jsonl."""
+    out = {}
+    for run in run_ids:
+        recs = [json.loads(x) for x in (REPO_ROOT / "results" / run / "calls.jsonl").read_text().splitlines()]
+        groups: dict[str, list] = {}
+        for r in recs:
+            groups.setdefault(r["model"].split("#")[0] + (" (sampled)" if "#sample" in r["model"] else ""), []).append(r)
+        out[run] = {m: {"calls": len(rs), "sec_per_call": float(np.mean([r["latency_s"] for r in rs])),
+                        "sec_per_call_median": float(np.median([r["latency_s"] for r in rs])),
+                        "input_tokens_per_call": float(np.mean([r["input_tokens"] for r in rs])),
+                        "output_tokens_per_call": float(np.mean([r["output_tokens"] for r in rs]))}
+                    for m, rs in sorted(groups.items())}
     return out
 
 
@@ -66,7 +87,7 @@ def _sd(x):
 def run(config: dict, calls=None) -> dict:
     templates = {k: extract.load_prompt(v) for k, v in config["prompts"].items()}
     alpha = config["alpha"]
-    caches = _caches(PRIORS / "cache")
+    caches = _caches(PRIORS / "cache", config.get("ollama_labels"))
     chunks = _prompts(config, templates)
     texts = {j["doc_id"]: extract.chunk(j["text"], **config["chunk"]) for j in jobs(config) if "text" in j}
     truth = {v: {a: recovery.ground_truth_counts(a, all_platforms=(v == "all")) for a in config["actors"]}
@@ -86,8 +107,9 @@ def run(config: dict, calls=None) -> dict:
         n_samples = len({s for (m, s) in caches if m == mode})
         out["refusals"][mode] = {k: f"{len(v)}/{n_samples}" for k, v in sorted(by_chunk.items())}
     loaded: dict = {}
-    for mode, run_id in config["runs"].items():
-        for f in sorted((PRIORS / run_id / mode).glob("*.json")):
+    for mode, spec in config["runs"].items():
+        run_id, sub = run_dir(spec)
+        for f in sorted((PRIORS / run_id / (sub or mode)).glob("*.json")):
             d = json.loads(f.read_text())
             m = d["meta"]
             loaded.setdefault(mode, {}).setdefault((m["cond"], m["actor"]), {})[m["sample"]] = d
@@ -132,8 +154,8 @@ def run(config: dict, calls=None) -> dict:
                                                    for k in ("f1", "jsd")} for ra in mats[0]["diag_margin"]}
     # H3 sensitivity: S without the chunks F refused in any sample
     drop = refused.get("F", set())
-    for mode in ("S", "S-sampled"):
-        if mode not in loaded:
+    for mode in loaded:
+        if mode == "F":
             continue
         res = {}
         for (cond, actor), by_s in sorted(loaded[mode].items()):
@@ -152,6 +174,16 @@ def run(config: dict, calls=None) -> dict:
         # H4 column-wise (post hoc secondary, approved by Jack 2026-10-27): per plan actor (column),
         # the matched prior minus the best other actor's prior, from the pre-registered matrix
         out["post_hoc"]["h4_colwise"] = {mode: h4_colwise(h) for mode, h in out["h4"].items() if len(h["f1"]) > 1}
+    # H3 (spec §6): S-to-F ratio of edge-F1 per actor (R priors), and with F-refused chunks dropped from S
+    if "F" in out["modes"]:
+        f1 = lambda mode, a: out["modes"][mode][f"R/{a}"]["summary"]["f1_all"]["mean"]
+        out["h3"] = {mode: {a: {"s_over_f": f1(mode, a) / f1("F", a) if f1("F", a) else None,
+                                "s_over_f_drop_f_refused": (out["h3_sensitivity"][mode]["R"][a]["f1"]["mean"] / f1("F", a)
+                                                            if f1("F", a) else None)}
+                            for a in config["actors"] if f"R/{a}" in out["modes"][mode]}
+                     for mode in out["modes"] if mode != "F"}
+    if "timing_runs" in config:
+        out["timing"] = timing(config["timing_runs"])
     out["tactics"] = list(TACTICS)
     out["alpha"] = alpha
     return out

@@ -103,12 +103,13 @@ def entropy_bits(P: np.ndarray) -> float:
 def counts_files(config: dict) -> dict[str, list[np.ndarray]]:
     """'R-<mode>/<actor>' and 'oracle-<mode>' -> raw count matrices per sample (14 x 14)."""
     out = {}
-    for mode, run in config["runs"].items():
+    for mode, spec in config["runs"].items():
+        run, sub = rs.run_dir(spec)
         for cond, actors in (("R", config["actors"]), ("oracle", ["OpTC-redteam"])):
             if cond == "oracle" and mode not in config.get("oracle_modes", []):
                 continue
             for a in actors:
-                files = sorted((rs.PRIORS / run / mode).glob(f"{cond}_{a}_*.json"))
+                files = sorted((rs.PRIORS / run / (sub or mode)).glob(f"{cond}_{a}_*.json"))
                 if files:
                     out[f"{cond}-{mode}" + ("" if cond == "oracle" else f"/{a}")] = \
                         [np.array(json.loads(f.read_text())["counts"]) for f in files]

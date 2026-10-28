@@ -21,7 +21,7 @@ import pandas as pd
 
 from ctit.cti import prior
 from ctit.eval import actor_jsd, plans, recovery
-from ctit.experiments.redteam_scoring import PRIORS, reachable
+from ctit.experiments.redteam_scoring import PRIORS, reachable, run_dir
 from ctit.map import v3
 from ctit.map.attack import TACTICS
 from ctit.map.extended import tag
@@ -62,12 +62,13 @@ def run(config: dict, calls=None) -> dict:
 
     priors: dict[str, list[np.ndarray]] = {"ATTK/APT29": [prior.attk_counts("G0016")[0]],
                                            "Uni": [np.ones((len(TACTICS),) * 2)]}
-    for mode, run_id in config["runs"].items():
+    for mode, spec in config["runs"].items():
+        run_id, sub = run_dir(spec)
         for cond in ("R", "B"):
             for a in config["actors"]:
                 if cond == "B" and a != "APT29":
                     continue
-                files = sorted((PRIORS / run_id / mode).glob(f"{cond}_{a}_*.json"))
+                files = sorted((PRIORS / run_id / (sub or mode)).glob(f"{cond}_{a}_*.json"))
                 if files:
                     priors[f"{cond}-{mode}/{a}"] = [np.array(json.loads(f.read_text())["counts"]) for f in files]
     vs_exec = {name: _summ([recovery.chance_control(C, E, draws, rng) for C in Cs]) for name, Cs in priors.items()}
