@@ -23,10 +23,17 @@ frontier:
     usd_per_mtok: {input: 4.0, output: 20.0}
 open_weight:
   S:  # primary (2026-10-27): Ministral 3 14B Instruct 2512 (Mistral AI, Apache 2.0), instruct, not reasoning
-    tag: ministral-3:14b-instruct-2512-q4_K_M
-    ollama_id: 4760c35aeb9d
+    # Built from the official ministral-3:14b-instruct-2512-q4_K_M (ollama_id 4760c35aeb9d, template
+    # aa65b5ae...) with the template's default system-prompt injection removed and nothing else
+    # changed (SPEC_ISSUES 2026-10-27): configs/modelfiles/, sha256 of the Modelfile below.
+    tag: ministral-3-nosys:14b-instruct-2512-q4_K_M
+    base_tag: ministral-3:14b-instruct-2512-q4_K_M
+    modelfile: configs/modelfiles/ministral-3-nosys-14b-instruct-2512-q4_K_M.Modelfile
+    modelfile_sha256: b6f12da10606a93437bd8581cb5d32c035d4fde3e632bb55e409d93540bb4168
+    # as run: ae31aeb7166085d32e8f38671e7168b5c5cc35714c944c9a49358f4c892d310b (differs only in the FROM path, now ~/.ollama/...; same blob, same ollama_id; 2026-11-06)
+    ollama_id: 9c53f01aa0e0
     weights_sha256: bfb40fc6bb9c3b2ed529b480e04f824c005ea8f86733d4ebbf0c204de484891e
-    template_sha256: aa65b5aebf89e7dfb3aa05af9220299a7e1cebe3ab97daae3c2e259acbdf278c
+    template_sha256: 397d02246bd1005298e81866d3c06a7dbd0ddad3677a151f363c640fbf47b38c
     parameters: 13.9B
     quantization: Q4_K_M
     context_length: 262144
@@ -35,11 +42,16 @@ open_weight:
     # (`ollama show --parameters`). Sent explicitly, with the seed; every other sampling
     # parameter is not sent and takes Ollama's built-in default, as in the Qwen run.
     sampled: {options: {temperature: 0.15, num_ctx: 16384}, seeds: [0, 1, 2, 3, 4]}
-  S_3B:  # size point: Ministral 3 3B Instruct 2512, instruct
-    tag: ministral-3:3b-instruct-2512-q4_K_M
-    ollama_id: f04aa1c738f6
+  S_3B:  # size point: Ministral 3 3B Instruct 2512, instruct; built like S from the official
+    # ministral-3:3b-instruct-2512-q4_K_M (ollama_id f04aa1c738f6, template 24c6226a...)
+    tag: ministral-3-nosys:3b-instruct-2512-q4_K_M
+    base_tag: ministral-3:3b-instruct-2512-q4_K_M
+    modelfile: configs/modelfiles/ministral-3-nosys-3b-instruct-2512-q4_K_M.Modelfile
+    modelfile_sha256: 10f4824a517a01c8b4b97381c1cb54f8d4aef259a7500cb79fdf56c1ffc0616c
+    # as run: 79e8ef9c86740d55d548ee8dc8b556e6d2dca4811054cc96482c44ce0b512ad1 (differs only in the FROM path, now ~/.ollama/...; same blob, same ollama_id; 2026-11-06)
+    ollama_id: 5f49d84e5598
     weights_sha256: 910e4bf4e2338f181e99796d7452404e85c1b6bbbf8cd0bb094672cf9b6f2f22
-    template_sha256: 24c6226aca35b16350187fb9125e7cb4e746795c78edd3cb1de45654c7e77181
+    template_sha256: 397d02246bd1005298e81866d3c06a7dbd0ddad3677a151f363c640fbf47b38c
     parameters: 3.8B
     quantization: Q4_K_M
     context_length: 262144

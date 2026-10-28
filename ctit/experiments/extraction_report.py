@@ -61,7 +61,8 @@ def timing(run_ids: list[str]) -> dict:
         recs = [json.loads(x) for x in (REPO_ROOT / "results" / run / "calls.jsonl").read_text().splitlines()]
         groups: dict[str, list] = {}
         for r in recs:
-            groups.setdefault(r["model"].split("#")[0] + (" (sampled)" if "#sample" in r["model"] else ""), []).append(r)
+            sampled = "#sample" in r["model"] or "seed" in (r.get("options") or {})  # Ollama logs the bare tag
+            groups.setdefault(r["model"].split("#")[0] + (" (sampled)" if sampled else ""), []).append(r)
         out[run] = {m: {"calls": len(rs), "sec_per_call": float(np.mean([r["latency_s"] for r in rs])),
                         "sec_per_call_median": float(np.median([r["latency_s"] for r in rs])),
                         "input_tokens_per_call": float(np.mean([r["input_tokens"] for r in rs])),

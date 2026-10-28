@@ -82,8 +82,10 @@ def models_for(mode: str, pins: dict) -> list[tuple[str, object]]:
     for i in samples:
         m = OllamaModel(slot, url=url, sample=i)
         m.verify()
-        key = json.dumps({"tag": m.pin["tag"], "w": m.pin["weights_sha256"], "o": m.options}, sort_keys=True)
-        out.append(("t0" if i is None else f"s{i}", Cached(m, key)))
+        key = {"tag": m.pin["tag"], "w": m.pin["weights_sha256"], "o": m.options}
+        if "template_sha256" in m.pin:  # the rendered prompt depends on the template (2026-10-27)
+            key["t"] = m.pin["template_sha256"]
+        out.append(("t0" if i is None else f"s{i}", Cached(m, json.dumps(key, sort_keys=True))))
     return out
     raise ValueError(mode)
 

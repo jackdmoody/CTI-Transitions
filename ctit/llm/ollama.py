@@ -17,7 +17,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MODELS = REPO_ROOT / "configs" / "models.yaml"
 OLLAMA_URL = "http://127.0.0.1:11434"
 MANIFESTS = Path.home() / ".ollama" / "models" / "manifests" / "registry.ollama.ai" / "library"
+# models built locally with `ollama create` (e.g. the no-system-prompt Ministral, configs/modelfiles/)
+MANIFESTS_V2 = Path.home() / ".ollama" / "models" / "manifests-v2" / "ollama.com" / "library"
 MODEL_LAYER = "application/vnd.ollama.image.model"
+TEMPLATE_LAYER = "application/vnd.ollama.image.template"
 
 
 class DigestMismatch(RuntimeError):
@@ -28,11 +31,19 @@ def pinned(slot: str, path: Path = MODELS) -> dict:
     return yaml.safe_load(path.read_text())["open_weight"][slot]
 
 
-def local_weights_digest(tag: str, manifests: Path = MANIFESTS) -> str:
+def local_layer_digest(tag: str, media_type: str, manifests: Path = MANIFESTS) -> str:
     name, _, version = tag.partition(":")
-    manifest = json.loads((manifests / name / (version or "latest")).read_text())
-    (layer,) = [l for l in manifest["layers"] if l["mediaType"] == MODEL_LAYER]
+    for root in (manifests, MANIFESTS_V2):
+        path = root / name / (version or "latest")
+        if path.exists():
+            break
+    manifest = json.loads(path.read_text())
+    (layer,) = [l for l in manifest["layers"] if l["mediaType"] == media_type]
     return layer["digest"].removeprefix("sha256:")
+
+
+def local_weights_digest(tag: str, manifests: Path = MANIFESTS) -> str:
+    return local_layer_digest(tag, MODEL_LAYER, manifests)
 
 
 class OllamaModel:
@@ -56,6 +67,10 @@ class OllamaModel:
         got = local_weights_digest(self.pin["tag"], self.manifests)
         if got != self.pin["weights_sha256"]:
             raise DigestMismatch(f"{self.pin['tag']}: local weights {got} != pinned {self.pin['weights_sha256']}")
+        if "template_sha256" in self.pin:
+            t = local_layer_digest(self.pin["tag"], TEMPLATE_LAYER, self.manifests)
+            if t != self.pin["template_sha256"]:
+                raise DigestMismatch(f"{self.pin['tag']}: local template {t} != pinned {self.pin['template_sha256']}")
 
     def chat(self, prompt: str, calls=None, *, system: str | None = None, attempt: int = 1) -> str:
         opts = dict(self.options)

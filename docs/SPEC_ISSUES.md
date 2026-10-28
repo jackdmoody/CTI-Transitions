@@ -266,3 +266,59 @@ Runs: F `20261027T121723Z-extraction-a53c21c` (185 calls, 1.14M in / 0.37M out t
   - control (2) is outer(mean n, n), so every row is the group's tactic profile at ATTK's scale;
   - for (d)(ii) the fit baseline is rebuilt without the two rules (`data/eval/optc_fit_transitions_v3_noscript.json`), so test and baseline are tagged alike.
 - F parts first (`configs/redteam_diagnosis_F.yaml`); S parts once the Ministral 14B priors exist.
+
+## 2026-10-27 20:50 EDT: Ministral run stopped; the Ollama template's default system prompt is removed (decided by Jack)
+- **What happened:** the official Ollama template for `ministral-3:14b-instruct-2512-q4_K_M` and `ministral-3:3b-instruct-2512-q4_K_M` injects a default system prompt whenever the request carries no system message (ours never does). The template block, quoted verbatim from `ollama show --modelfile` (Ollama 0.40.10, 14B; the 3B is identical except "Ministral-3-3B-Instruct-2512"). `{{ currentDate }}` and `{{ yesterdayDate }}` are filled with the server's date at request time:
+
+````
+{{- if not $hasSystemPrompt }}[SYSTEM_PROMPT]You are Ministral-3-14B-Instruct-2512, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.
+You power an AI assistant called Le Chat.
+Your knowledge base was last updated on 2023-10-01.
+The current date is {{ currentDate }}.
+
+When you're not sure about some information or when the user's request requires up-to-date or specific data, you must use the available tools to fetch the information. Do not hesitate to use tools whenever they can provide a more accurate or complete response. If no relevant tools are available, then clearly state that you don't have the information and avoid making up anything.
+If the user's question is not clear, ambiguous, or does not provide enough context for you to accurately answer the question, you do not try to answer it right away and you rather ask the user to clarify their request (e.g. "What are some good restaurants around me?" => "Where are you?" or "When is the next flight to Tokyo" => "Where do you travel from?").
+You are always very attentive to dates, in particular you try to resolve dates (e.g. "yesterday" is {{ yesterdayDate }}) and when asked about information at specific dates, you discard information that is at another date.
+You follow these instructions in all languages, and always respond to the user in the language they use or request.
+Next sections describe the capabilities that you have.
+
+# WEB BROWSING INSTRUCTIONS
+
+You cannot perform any web search or access internet to open URLs, links etc. If it seems like the user is expecting you to do so, you clarify the situation and ask the user to copy paste the text directly in the chat.
+
+# MULTI-MODAL INSTRUCTIONS
+
+You have the ability to read images, but you cannot generate images. You also cannot transcribe audio files or videos.
+You cannot read nor transcribe audio files or videos.
+
+# TOOL CALLING INSTRUCTIONS
+
+You may have access to tools that you can use to fetch information or perform actions. You must use these tools in the following situations:
+
+1. When the request requires up-to-date information.
+2. When the request requires specific data that you do not have in your knowledge base.
+3. When the request involves actions that you cannot perform without tools.
+
+Always prioritize using tools to provide the most accurate and helpful response. If tools are not available, inform the user that you cannot perform the requested action at the moment.[/SYSTEM_PROMPT]
+{{- end }}
+````
+
+- **Why it's a problem** (Jack):
+  - Opus and Qwen got only the frozen v1 user prompt, so this was a prompt difference between models.
+  - The prompt contains the date, so the rendered prompt changes from day to day, and a rerun on another day is not the same experiment.
+  - It tells the model to "clearly state that you don't have the information and avoid making up anything", which bears directly on the no-report (B) condition that H2 measures.
+- **Stopped** at 20:45 EDT. 61 calls had been made by the 14B in run `20261028T001101Z-extraction-3e5207d`:
+  - temperature 0: 44 (37 first attempts + 7 schema retries);
+  - sampled seed 0: 17 (14 + 3);
+  - no refusals. The 3B never started.
+- **Discarded, kept on disk:** all 61 responses (cache dirs 2aa8a7208001cbf8 and 092ba0be9db1448c, plus four empty seed dirs) and the temperature-0 priors written before the stop (`data/priors/20261028T001101Z-extraction-3e5207d/S`). Each carries a DISCARDED.txt, and none is used anywhere.
+- **F and Qwen had no system prompt (checked):**
+  - Every logged call's prompt hash equals the hash of the frozen v1 user prompt alone: F 185/185 and 1/1, Qwen 222/222 and 8/8. Our code hashes system + user, so nothing was sent as a system message.
+  - F is the Anthropic Messages API with no `system` parameter.
+  - Qwen's Ollama template renders a system block only when a system message or tools are passed, and its Modelfile has no SYSTEM line.
+- **Fix:**
+  - Pinned Modelfiles derived from the official ones with only that block removed: `configs/modelfiles/ministral-3-nosys-{14b,3b}-instruct-2512-q4_K_M.Modelfile`, sha256 ae31aeb7…d310b (14B) and 79e8ef9c…12ad1 (3B). Built as `ministral-3-nosys:{14b,3b}-instruct-2512-q4_K_M` (ollama_id 9c53f01aa0e0 / 5f49d84e5598).
+  - The model, params (temperature 0.15) and license layers are byte-identical to the official ones (same weights digests bfb40fc6… / 910e4bf4…). The parser stays `ministral`, with no renderer. Only the template layer changes: 397d0224…, the same for both sizes.
+  - Verified with one call per model on the debug-logging private server: the prompt "Reply with the single word OK." rendered to 44 characters and 11 tokens (`[INST]…[/INST]`), with no system block and no date.
+- **Cache:** the response-cache key now includes the template digest, as well as the tag, weights and options, so none of the 61 calls can be replayed. They also live under a different tag.
+- **Relaunch:** 14B, then 3B, with everything else as in the 20:06 entry.
