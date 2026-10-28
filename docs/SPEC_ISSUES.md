@@ -245,3 +245,24 @@ Runs: F `20261027T121723Z-extraction-a53c21c` (185 calls, 1.14M in / 0.37M out t
   - one temperature-0 run plus 5 sampled runs. "Sampled" keeps its pre-registered meaning, the model's default (Modelfile) sampling. Every sampling parameter is sent explicitly and recorded;
   - conditions R and B for all four actors, plus the oracle for the 14B only.
 - 14B first, then 3B. Every analysis that used S priors is rerun with Ministral as S.
+
+## 2026-10-27: H4 column-wise approved as a POST HOC secondary analysis (Jack)
+- For each plan actor (column) of the pre-registered 4×4 matrix: the matched prior's edge-F1 minus the best other actor's prior. For JSD, the best other prior's JSD minus the matched prior's, so a positive value means the matched prior is closer.
+- Columns hold the plan, and so the chance level, fixed. That avoids the column confound of the chance-normalized row-wise matrix.
+- Always reported next to the pre-registered row-wise result, never in place of it (`ctit.experiments.extraction_report.h4_colwise`).
+
+## 2026-10-27: case study B diagnosis (ATTK lead, U inversion): POST HOC, diagnostics only (Jack)
+- Run every analysis, report every one, select nothing from them.
+- ATTK's case study B numbers go in the paper regardless; the diagnosis only explains them.
+- Contents (`ctit/experiments/redteam_diagnosis.py`):
+  - (a) ATTK's construction, and the mean row entropy of every prior as scored;
+  - (b) per-transition decomposition of ATTK − Uni and R − Uni over positive and negative windows, with tactic and rule composition;
+  - (c) controls: ATTK's edge set with uniform weights; destination-tactic frequency only; actor-agnostic ATTK from all groups; R at α 0.01 and 0.1;
+  - (d) scripted job removed: (i) xx01/xx51 hosts dropped; (ii) the two scripted-job rules' tags dropped from test and fit;
+  - (e) per host, and leave-one-host-out AUPRC;
+  - (f) the same for U.
+- **Design choices made here, before any result was seen:**
+  - control (1) gives every ATTK edge the mean nonzero ATTK count, keeping ATTK's count scale;
+  - control (2) is outer(mean n, n), so every row is the group's tactic profile at ATTK's scale;
+  - for (d)(ii) the fit baseline is rebuilt without the two rules (`data/eval/optc_fit_transitions_v3_noscript.json`), so test and baseline are tagged alike.
+- F parts first (`configs/redteam_diagnosis_F.yaml`); S parts once the Ministral 14B priors exist.
