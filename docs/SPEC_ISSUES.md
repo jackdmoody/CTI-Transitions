@@ -340,3 +340,22 @@ Always prioritize using tools to provide the most accurate and helpful response.
 - Known so far:
   - F has 1 failure, B/Sandworm s4, first attempt: an unclosed ```json fence with complete JSON inside, i.e. a wrapping gap.
   - Qwen has 8 failures, all invalid `\` escapes from unescaped Windows paths: malformed output.
+
+## 2026-10-27 21:38 EDT: AMENDMENT to the 20:06 EDT model-change entry: both 14B open models are reported side by side (decided by Jack before any Ministral result was computed)
+1. **Neither 14B model is superseded.**
+   - **S-Q** = Qwen3-14B (`qwen3:14b`), the pre-registered S.
+   - **S-M** = Ministral 3 14B Instruct (`ministral-3-nosys:14b-instruct-2512-q4_K_M`), added after the first results for provenance, as a non-PRC option.
+   - Sampled variants: **S-Q5** and **S-M5**. The size point **S-M3** = Ministral 3 3B Instruct.
+   - **No Qwen 4B run.** This replaces "Ministral becomes the primary S" and "Qwen superseded" in the 20:06 entry.
+2. **Same tables for both.** Wherever the plan said to move Qwen to a "superseded" block, S-Q and S-M share the same tables:
+   - the extraction table with the chance control, R−B, hallucination rates, refusals, schema failures and sec/call;
+   - H3 per model, H4 row-wise and column-wise per model;
+   - case studies A and B;
+   - the S parts of the ATTK diagnosis, run for both models.
+3. **Sampling parameters actually sent** (from `calls.jsonl`):
+   - **S-Q5** (runs a53c21c and a686409, 185 + 7 sampled calls): options `{num_ctx: 16384}` + seed, with `think: false` sent at the top level of the request. No temperature or other sampling parameter was sent, so the qwen3:14b Modelfile defaults applied: temperature 0.6, top_k 20, top_p 0.95, repeat_penalty 1.
+   - **S-M5** (run 5528fd6): options `{temperature: 0.15, num_ctx: 16384}` + seed, no think field. 0.15 is the Ministral Modelfile's only parameter; everything else takes Ollama's built-in defaults.
+   - Temperature-0 runs: both models get `{temperature: 0, num_ctx: 16384}`, and Qwen also gets `think: false`.
+   - So "default sampling" means temperature 0.6 with top-k/top-p truncation for S-Q5, and temperature 0.15 for S-M5. S5 comparisons between the models are not like-for-like in sampling.
+4. **The running Ministral jobs are not stopped or changed.** Nothing else changes.
+- Config slot names stay as they are (`S` = Ministral 14B, `S_3B`, `S_qwen3_14b`), so the running jobs aren't touched. Reports label them S-M, S-M3 and S-Q.

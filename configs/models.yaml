@@ -2,9 +2,10 @@
 # layer in the Ollama manifest (~/.ollama/models/manifests/registry.ollama.ai/library/<name>/<tag>);
 # ollama_id is what `ollama list` shows. Qwen pulled 2026-10-24, Ministral 3 pulled 2026-10-27,
 # both with Ollama 0.40.10.
-# 2026-10-27 20:06 EDT (SPEC_ISSUES): S changes from qwen3:14b to Ministral 3 14B Instruct for
-# provenance (no PRC-origin models), decided after the Qwen results were seen. Qwen is kept
-# below as superseded.
+# 2026-10-27 (SPEC_ISSUES, 20:06 entry and its amendment): both 14B open models are reported side by
+# side. S-Q = qwen3:14b (pre-registered S, slot S_qwen3_14b); S-M = Ministral 3 14B Instruct (slot S,
+# added after the first results for provenance); S-M3 = Ministral 3 3B (slot S_3B, size point).
+# Slot names are kept so the running jobs are untouched.
 # Sampling (spec §3, SPEC_ISSUES 2026-10-27): F accepts no temperature and its reasoning can't be
 # turned off, so F = 5 samples per extraction (mean ± sd) at a pinned effort. S runs twice:
 # temperature 0 (primary, `options`) and 5 samples at the model's default sampling (`sampled`,
@@ -57,7 +58,7 @@ open_weight:
     context_length: 262144
     options: {temperature: 0, num_ctx: 16384}
     sampled: {options: {temperature: 0.15, num_ctx: 16384}, seeds: [0, 1, 2, 3, 4]}
-  S_qwen3_14b:  # superseded 2026-10-27 (was S); runs a53c21c (pre-fix) and a686409 (post-fix) kept
+  S_qwen3_14b:  # S-Q, the pre-registered S (was slot S); runs a53c21c (pre-fix) and a686409 (post-fix)
     tag: qwen3:14b
     ollama_id: bdbd181c33f2
     weights_sha256: a8cc1361f3145dc01f6d77c6c82c9116b9ffe3c97b34716fe20418455876c40e
@@ -68,7 +69,7 @@ open_weight:
     # Default sampling = the Modelfile params of this digest (temperature 0.6, top_k 20,
     # top_p 0.95, repeat_penalty 1), so no temperature is sent; seed fixes each sample.
     sampled: {options: {num_ctx: 16384, think: false}, seeds: [0, 1, 2, 3, 4]}
-  S_4B:  # superseded 2026-10-27 before any run: Qwen3-4B-Instruct-2507
+  S_4B:  # not run (Jack, 2026-10-27): Qwen3-4B-Instruct-2507
     tag: qwen3:4b-instruct
     ollama_id: 0edcdef34593
     weights_sha256: 85e4a5b7b8ef0e48af0e8658f5aaab9c2324c76c1641493f4d1e25fce54b18b9
