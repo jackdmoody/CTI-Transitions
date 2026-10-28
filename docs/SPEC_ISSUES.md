@@ -235,3 +235,13 @@ Runs: F `20261027T121723Z-extraction-a53c21c` (185 calls, 1.14M in / 0.37M out t
      - Why ATTK wins is not yet diagnosed.
 6. **Case study A** (`ctit/experiments/otrf_case.py`, `results/20261027T225650Z-otrf_case-5715a18`): built now, because T7 had not been built. v3 tags OTRF APT29 Sysmon only; per host-day, repeats are collapsed. Recovered: 37 transitions, 22 edges, 8 tactics. Against the plan: F1 .28 (2.07× chance, 98th percentile). Priors against the executed edges: only R-S-sampled APT29 is above the 95th percentile, and R-F APT29 ≈ R-F OilRig. The recording has no benign split, so background activity is included.
 7. **Sandworm-P04/P05:** kept as fetched (primary) and listed as a limitation (spec §2.3, §10).
+
+## 2026-10-27 20:06 EDT: small open model changes from Qwen3-14B to Ministral 3 14B Instruct (decided by Jack)
+- **Change:** the S model changes from Qwen3-14B (`qwen3:14b`) to **Ministral 3 14B Instruct** (Mistral AI, Apache 2.0), for provenance reasons: no PRC-origin models. The size point changes from Qwen3-4B-Instruct to **Ministral 3 3B Instruct**.
+- **This was decided after the Qwen results were seen.** Ministral becomes the primary S model whatever its results are. The Qwen3-14B run is kept on disk and in the logs, and is disclosed as "qwen3-14b (superseded)": runs `20261027T121707Z-extraction-a53c21c` (pre-fix) and `20261027T223928Z-extraction-a686409` (post-fix). Nothing from it is deleted. No qwen3:4b-instruct run was ever started.
+- **Settings are identical to the Qwen S run except the model:**
+  - `num_ctx` 16384, 6k/300 chunks, frozen v1 prompts, the same schema validation and true single retry, the fragment-aware evidence check, per-report dedupe;
+  - the same private single-slot Ollama server, stopped when done;
+  - one temperature-0 run plus 5 sampled runs. "Sampled" keeps its pre-registered meaning, the model's default (Modelfile) sampling. Every sampling parameter is sent explicitly and recorded;
+  - conditions R and B for all four actors, plus the oracle for the 14B only.
+- 14B first, then 3B. Every analysis that used S priors is rerun with Ministral as S.
