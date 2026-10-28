@@ -432,3 +432,40 @@ Units are bits over uniform per plan transition at α = 0.5, with [95% CI]; Uni 
 - **4×4, best actor's chain per plan (column):** R-F 3/4 (OilRig, Sandworm, menuPass; the APT29 plan is best explained by the menuPass prior), R-Q 1/4 (Sandworm), R-Q5 1/4 (menuPass). The R-F column-best pattern is the same at α 0.01 and 0.1.
 - **α sensitivity:** at α 0.01 most priors drop well below uniform (sparse chains give near-zero probability to plan transitions they lack). Exceptions: R-F OilRig .24, R-F/R-Q/B-F on menuPass. At α 0.1 the pattern is in between.
 - **Case A (executed OTRF APT29, 37 transitions):** ATTK .76 [.50, .98]; R-F −.12, R-Q −.06, R-Q5 −.05, B-F −.05, B-Q .01. ATTK's tactic-frequency profile fits the mapper-visible executed sequence better than any extracted chain.
+
+## 2026-10-28 01:06 EDT: Ministral 14B and 3B runs complete; schema failures; wrapping-only fix (POST HOC); S-Q and S-M side by side
+- **Runs:**
+  - Ministral 3 14B, no-system-prompt Modelfile: `results/20261028T005130Z-extraction-5528fd6` (262 calls, modes S and S-sampled).
+  - Ministral 3 3B: `results/20261028T040137Z-extraction-d032eae` (230 calls, modes S_3B and S_3B-sampled; R and B only).
+  - Both exited 0 and made no refusals. Private Ollama server stopped.
+- **Schema failures:** `results/20261028T044346Z-schema_failures-ce77e76`; classifier in `ctit.experiments.schema_failures`. Counts are first attempts / retries:
+  - F: 1/0, a wrapping gap (fence, then prose).
+  - S-Q: 8/8, all malformed (bad `\` escapes).
+  - S-M: 40/40. 12 wrapping (`[]` + prose), 23 multiple_values, 5 malformed.
+  - S-M3: 14/13. 0 wrapping, 3 multiple_values, 11 malformed.
+- **Retries:** retried with the same seed and options, so they mostly repeat the first attempt. Identical retries: S-Q 8/8, S-M 37/40, S-M3 11/14. One S-M3 sampled retry succeeded.
+- **New class, not covered by the 21:14 rule, needs Jack:** *multiple_values*, i.e. the first JSON value decodes and another JSON value follows (typically `[]` then a fenced list).
+  - Choosing one of the two values is a content decision, so it is classed as neither a wrapping gap nor fixed. As run, these chunks are skipped.
+  - 21 of the 23 S-M cases and 2 of the 3 S-M3 cases are `[]` twice, so either choice gives the same counts.
+  - Two cases are substantive:
+    - S-M t0, R/OilRig-P01 chunk 0: a list of 25, then a list of 9.
+    - S-M3 s1, B/menuPass: `[]`, then a list of 8.
+- **Wrapping-only fix, POST HOC:** the cache replay through the run-time path reproduces every as-run prior exactly before the fix is applied.
+  - The fix changes one prior: F B/Sandworm s4, 15 → 16 edges. The 12 S-M wrapping cases are `[]` + prose, so their counts are unchanged.
+  - Affected tables, as run → fixed:
+    - F B/Sandworm edge-F1 .183 → .204, F1/chance 1.84 → 2.05.
+    - R−B (F, ratio) Sandworm 0.81 → 0.60; H2b Spearman unchanged (−0.4).
+    - Likelihood B-F Sandworm, α 0.5: −.02 → .00.
+  - Case A uses APT29 B only, and case B uses R and oracle only, so neither is affected.
+  - Results: `…T050423Z-extraction_report-f3d6dc4` and `…T044500Z-prior_likelihood-ce77e76`. As-run stays primary.
+- **Reproduction:** the reruns with S-Q and S-M side by side reproduce every earlier F and Qwen number exactly, except:
+  - the Monte-Carlo chance-control draws for Qwen and the baselines (shared RNG stream, new mode order);
+  - the diagnosis's "best other condition" lines, which now pick from more conditions.
+- **3B in condition B:** returns an empty list for 19 of 24 actor/sample calls (4 at temperature 0, 20 sampled), and one more is `[]` followed by a list (the multiple_values case above). Where it lists transitions, technique IDs often fail validation. Its B priors have about 0 edges, so its R−B ratio is undefined.
+- **oracle-M5:** its five samples score identically in case B (both versions). They differ in edges (22–26) but agree on every prior cell the test windows use (checked), so this is real, not a loading error.
+- **Results:**
+  - extraction report `results/20261028T050417Z-extraction_report-f3d6dc4` (timing includes the original F and Qwen runs);
+  - case A `…T044412Z-otrf_case-ce77e76`;
+  - case B as run `…T044524Z-redteam_scoring-ce77e76` and collapsed `…T044720Z-redteam_scoring-ce77e76`;
+  - likelihood `…T044436Z-prior_likelihood-ce77e76`;
+  - diagnosis with S parts (Q, Q5, M, M5) `…T044917Z-redteam_diagnosis-ce77e76`.

@@ -97,3 +97,14 @@
 - Case study A (OTRF APT29): `results/20261027T225650Z-otrf_case-5715a18`. Case study B (OpTC red team): `results/20261027T235002Z-redteam_scoring-5715a18`. Fit-host transitions cached at `data/eval/optc_fit_transitions_v3.json` (~60 min to build).
 - Tests: 115 passed, 3 skipped.
 - **Open:** why ATTK beats every extracted prior in case study B; whether to adopt the column-wise H4 reading (post hoc, Jack).
+
+## 2026-10-27/28: diagnosis, collapsed case B, likelihood, Ministral, schema failures (all post hoc analyses in SPEC_ISSUES)
+- Case B diagnosis (F, then S parts for Q, Q5, M, M5). Collapsed case B scoring with tie reporting. Prior log-likelihood. All are labelled POST HOC.
+- Ministral 3 runs with no-system-prompt Modelfiles:
+  - 14B `20261028T005130Z`, 3B `20261028T040137Z`.
+  - The earlier run with the injected system prompt (`20261028T001101Z`, 61 calls) is kept on disk, labelled DISCARDED.
+  - Ollama digests (`configs/models.yaml`): qwen3:14b `bdbd181c33f2` (weights a8cc1361…); ministral-3-nosys:14b `9c53f01aa0e0` (weights bfb40fc6…, template 397d0224…); ministral-3-nosys:3b `5f49d84e5598` (weights 910e4bf4…, same template).
+- Schema-failure classifier and wrapping-only fix (`ctit/experiments/schema_failures.py`). The fix changes one prior (F B/Sandworm s4).
+- All S analyses rerun with S-Q and S-M side by side. F and Qwen numbers reproduce. Private Ollama server stopped.
+- Tests: 150 passed, 3 skipped.
+- **Open (Jack):** the multiple_values class (2 substantive chunks); whether the wrapping-fix numbers replace as-run anywhere.
