@@ -27,6 +27,8 @@ runs:
   S-M-sampled: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled__unwrap}
   S-M3: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B__unwrap}
   S-M3-sampled: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B-sampled__unwrap}
-timing_runs: [20261027T223842Z-extraction-a686409, 20261027T223928Z-extraction-a686409,
+# timing: the original F and Qwen runs hold their first calls; the post-fix runs only the retries
+timing_runs: [20261027T121723Z-extraction-a53c21c, 20261027T121707Z-extraction-a53c21c,
+              20261027T223842Z-extraction-a686409, 20261027T223928Z-extraction-a686409,
               20261028T005130Z-extraction-5528fd6, 20261028T040137Z-extraction-d032eae]
 post_hoc: {draws: 10000, seed: 20261027, h4_alphas: [0.01, 0.1]}  # post hoc (2026-10-27)
