@@ -1,0 +1,19 @@
+# Case study B diagnosis, F and S parts (POST HOC, 2026-10-27; SPEC_ISSUES). Diagnostics, not tuning:
+# everything is reported, nothing is selected. S parts for both 14B models (amendment 2026-10-27 21:38 EDT):
+# Q / Q5 = Qwen3-14B (S-Q) at temperature 0 / sampled; M / M5 = Ministral 3 14B (S-M).
+experiment: redteam_diagnosis
+actors: [APT29, menuPass, OilRig, Sandworm]
+alpha: 0.5
+alphas: [0.01, 0.1]          # control (4): R priors at these alphas
+oracle_modes: [Q, Q5, M, M5] # F refused the oracle 5/5
+scripted_rules:              # "Process Creation Using Sysnative Folder", "Recon Command Output Piped To Findstr"
+  - 3c1b5fb0-c72f-45ba-abd1-4d4c353144ab
+  - ccb5742c-c248-4982-8c5c-5571b9275ad3
+bootstrap: {n: 1000, seed: 20261027}
+workers: 3
+runs:
+  F: 20261027T223842Z-extraction-a686409
+  Q: {run: 20261027T223928Z-extraction-a686409, mode: S}
+  Q5: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled}
+  M: {run: 20261028T005130Z-extraction-5528fd6, mode: S}
+  M5: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled}

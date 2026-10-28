@@ -1,0 +1,17 @@
+# WRAPPING-ONLY FIX VARIANT (POST HOC, SPEC_ISSUES 2026-10-27 21:14 EDT): priors from <mode>__unwrap/.
+# As-run (configs/prior_likelihood.yaml) stays primary.
+# Priors as probabilistic models (POST HOC, 2026-10-27, SPEC_ISSUES): bits over uniform per plan
+# transition, log2(13 P(next | current)), alpha 0.5 primary, 0.01 and 0.1 sensitivity; 4x4; case A.
+# Labels: F = Opus 5.5; Q / Q5 = Qwen3-14B (S-Q, pre-registered) at temperature 0 / sampled; M / M5 =
+# Ministral 3 14B (S-M, no-system-prompt Modelfile) at temperature 0 / sampled (amendment 2026-10-27 21:38 EDT).
+experiment: prior_likelihood
+actors: [APT29, menuPass, OilRig, Sandworm]
+alphas: [0.5, 0.01, 0.1]
+n_boot: 1000
+seed: 20261027
+runs:
+  F: {run: 20261027T223842Z-extraction-a686409, mode: F__unwrap}
+  Q: {run: 20261027T223928Z-extraction-a686409, mode: S__unwrap}
+  Q5: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled__unwrap}
+  M: {run: 20261028T005130Z-extraction-5528fd6, mode: S__unwrap}
+  M5: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled__unwrap}
