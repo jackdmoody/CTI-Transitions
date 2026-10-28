@@ -19,8 +19,9 @@
    replayed as cached, so all other chunks keep their as-run outcome. The priors go to
    data/priors/<run>/<mode>__unwrap/. The as-run replay (no fix) must reproduce the saved priors exactly.
 3. Multiple-JSON-value replies (POST HOC; SPEC_ISSUES 2026-10-28 08:21 EDT, Jack's rule), any attempt:
-   - every value identical (e.g. `[]` twice): the reply counts as parsed (variant `__mv`, the new primary
-     reading; it must leave every prior's counts unchanged);
+   - every value identical (e.g. `[]` twice): the reply counts as parsed (variant `__mv`; it must leave
+     every prior's counts unchanged). As run stays primary; all variants are Appendix B sensitivity
+     analyses (SPEC_ISSUES 2026-10-28 18:43 EDT);
    - values differ: a failure as run; sensitivity variants `__mvfirst` / `__mvlast` hand the parser the
      first / last value. All three variants include the wrapping-only fix. The value handed over is a
      substring of the reply, so content is never changed.

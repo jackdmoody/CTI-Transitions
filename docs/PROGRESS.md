@@ -113,4 +113,4 @@
 - Jack's rule (SPEC_ISSUES 08:21, logged before computing). Identical values = parsed: no count changes. First/last-value sensitivity for the two content-bearing cases, run through extraction, H3, R−B, H4, likelihood and case B. Small changes, confined to S-M OilRig and S-M35 B/menuPass (SPEC_ISSUES 08:42).
 - Paper tables (a)–(g) as CSV in `results/paper_tables/` with a README. Sources rerun at `ecf227b`, and they reproduce.
 - Tests: 160 passed, 3 skipped.
-- **Open (Jack):** whether the wrapping fix or the identical-values reading becomes primary anywhere (numerically the same except F B/Sandworm s4).
+- Parsing decision (Jack, SPEC_ISSUES 18:43, closed): as run is primary everywhere; the wrapping fix and the multiple-JSON-value variants go to Appendix B as sensitivity analyses only. Nothing rerun.

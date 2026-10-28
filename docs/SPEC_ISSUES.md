@@ -507,3 +507,8 @@ Applies to replies of class *multiple_values* (01:06 entry): two or more JSON va
   - Table (a) recomputes F1/chance with one shared chance draw (common random numbers: 10,000 orderings of the 182 off-diagonal cells, seed 20261027), so its ratios differ from the report's in the second decimal.
   - Table (f): Qwen's request also carried `think: false` outside `options` (from the cache keys; not in calls.jsonl).
   - Table (g): plan release dates are in `configs/plan_release_dates.yaml` (changelogs; GitHub commit dates for OilRig and Sandworm, which have no changelog).
+
+## 2026-10-28 18:43 EDT: parsing decision — as run is primary everywhere (decided by Jack; CLOSED)
+- **As-run numbers are primary in every table and hypothesis test.** This closes the open item from the 01:06 and 08:42 entries (whether the wrapping fix or the identical-values reading becomes primary anywhere).
+- The wrapping-only fix (21:14 rule) and the multiple-JSON-value variants (08:21 rule: identical values parsed, and the first/last-value sensitivity) are reported **only as sensitivity analyses in Appendix B**. This supersedes "the reply counts as parsed" in the 08:21 entry for the primary numbers: as run, those replies stay schema failures (S-M 40 and S-M3 14 first attempts in the primary schema-failure table; 18 and 12 under the rule, in Appendix B).
+- Nothing is rerun. The paper tables (`results/paper_tables/`, run `…-paper_tables-5a5ee02`) already use the as-run priors only.
