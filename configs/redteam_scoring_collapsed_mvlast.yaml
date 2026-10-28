@@ -1,0 +1,22 @@
+# MULTIPLE-JSON-VALUE SENSITIVITY (last value; POST HOC, SPEC_ISSUES 2026-10-28 08:21 EDT): priors from
+# <mode>__mvlast/ (wrapping-only fix + identical values parsed + the last value of a reply whose values differ).
+# As-run stays primary.
+# Case study B, collapsed (consistent) scoring: POST HOC, 2026-10-27 (SPEC_ISSUES). Repeats
+# collapsed per window, only off-diagonal transitions scored; priors and P_ben with the self cell
+# dropped and renormalized. U unchanged (DRIFT as published). Same test set, bootstrap, lambda = 0.
+# The as-run scoring (configs/redteam_scoring.yaml) stays as reported; both go in the report.
+# Labels: F = Opus 5.5; Q / Q5 = Qwen3-14B (S-Q, pre-registered) at temperature 0 / sampled; M / M5 =
+# Ministral 3 14B (S-M, no-system-prompt Modelfile) at temperature 0 / sampled (amendment 2026-10-27 21:38 EDT).
+experiment: redteam_scoring
+version: collapsed
+actors: [APT29, menuPass, OilRig, Sandworm]
+alpha: 0.5
+oracle_modes: [Q, Q5, M, M5]
+bootstrap: {n: 1000, seed: 20261027}
+workers: 6
+runs:
+  F: {run: 20261027T223842Z-extraction-a686409, mode: F__mvlast}
+  Q: {run: 20261027T223928Z-extraction-a686409, mode: S__mvlast}
+  Q5: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled__mvlast}
+  M: {run: 20261028T005130Z-extraction-5528fd6, mode: S__mvlast}
+  M5: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled__mvlast}

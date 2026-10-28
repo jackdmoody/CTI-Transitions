@@ -1,0 +1,35 @@
+# MULTIPLE-JSON-VALUE SENSITIVITY (first value; POST HOC, SPEC_ISSUES 2026-10-28 08:21 EDT): priors from
+# <mode>__mvfirst/ (wrapping-only fix + identical values parsed + the first value of a reply whose values differ).
+# As-run stays primary.
+# WP6 extraction results (spec §4, §6; SPEC_ISSUES 2026-10-27): reads saved priors, no model calls.
+# Refusals per chunk, strict and fragment-aware hallucination rates (R, oracle), recovery vs. plan
+# ground truth (all platforms primary, Windows-only appendix), H4 prior-level matrix, H3 sensitivity.
+experiment: extraction_report
+actors: [APT29, menuPass, OilRig, Sandworm]
+conditions: [R, B, oracle]
+oracle_text: data/optc_check/groundtruth/OpTCRedTeamGroundTruth.txt
+prompts: {report: extract_v1.txt, memory: memory_v1.txt}
+chunk: {tokens: 6000, overlap: 300}
+alpha: 0.5
+# Post-fix runs (true schema retry, 2026-10-27): primary. Pre-fix: configs/extraction_report_prefix.yaml.
+# Models side by side (amendment 2026-10-27 21:38 EDT): F = Opus 5.5; S-Q = Qwen3-14B (pre-registered S);
+# S-M = Ministral 3 14B (no-system-prompt Modelfile); S-M3 = Ministral 3 3B (size point, R and B only).
+# "-sampled" = 5 seeds at each model's sampling settings (S-Q5, S-M5, S-M35 in the report).
+# Mode names match the cache labels below, so refusals are read per mode.
+ollama_labels:
+  qwen3:14b: S-Q
+  ministral-3-nosys:14b-instruct-2512-q4_K_M: S-M
+  ministral-3-nosys:3b-instruct-2512-q4_K_M: S-M3
+runs:
+  F: {run: 20261027T223842Z-extraction-a686409, mode: F__mvfirst}
+  S-Q: {run: 20261027T223928Z-extraction-a686409, mode: S__mvfirst}
+  S-Q-sampled: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled__mvfirst}
+  S-M: {run: 20261028T005130Z-extraction-5528fd6, mode: S__mvfirst}
+  S-M-sampled: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled__mvfirst}
+  S-M3: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B__mvfirst}
+  S-M3-sampled: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B-sampled__mvfirst}
+# timing: the original F and Qwen runs hold their first calls; the post-fix runs only the retries
+timing_runs: [20261027T121723Z-extraction-a53c21c, 20261027T121707Z-extraction-a53c21c,
+              20261027T223842Z-extraction-a686409, 20261027T223928Z-extraction-a686409,
+              20261028T005130Z-extraction-5528fd6, 20261028T040137Z-extraction-d032eae]
+post_hoc: {draws: 10000, seed: 20261027, h4_alphas: [0.01, 0.1]}  # post hoc (2026-10-27)
