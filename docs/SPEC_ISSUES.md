@@ -359,3 +359,19 @@ Always prioritize using tools to provide the most accurate and helpful response.
    - So "default sampling" means temperature 0.6 with top-k/top-p truncation for S-Q5, and temperature 0.15 for S-M5. S5 comparisons between the models are not like-for-like in sampling.
 4. **The running Ministral jobs are not stopped or changed.** Nothing else changes.
 - Config slot names stay as they are (`S` = Ministral 14B, `S_3B`, `S_qwen3_14b`), so the running jobs aren't touched. Reports label them S-M, S-M3 and S-Q.
+
+## 2026-10-27 21:52 EDT: priors scored as probabilistic models (log-likelihood of plan transitions): POST HOC (Jack; logged before anything is computed)
+- CPU only, no model calls. It runs after the diagnosis interim report and does not delay the Ministral runs.
+- **Score:** for each prior against each plan, the mean log-likelihood per ground-truth transition, reported as bits gained over uniform: mean over transitions of log2(13 × P̂(next | current)).
+  - Transitions: the plan's collapsed sequence with multiplicity (all platforms, as `ctit.eval.recovery`): APT29 45, OilRig 17, Sandworm 25, menuPass 6.
+  - α = 0.5 (pre-registered).
+- **P̂ as defined here** (my reading, fixed before computing): the prior's counts + α over the 14 tactics, with the self-transition cell dropped (collapsed plans have none), renormalized over the 13 other tactics. So Uni is exactly 0 bits.
+  - For ATTK the counts are n nᵀ, its diagonal dropped the same way.
+  - No projection onto K: this is the 14-tactic plan space, as in T2/T4.
+- **Priors:** R-F, R-Q, R-Q5, B-F, B-Q, ATTK, Uni, and the Ministral priors (R-M, R-M5, B-M, R-M3, …) once they exist. Every saved prior is scored; the listed ones are reported.
+- **Uncertainty:**
+  - 95% CI by bootstrapping transitions within each plan (1,000 resamples, seed 20261027).
+  - For multi-sample priors (F, Q5, M5) the point estimate is the mean over samples. The CI comes from bootstrapping that mean, with the same resampled transitions for every sample. Mean ± sd over samples is also reported.
+- **4×4:** R prior actor × plan, per model. For each plan (column), which actor's chain gives the highest likelihood.
+- **Sensitivity:** α = 0.01 and 0.1.
+- **Case study A:** the same score for each prior against the executed OTRF APT29 sequence (37 transitions, `ctit.experiments.otrf_case`).
