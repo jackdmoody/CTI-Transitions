@@ -390,3 +390,11 @@ Always prioritize using tools to provide the most accurate and helpful response.
 4. **Diagnosis:** item 2b splits every as-run score difference into its self-transition part and its off-diagonal part. Items 2c and 2d run on both versions.
 5. The case B method note above now says exactly what the as-run scorer did.
 - Run after the diagnosis prep finishes. The Ministral runs are not touched.
+- **Ties (2026-10-27 22:17 EDT, Jack):** no random tie-breaking. Each condition reports:
+  - the share of positive and of negative windows scoring exactly 0;
+  - the realized FPR at the Det@1% threshold;
+  - the tie convention:
+    - AUPRC: sklearn's step over distinct scores, so tied windows enter together.
+    - AUROC: a tied positive-negative pair counts 1/2.
+    - Det and TTD: detected only if strictly above the threshold.
+  - If the 1% point falls inside a tie block (some value v with P(neg > v) < 1% < P(neg ≥ v)), that is flagged, with whether it is the zero block, and detection is reported at the achievable FPR on each side (score > v and score ≥ v).

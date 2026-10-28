@@ -63,3 +63,14 @@ def test_collapsed_prior_has_no_self_cell_and_uni_is_uniform():
     C = np.zeros((14, 14)); C[TACTICS.index("Execution"), TACTICS.index("Persistence")] = 50
     Q = rs.collapsed_prior(C, 0.5, K)
     assert np.allclose(np.diag(Q), 0) and Q[K.index("Execution"), K.index("Persistence")] > 0.5
+
+
+def test_tie_report_flags_threshold_inside_zero_block():
+    y = np.array([False] * 1000 + [True] * 4)
+    score = np.concatenate([np.zeros(995), np.ones(5), [0.0, 0.0, 2.0, -1.0]])
+    r = rs.tie_report(score, y)
+    assert r["zero_share_negative"] == 0.995 and r["zero_share_positive"] == 0.5
+    b = r["threshold_inside_tie_block"]
+    assert b["is_zero_block"] and b["below_side"]["fpr"] == 0.005 and b["above_side"]["fpr"] == 1.0
+    assert b["below_side"]["det"] == 0.25 and b["above_side"]["det"] == 0.75
+    assert "threshold_inside_tie_block" not in rs.tie_report(np.linspace(0, 1, 1004), y)

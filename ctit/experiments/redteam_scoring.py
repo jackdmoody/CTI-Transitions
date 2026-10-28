@@ -134,6 +134,32 @@ def lr_scores_collapsed(n: int, pairs: tuple, P_adv: np.ndarray, P_ben: np.ndarr
     return np.where(cnt > 0, tot / np.maximum(cnt, 1), 0.0)
 
 
+TIE_CONVENTION = (
+    "no random tie-breaking. AUPRC: sklearn average_precision_score, which steps over distinct score "
+    "values, so tied windows enter together at one threshold. AUROC: sklearn roc_auc_score, a tied "
+    "positive-negative pair counts 1/2. Det@1%FPR and TTD: threshold = 99th percentile of the negative "
+    "windows' scores; detected only if strictly above it, so windows tied at the threshold are not detected.")
+
+
+def tie_report(score: np.ndarray, y: np.ndarray) -> dict:
+    """Share of windows scoring exactly 0, realized FPR at the Det@1% threshold, and, if that threshold
+    sits inside a block of tied negative scores, detection at the achievable FPR on each side of it."""
+    neg, pos = score[~y], score[y]
+    thr = float(np.quantile(neg, 0.99))
+    out = {"zero_share_positive": float((pos == 0).mean()), "zero_share_negative": float((neg == 0).mean()),
+           "threshold": thr, "fpr_realized": float((neg > thr).mean()), "det_at_realized": float((pos > thr).mean())}
+    # the 1% point falls inside a tie block when some value v has P(neg > v) < 1% < P(neg >= v)
+    for v in np.unique(neg):
+        gt, ge = float((neg > v).mean()), float((neg >= v).mean())
+        if gt < 0.01 < ge:
+            out["threshold_inside_tie_block"] = {
+                "block_value": float(v), "is_zero_block": bool(v == 0.0), "negatives_in_block": int((neg == v).sum()),
+                "below_side": {"fpr": gt, "det": float((pos > v).mean())},
+                "above_side": {"fpr": ge, "det": float((pos >= v).mean())}}
+            break
+    return out
+
+
 def prior_counts(config: dict) -> dict[str, list[np.ndarray]]:
     """condition -> raw 14 x 14 count matrices per sample (Uni: zeros; ATTK: n n^T)."""
     groups = {a: v["attack_group"] for a, v in load_actors().items()}
@@ -241,7 +267,9 @@ def run(config: dict, calls=None) -> dict:
         for name, Cs in prior_counts(config).items():
             scores[name] = [lr_scores_collapsed(len(win), pairs, collapsed_prior(C, alpha, K), P_ben) for C in Cs]
         n_off = np.bincount(pairs[0], minlength=len(win))
-        extra = {"version": "collapsed (POST HOC)", "offdiag_transitions_per_window": {
+        extra = {"version": "collapsed (POST HOC)", "tie_convention": TIE_CONVENTION,
+                 "ties": {c: [tie_report(sc, y) for sc in ss] for c, ss in scores.items()},
+                 "offdiag_transitions_per_window": {
             lab: {int(k): int(v) for k, v in zip(*np.unique(n_off[sel], return_counts=True))}
             for lab, sel in (("positive", y), ("negative", ~y))},
             "positive_windows_without_offdiag": int((n_off[y] == 0).sum()),
