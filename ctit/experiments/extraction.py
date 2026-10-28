@@ -8,7 +8,8 @@ Conditions:
   oracle  report-conditioned on OpTCRedTeamGroundTruth.pdf's text, same prompt (T9 upper bound)
 Model modes (configs/models.yaml):
   F               claude-opus-5-5, pinned effort, `samples` samples, `workers` calls in parallel
-  S, S-sampled    qwen3:14b at temperature 0 (one sample) and at default sampling (seeds 0..4)
+  <slot>, <slot>-sampled   an open-weight slot (S = Ministral 3 14B since 2026-10-27, S_3B = Ministral 3 3B)
+                  at temperature 0 (one sample) and at default sampling (seeds 0..4)
 One prior per (mode, condition, actor, sample), aggregated per document (ctit.cti.extract).
 check_leakage must pass first. Every API/Ollama call goes to calls.jsonl; responses are
 cached under data/priors/cache/ (keyed by model, options, sample and prompt hash) so an
@@ -73,19 +74,17 @@ def models_for(mode: str, pins: dict) -> list[tuple[str, object]]:
         return [(f"s{i}", Cached(extract.AnthropicModel(pin), f"{key}#s{i}"))
                 for i in range(pin["samples"])]
     url = pins.get("ollama_server", {}).get("url", "http://127.0.0.1:11434")
-    if mode == "S":
-        m = OllamaModel("S", url=url)
+    slot = mode.removesuffix("-sampled")
+    if slot not in pins.get("open_weight", {}):
+        raise ValueError(mode)
+    samples = [None] if slot == mode else list(range(len(pins["open_weight"][slot]["sampled"]["seeds"])))
+    out = []
+    for i in samples:
+        m = OllamaModel(slot, url=url, sample=i)
         m.verify()
         key = json.dumps({"tag": m.pin["tag"], "w": m.pin["weights_sha256"], "o": m.options}, sort_keys=True)
-        return [("t0", Cached(m, key))]
-    if mode == "S-sampled":
-        out = []
-        for i in range(len(OllamaModel("S").pin["sampled"]["seeds"])):
-            m = OllamaModel("S", sample=i, url=url)
-            m.verify()
-            key = json.dumps({"tag": m.pin["tag"], "w": m.pin["weights_sha256"], "o": m.options}, sort_keys=True)
-            out.append((f"s{i}", Cached(m, key)))
-        return out
+        out.append(("t0" if i is None else f"s{i}", Cached(m, key)))
+    return out
     raise ValueError(mode)
 
 

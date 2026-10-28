@@ -83,3 +83,25 @@ def test_attempt_one_keeps_the_original_cache_file(tmp_path):
     c = extraction.Cached(Replay("x", RESP), "k", root=tmp_path)
     c.chat("p")
     assert (c.dir / f"{hashlib.sha256(b'p').hexdigest()}.json").exists()
+
+
+def test_models_for_open_weight_slots(monkeypatch):
+    made = []
+
+    class Fake:
+        def __init__(self, slot, *, url, sample=None):
+            self.pin = {"tag": slot, "weights_sha256": "w"}
+            self.options, self.name = {"seed": sample}, slot
+            made.append((slot, sample))
+
+        def verify(self):
+            pass
+
+    monkeypatch.setattr(extraction, "OllamaModel", Fake)
+    monkeypatch.setattr(extraction, "Cached", lambda m, key: m)  # no cache dirs in data/
+    pins = {"open_weight": {"S_3B": {"sampled": {"seeds": [0, 1, 2]}}}}
+    assert [s for s, _ in extraction.models_for("S_3B", pins)] == ["t0"]
+    assert [s for s, _ in extraction.models_for("S_3B-sampled", pins)] == ["s0", "s1", "s2"]
+    assert made == [("S_3B", None), ("S_3B", 0), ("S_3B", 1), ("S_3B", 2)]
+    with pytest.raises(ValueError):
+        extraction.models_for("S_7B", pins)

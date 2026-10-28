@@ -88,11 +88,18 @@ def test_sampled_mode_sends_seed_and_no_temperature(tmp_path, monkeypatch):
 
 def test_pinned_sampling_matches_spec():
     """Spec §3 (2026-10-27): F sends no sampling parameters, effort pinned, 5 samples;
-    S primary at temperature 0, S sampled at default sampling with 5 seeds, thinking off."""
+    S primary at temperature 0, S sampled at default sampling with 5 seeds. S and S_3B are
+    Ministral 3 Instruct (no thinking mode; Modelfile default temperature 0.15, sent explicitly);
+    the superseded Qwen pin keeps the settings its run used (thinking off)."""
     cfg = yaml.safe_load(ollama.MODELS.read_text())
     f = cfg["frontier"]["F"]
     assert "temperature" not in f["options"] and f["options"]["effort"] and f["samples"] == 5
-    s = cfg["open_weight"]["S"]
-    assert s["options"]["temperature"] == 0 and s["options"]["think"] is False
-    assert "temperature" not in s["sampled"]["options"] and s["sampled"]["options"]["think"] is False
-    assert len(s["sampled"]["seeds"]) == 5
+    for slot in ("S", "S_3B"):
+        s = cfg["open_weight"][slot]
+        assert s["tag"].startswith("ministral-3:") and "-instruct-" in s["tag"]
+        assert s["options"] == {"temperature": 0, "num_ctx": 16384}
+        assert s["sampled"]["options"] == {"temperature": 0.15, "num_ctx": 16384}
+        assert len(s["sampled"]["seeds"]) == 5
+    q = cfg["open_weight"]["S_qwen3_14b"]
+    assert q["tag"] == "qwen3:14b" and q["options"]["think"] is False
+    assert "temperature" not in q["sampled"]["options"] and q["sampled"]["options"]["think"] is False

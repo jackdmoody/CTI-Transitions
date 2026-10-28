@@ -1,0 +1,12 @@
+# WP6 extraction, size point (2026-10-27, SPEC_ISSUES): Ministral 3 3B Instruct (slot S_3B in
+# configs/models.yaml), same settings as the S run. Prompts v1 (frozen). R = 23 prior reports
+# (menuPass-P01 excluded), B = no-report per actor; no oracle for the 3B.
+experiment: extraction
+actors: [APT29, menuPass, OilRig, Sandworm]
+conditions: [R, B]  # oracle for the 14B only (Jack, 2026-10-27)
+oracle_text: data/optc_check/groundtruth/OpTCRedTeamGroundTruth.txt
+prompts: {report: extract_v1.txt, memory: memory_v1.txt}
+chunk: {tokens: 6000, overlap: 300}
+alpha: 0.5
+modes: [S_3B, S_3B-sampled]
+workers: {S_3B: 1, S_3B-sampled: 1}
