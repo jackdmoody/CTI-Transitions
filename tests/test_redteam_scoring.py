@@ -38,3 +38,28 @@ def test_metrics_threshold_and_ttd():
 def test_matrix_from_edge_counts():
     M = rs.matrix({"Execution|Discovery": 3, "Discovery|Discovery": 1}, ["Execution", "Discovery"])
     assert M.tolist() == [[0, 3], [0, 1]]
+
+
+def test_collapsed_pairs_drop_repeats():
+    ki = {"Execution": 0, "Defense Evasion": 1, "Discovery": 2}
+    w, a, b = rs.collapsed_pairs([["Defense Evasion"] * 8, ["Execution", "Execution", "Defense Evasion",
+                                                             "Defense Evasion", "Discovery", "Discovery", "Execution", "Execution"]], ki)
+    assert w.tolist() == [1, 1, 1] and list(zip(a, b)) == [(0, 1), (1, 2), (2, 0)]
+
+
+def test_collapsed_scores_tie_windows_without_offdiag_transitions():
+    pairs = (np.array([1]), np.array([0]), np.array([1]))
+    P = rs.offdiag(np.full((2, 2), 0.5))
+    s = rs.lr_scores_collapsed(2, pairs, P, P)
+    assert s.tolist() == [0.0, 0.0]
+
+
+def test_collapsed_prior_has_no_self_cell_and_uni_is_uniform():
+    from ctit.map.attack import TACTICS
+    K = [t for t in TACTICS if t != "Reconnaissance"]
+    P = rs.collapsed_prior(np.zeros((14, 14)), 0.5, K)
+    assert np.allclose(np.diag(P), 0) and np.allclose(P.sum(axis=1), 1)
+    assert np.allclose(P[~np.eye(len(K), dtype=bool)], 1 / (len(K) - 1))
+    C = np.zeros((14, 14)); C[TACTICS.index("Execution"), TACTICS.index("Persistence")] = 50
+    Q = rs.collapsed_prior(C, 0.5, K)
+    assert np.allclose(np.diag(Q), 0) and Q[K.index("Execution"), K.index("Persistence")] > 0.5

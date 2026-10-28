@@ -14,6 +14,10 @@ lambda = 0, metrics and host-cluster bootstrap as redteam_scoring.
     job rules dropped from the test events and from the fit baseline, windows rebuilt.
  e. Positive windows per attacked host; leave-one-host-out AUPRC for ATTK, Uni and U.
  f. U: per-edge JSD contributions over positive vs. negative windows, and U under d(i), d(ii).
+Items c and d run in both versions of case B scoring: as run (14-way rows, self cell kept,
+projected onto K, uncollapsed windows) and collapsed (POST HOC, SPEC_ISSUES 2026-10-27: repeats
+collapsed per window, self cells dropped; ctit.experiments.redteam_scoring). Item b splits each
+as-run score difference into its self-transition and off-diagonal parts.
 Test-window events with rule ids are cached in data/eval/optc_redteam_tagged.parquet (rebuilt
 with redteam_testset._host_day; the windows are checked against optc_redteam_windows.parquet).
 """
@@ -128,8 +132,12 @@ def decompose(seqs: np.ndarray, y: np.ndarray, d: np.ndarray, K: list[str], top:
         np.add.at(C, (seqs[sel, :-1].ravel(), seqs[sel, 1:].ravel()), 1)
         contrib = C * d / n_t
         order = np.argsort(-np.abs(contrib).ravel())[:top]
+        self_part = float(np.trace(contrib))
         out[label] = {"windows": int(sel.sum()), "total": float(contrib.sum()),
                       "per_window": float(contrib.sum() / max(sel.sum(), 1)),
+                      "self_part": self_part, "offdiag_part": float(contrib.sum() - self_part),
+                      "self_part_per_window": self_part / max(sel.sum(), 1),
+                      "offdiag_part_per_window": float(contrib.sum() - self_part) / max(sel.sum(), 1),
                       "top": [{"transition": f"{K[i // len(K)]} -> {K[i % len(K)]}",
                                "count": int(C.ravel()[i]), "log_ratio": float(d.ravel()[i]),
                                "sum": float(contrib.ravel()[i]),
@@ -199,7 +207,6 @@ def run(config: dict, calls=None) -> dict:
     drop = tuple(config["scripted_rules"])
     groups = {a: v["attack_group"] for a, v in load_actors().items()}
     workers = config.get("workers", 3)
-    proj = lambda C, al: prior.project(prior.from_counts(C, al), K)
     seq_of = lambda w: np.array([[ki[t] for t in ts] for ts in w["tactics"]])
 
     tagged = test_tagged(workers)
@@ -213,72 +220,88 @@ def run(config: dict, calls=None) -> dict:
     b = rs.baseline(rs.fit_counts(fit_hosts, workers), K, alpha)
     b2 = rs.baseline(rs.fit_counts(fit_hosts, workers, drop=drop, cache=FIT_NOSCRIPT), K, alpha)
 
-    main = rs._priors(config, K)  # Uni, ATTK/<actor>, R-<mode>/<actor>, oracle-<mode>
-    raw = counts_files(config)
-    attk = {a: prior.attk_counts(groups[a])[0] for a in config["actors"]}
+    counts = rs.prior_counts(config)  # Uni, ATTK/<actor>, R-<label>/<actor>, oracle-<label>
+    attk = {a: counts[f"ATTK/{a}"][0] for a in config["actors"]}
+    as_run = lambda C, al: prior.project(prior.from_counts(C, al), K)  # as case B ran (self cell kept)
+    collapsed = lambda C, al: rs.collapsed_prior(C, al, K)
+    main = {n: [as_run(C, alpha) for C in Cs] for n, Cs in counts.items()}
     out: dict = {"note": "POST HOC diagnosis (2026-10-27): every analysis is reported; nothing is selected from it",
                  "K": K, "alpha": alpha}
 
     # a. ATTK as built; row entropy of every prior as used; share of each row's mass that is alpha
     alpha_share = lambda C: float(np.mean(len(TACTICS) * alpha / (C.sum(axis=1) + len(TACTICS) * alpha)))
-    out["a_attk_build"] = {a: {"tactic_counts_n": dict(zip(TACTICS, prior.attk_counts(groups[a])[1]["tactic_counts"].values())),
+    out["a_attk_build"] = {a: {"tactic_counts_n": prior.attk_counts(groups[a])[1]["tactic_counts"],
                                "count_max": float(C.max()), "count_mean_nonzero": float(C[C > 0].mean()),
                                "row_mass_alpha_share": alpha_share(C)} for a, C in attk.items()}
-    out["a_row_mass_alpha_share"] = {n: float(np.mean([alpha_share(C) for C in Cs])) for n, Cs in raw.items()}
-    out["a_entropy_bits"] = {n: float(np.mean([entropy_bits(P) for P in Ps])) for n, Ps in main.items()}
-    out["a_entropy_bits"]["P_ben"] = entropy_bits(b["P_ben"])
-    out["a_entropy_max_bits"] = float(np.log2(len(K)))
+    out["a_row_mass_alpha_share"] = {n: float(np.mean([alpha_share(C) for C in Cs]))
+                                     for n, Cs in counts.items() if n.startswith(("R-", "oracle-"))}
+    out["a_entropy_bits"] = {"as_run": {n: float(np.mean([entropy_bits(P) for P in Ps])) for n, Ps in main.items()},
+                             "collapsed": {n: float(np.mean([entropy_bits(collapsed(C, alpha)) for C in Cs]))
+                                           for n, Cs in counts.items()}}
+    out["a_entropy_bits"]["as_run"]["P_ben"] = entropy_bits(b["P_ben"])
+    out["a_entropy_bits"]["collapsed"]["P_ben"] = entropy_bits(rs.offdiag(b["pooled"] + alpha))
+    out["a_entropy_max_bits"] = {"as_run": float(np.log2(len(K))), "collapsed": float(np.log2(len(K) - 1))}
+    out["a_self_cell_mass"] = {n: {t: float(np.mean([P[ki[t], ki[t]] for P in Ps])) for t in ("Defense Evasion", "Execution")}
+                               for n, Ps in main.items()}
 
-    # b. decomposition vs. Uni, and window composition
+    # b. as-run decomposition vs. Uni (self-transition and off-diagonal parts), window composition
     logU = np.log(main["Uni"][0])
     out["b_decomposition"] = {n: decompose(seqs, y, np.mean([np.log(P) for P in Ps], axis=0) - logU, K)
                               for n, Ps in main.items() if n != "Uni"}
     out["b_composition"] = composition(win, titles, tactic_of)
 
-    # c. controls, scored with the reference conditions
-    ctrl = {}
+    # c. controls (raw counts, alpha), scored in both versions with the reference conditions
+    ctrl: dict[str, tuple[list[np.ndarray], float]] = {}
     for a, C in attk.items():
-        ctrl[f"c1_edgeset_uniform/{a}"] = [proj((C > 0) * C[C > 0].mean(), alpha)]
+        ctrl[f"c1_edgeset_uniform/{a}"] = ([(C > 0) * C[C > 0].mean()], alpha)
         n = np.sqrt(np.diag(C))  # C = n n^T
-        ctrl[f"c2_destination_only/{a}"] = [proj(np.outer(np.full(len(n), n.mean()), n), alpha)]
+        ctrl[f"c2_destination_only/{a}"] = ([np.outer(np.full(len(n), n.mean()), n)], alpha)
     n_all = attk_all_tactic_counts()
-    ctrl["c3_all_groups"] = [proj(np.outer(n_all, n_all), alpha)]
-    for n, Cs in raw.items():
+    ctrl["c3_all_groups"] = ([np.outer(n_all, n_all)], alpha)
+    for n, Cs in counts.items():
         if n.startswith("R-"):
             for al in config["alphas"]:
-                ctrl[f"c4_alpha{al}/{n}"] = [proj(C, al) for C in Cs]
-    scores = {"U": [rs.u_scores(seqs, b["base"], alpha)]}
-    scores.update({n: [rs.lr_scores(seqs, P, b["P_ben"]) for P in Ps] for n, Ps in {**main, **ctrl}.items()})
+                ctrl[f"c4_alpha{al}/{n}"] = (Cs, al)
+    specs = {**{n: (Cs, alpha) for n, Cs in counts.items()}, **ctrl}
     out["c_all_groups_tactic_counts"] = dict(zip(TACTICS, n_all.astype(int).tolist()))
-    out["c_entropy_bits"] = {n: float(np.mean([entropy_bits(P) for P in Ps])) for n, Ps in ctrl.items()}
-    out["c_controls"] = _eval(scores, y, host, n_boot, seed)
+    u = {"U": [rs.u_scores(seqs, b["base"], alpha)]}
+    pairs = rs.collapsed_pairs(win["tactics"], ki)
+    P_ben_c = rs.offdiag(b["pooled"] + alpha)
+    sc = {"as_run": {**u, **{n: [rs.lr_scores(seqs, as_run(C, al), b["P_ben"]) for C in Cs] for n, (Cs, al) in specs.items()}},
+          "collapsed": {**u, **{n: [rs.lr_scores_collapsed(len(win), pairs, collapsed(C, al), P_ben_c) for C in Cs]
+                                for n, (Cs, al) in specs.items()}}}
+    out["c_controls"] = {v: _eval(scores, y, host, n_boot, seed) for v, scores in sc.items()}
 
-    # d. scripted job removed
-    base_scores = {n: v for n, v in scores.items() if n == "U" or n in main}
+    # d. scripted job removed, both versions
     keep = ~np.array([scripted(h) for h in host])
-    sub = {n: [s[keep] for s in ss] for n, ss in base_scores.items()}
-    d1 = _eval(sub, y[keep], host[keep], n_boot, seed)
     win2 = windows(tagged[~tagged["rule_id"].isin(drop)])
     seqs2, y2, host2 = seq_of(win2), win2["positive"].to_numpy(bool), win2["host"].to_numpy()
-    sc2 = {"U": [rs.u_scores(seqs2, b2["base"], alpha)]}
-    sc2.update({n: [rs.lr_scores(seqs2, P, b2["P_ben"]) for P in Ps] for n, Ps in main.items()})
-    d2 = _eval(sc2, y2, host2, n_boot, seed)
-    out["d_scripted_removed"] = {
-        "primary": {"windows": int(len(y)), "positive": int(y.sum()), **_lead(out["c_controls"])},
-        "i_drop_xx01_xx51_hosts": {"hosts_dropped": sorted({h for h in host if scripted(h)}),
-                                   "windows": int(keep.sum()), "positive": int(y[keep].sum()), **_lead(d1), "conditions": d1},
-        "ii_drop_scripted_rule_tags": {"rules": [titles[r] for r in drop], "windows": int(len(y2)),
-                                       "positive": int(y2.sum()), "fit_transitions": int(b2["pooled"].sum()),
-                                       **_lead(d2), "conditions": d2}}
+    pairs2 = rs.collapsed_pairs(win2["tactics"], ki)
+    u2 = {"U": [rs.u_scores(seqs2, b2["base"], alpha)]}
+    d2 = {"as_run": {**u2, **{n: [rs.lr_scores(seqs2, as_run(C, alpha), b2["P_ben"]) for C in Cs] for n, Cs in counts.items()}},
+          "collapsed": {**u2, **{n: [rs.lr_scores_collapsed(len(win2), pairs2, collapsed(C, alpha), rs.offdiag(b2["pooled"] + alpha))
+                                     for C in Cs] for n, Cs in counts.items()}}}
+    out["d_scripted_removed"] = {}
+    for v in ("as_run", "collapsed"):
+        base = {n: ss for n, ss in sc[v].items() if n == "U" or n in counts}
+        r1 = _eval({n: [s[keep] for s in ss] for n, ss in base.items()}, y[keep], host[keep], n_boot, seed)
+        r2 = _eval(d2[v], y2, host2, n_boot, seed)
+        out["d_scripted_removed"][v] = {
+            "primary": {"windows": int(len(y)), "positive": int(y.sum()),
+                        **_lead({n: c for n, c in out["c_controls"][v].items() if n == "U" or n in counts})},
+            "i_drop_xx01_xx51_hosts": {"hosts_dropped": sorted({h for h in host if scripted(h)}), "windows": int(keep.sum()),
+                                       "positive": int(y[keep].sum()), **_lead(r1), "conditions": r1},
+            "ii_drop_scripted_rule_tags": {"rules": [titles[r] for r in drop], "windows": int(len(y2)), "positive": int(y2.sum()),
+                                           "fit_transitions": int(b2["pooled"].sum()), **_lead(r2), "conditions": r2}}
 
-    # e. per host
+    # e. per host (as run; U is the same in both versions)
     pos_by_host = pd.Series(host[y]).value_counts().sort_index()
     loho = {}
     for h in np.unique(host):
         m = host != h
         if y[m].any():
-            loho[h] = {n: float(average_precision_score(y[m], np.mean([s[m] for s in scores[n]], axis=0)))
-                       for n in ["U", "Uni"] + [f"ATTK/{a}" for a in config["actors"]]}
+            loho[h] = {f"{n} ({v})" if n != "U" else n: float(average_precision_score(y[m], np.mean([s[m] for s in sc[v][n]], axis=0)))
+                       for v in ("as_run", "collapsed") for n in ["U", "Uni"] + [f"ATTK/{a}" for a in config["actors"]]}
     out["e_positive_windows_by_host"] = {h: int(v) for h, v in pos_by_host.items()}
     out["e_loho_auprc"] = loho
     out["e_loho_summary"] = {n: {"min": float(min(v[n] for v in loho.values())), "max": float(max(v[n] for v in loho.values())),

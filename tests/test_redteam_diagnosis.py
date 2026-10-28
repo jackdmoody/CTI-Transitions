@@ -46,3 +46,10 @@ def test_windows_keep_rules_and_cut_like_optc_redteam():
     ref = optc_redteam.windows(t)
     assert len(w) == len(ref) == 2 and w["rules"][1][0] == "r8"
     assert w["positive"].tolist() == ref["positive"].tolist() == [False, True]
+
+
+def test_decompose_splits_self_and_offdiagonal_parts():
+    seqs = np.array([[0, 1, 1]])
+    out = rd.decompose(seqs, np.array([True]), np.array([[0.0, 2.0], [0.0, -1.0]]), K)["positive"]
+    assert out["offdiag_part"] == pytest.approx(1.0) and out["self_part"] == pytest.approx(-0.5)
+    assert out["self_part"] + out["offdiag_part"] == pytest.approx(out["total"])

@@ -33,6 +33,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 
 from ctit.adapters.drift import BRIMS_MIN_TRANSITIONS, observational
 from ctit.cti import prior
+from ctit.cti.manifest import load_actors
 from ctit.eval import optc_redteam, optc_split
 from ctit.experiments import redteam_testset
 from ctit.map import v3
@@ -97,6 +98,59 @@ def u_scores(seqs: np.ndarray, base: np.ndarray, alpha: float) -> np.ndarray:
         np.add.at(C, (np.arange(len(seqs)), seqs[:, j] * n + seqs[:, j + 1]), 1)
     V = (C + alpha) / (C + alpha).sum(axis=1, keepdims=True)
     return np.array([observational.jsd(v, base) for v in V])
+
+
+# ---- collapsed (consistent) version, POST HOC 2026-10-27 (SPEC_ISSUES): repeats collapsed in each
+# window, only off-diagonal transitions scored; priors and P_ben with the self cell dropped.
+
+def offdiag(P: np.ndarray) -> np.ndarray:
+    """Self cell dropped, each row renormalized over the other tactics."""
+    Q = np.array(P, dtype=float)
+    np.fill_diagonal(Q, 0.0)
+    return Q / Q.sum(axis=1, keepdims=True)
+
+
+def collapsed_prior(C: np.ndarray, alpha: float, K: list[str]) -> np.ndarray:
+    """(counts + alpha) over 14 tactics, self cell dropped and renormalized over the other 13,
+    projected onto K, and the self cell the projection creates dropped again."""
+    return offdiag(prior.project(offdiag(np.asarray(C, dtype=float) + alpha), K))
+
+
+def collapsed_pairs(tactics, ki: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """(window index, from, to) of every off-diagonal transition after collapsing each window."""
+    w, a, b = [], [], []
+    for i, ts in enumerate(tactics):
+        c = [ki[t] for j, t in enumerate(ts) if j == 0 or t != ts[j - 1]]
+        for x, z in zip(c, c[1:]):
+            w.append(i), a.append(x), b.append(z)
+    return np.array(w, dtype=int), np.array(a, dtype=int), np.array(b, dtype=int)
+
+
+def lr_scores_collapsed(n: int, pairs: tuple, P_adv: np.ndarray, P_ben: np.ndarray) -> np.ndarray:
+    """Mean log-LR over a window's off-diagonal transitions; 0 (tied) for a window with none."""
+    w, a, b = pairs
+    tot = np.bincount(w, weights=np.log(P_adv[a, b]) - np.log(P_ben[a, b]), minlength=n)
+    cnt = np.bincount(w, minlength=n)
+    return np.where(cnt > 0, tot / np.maximum(cnt, 1), 0.0)
+
+
+def prior_counts(config: dict) -> dict[str, list[np.ndarray]]:
+    """condition -> raw 14 x 14 count matrices per sample (Uni: zeros; ATTK: n n^T)."""
+    groups = {a: v["attack_group"] for a, v in load_actors().items()}
+    out = {"Uni": [np.zeros((len(TACTICS),) * 2)]}
+    for a in config["actors"]:
+        out[f"ATTK/{a}"] = [prior.attk_counts(groups[a])[0]]
+    for label, spec in config["runs"].items():
+        run, sub = run_dir(spec)
+        for cond, actors in (("R", config["actors"]), ("oracle", ["OpTC-redteam"])):
+            if cond == "oracle" and label not in config["oracle_modes"]:
+                continue
+            for a in actors:
+                files = sorted((PRIORS / run / (sub or label)).glob(f"{cond}_{a}_*.json"))
+                if files:
+                    out[f"{cond}-{label}" + ("" if cond == "oracle" else f"/{a}")] = \
+                        [np.array(json.loads(f.read_text())["counts"]) for f in files]
+    return out
 
 
 def metrics(score: np.ndarray, y: np.ndarray, host: np.ndarray) -> dict:
@@ -179,11 +233,24 @@ def run(config: dict, calls=None) -> dict:
 
     fit = fit_counts(optc_split.load_split()["fit"], config.get("workers", 4))
     b = baseline(fit, K, alpha)
-    scores = {"U": [u_scores(seqs, b["base"], alpha)]}
-    for name, Ps in _priors(config, K).items():
-        scores[name] = [lr_scores(seqs, P, b["P_ben"]) for P in Ps]
+    scores = {"U": [u_scores(seqs, b["base"], alpha)]}  # U is DRIFT as published in both versions
+    extra = {}
+    if config.get("version", "as_run") == "collapsed":
+        pairs = collapsed_pairs(win["tactics"], ki)
+        P_ben = offdiag(b["pooled"] + alpha)
+        for name, Cs in prior_counts(config).items():
+            scores[name] = [lr_scores_collapsed(len(win), pairs, collapsed_prior(C, alpha, K), P_ben) for C in Cs]
+        n_off = np.bincount(pairs[0], minlength=len(win))
+        extra = {"version": "collapsed (POST HOC)", "offdiag_transitions_per_window": {
+            lab: {int(k): int(v) for k, v in zip(*np.unique(n_off[sel], return_counts=True))}
+            for lab, sel in (("positive", y), ("negative", ~y))},
+            "positive_windows_without_offdiag": int((n_off[y] == 0).sum()),
+            "negative_windows_without_offdiag": int((n_off[~y] == 0).sum())}
+    else:
+        for name, Ps in _priors(config, K).items():
+            scores[name] = [lr_scores(seqs, P, b["P_ben"]) for P in Ps]
     conditions, skipped = evaluate(scores, y, host, config["bootstrap"]["n"], rng)
-    return {
+    return {**extra,
         "K": K, "alpha": alpha, "lambda": 0.0, "windows": int(len(win)), "positive": int(y.sum()),
         "base_rate": float(y.mean()), "hosts": int(len(np.unique(host))), "attacked_hosts": int(len(np.unique(host[y]))),
         "fit_hosts": len(fit), "fit_transitions": int(b["pooled"].sum()), "u_baseline_hosts": b["u_hosts"],

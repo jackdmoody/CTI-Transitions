@@ -1,0 +1,16 @@
+# Case study B, collapsed (consistent) scoring: POST HOC, 2026-10-27 (SPEC_ISSUES). Repeats
+# collapsed per window, only off-diagonal transitions scored; priors and P_ben with the self cell
+# dropped and renormalized. U unchanged (DRIFT as published). Same test set, bootstrap, lambda = 0.
+# The as-run scoring (configs/redteam_scoring.yaml) stays as reported; both go in the report.
+# Labels: F = Opus 5.5; Q / Q5 = Qwen3-14B (S-Q, pre-registered); Ministral (M, M5) added later.
+experiment: redteam_scoring
+version: collapsed
+actors: [APT29, menuPass, OilRig, Sandworm]
+alpha: 0.5
+oracle_modes: [Q, Q5]
+bootstrap: {n: 1000, seed: 20261027}
+workers: 6
+runs:
+  F: 20261027T223842Z-extraction-a686409
+  Q: {run: 20261027T223928Z-extraction-a686409, mode: S}
+  Q5: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled}
