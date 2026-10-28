@@ -322,3 +322,17 @@ Always prioritize using tools to provide the most accurate and helpful response.
   - Verified with one call per model on the debug-logging private server: the prompt "Reply with the single word OK." rendered to 44 characters and 11 tokens (`[INST]…[/INST]`), with no system block and no date.
 - **Cache:** the response-cache key now includes the template digest, as well as the tag, weights and options, so none of the 61 calls can be replayed. They also live under a different tag.
 - **Relaunch:** 14B, then 3B, with everything else as in the 20:06 entry.
+
+## 2026-10-27 21:14 EDT: parser gaps vs. malformed output (decided by Jack before any new Ministral failure was seen; POST HOC relative to the F and Qwen results)
+1. **Definition:**
+   - A *parser gap* is output that is valid JSON once the wrapping is removed: an unclosed or mismatched code fence, or prose before or after the JSON.
+   - Anything wrong inside the JSON is *malformed output* and stays a failure. That includes bad escapes, trailing commas, unbalanced quotes or brackets, and truncation.
+   - JSON content is never repaired.
+2. **The runs are not stopped over this.** The Ministral 14B and 3B runs finish with the current parser (`ctit.cti.schema.parse`), and the parser and validation are not changed during them.
+3. **After the runs, a wrapping-only fix is applied uniformly** to every model's cached first attempts (F, Ministral 14B and 3B, Qwen superseded), with no new calls.
+   - Every affected table is reported both ways: as run, and with the wrapping fix. **Primary numbers stay as run** unless Jack decides otherwise after seeing both.
+   - Operational rule (mine, fixed now, before any new failure is seen): in the fix variant, a chunk whose first attempt parses once the wrapping is stripped uses that first attempt. Otherwise it keeps its as-run outcome (retry result or skip). Validation (tactic names, self-transitions) and the evidence checks are unchanged.
+4. **The schema-failure table** gives, per model and mode, every failure with its parser message and its class under rule 1 (wrapping gap or malformed output), for first attempts and retries.
+- Known so far:
+  - F has 1 failure, B/Sandworm s4, first attempt: an unclosed ```json fence with complete JSON inside, i.e. a wrapping gap.
+  - Qwen has 8 failures, all invalid `\` escapes from unescaped Windows paths: malformed output.
