@@ -218,6 +218,7 @@ Runs: F `20261027T121723Z-extraction-a53c21c` (185 calls, 1.14M in / 0.37M out t
 3. **Baselines:** ATTK and Uni are scored with the same edge-set definition (count > 0 on an off-diagonal cell) and the chance control. ATTK has no order, so its edge set is every pair of tactics the group uses (Sandworm: all 14 tactics, the same as Uni). Uni equals chance by construction.
 4. **H4:** the pre-registered result is reported as is (F 3/4 rows on edge-F1; JSD degenerate at α = 0.5 with sparse ground truth). Post hoc: JSD at α ∈ {0.01, 0.1}, and the 4×4 matrix of chance-normalized edge-F1. The chance-normalized matrix is confounded by column: menuPass's small chance level inflates its whole column. I suggested a column-wise reading of the pre-registered matrix to Jack, but it is not adopted.
 5. **Case study B** (`ctit/experiments/redteam_scoring.py`), as run:
+   - **Scorer as run (precise wording added 2026-10-27 22:04 EDT):** each prior is (counts + α) row-normalized over all 14 tactics, **self cell kept** (`prior.from_counts`; ATTK's self cell is n_i²), then projected onto K (the 13 tactics v3 can emit, all but Reconnaissance) by the absorbing-chain formula. The self cell survives the projection, and Uni becomes 1/13 on every cell, self included. P_ben is pooled over K × K **including self-transitions**. Windows are **not collapsed**: all 7 transitions are scored, self-transitions included. Self-transitions are 77% of positive-window transitions (322) and 44% of negative-window transitions (30,674). Extracted priors give the self cell only smoothing mass. U is DRIFT's JSD over K × K edges, self edges included.
    - K is the tactics v3 can emit (each rule's primary tactic).
    - P_ben is pooled over the 223 fit hosts, 19–22 Sep; each host's tagged events are kept in time order across its days. Cached in `data/eval/optc_fit_transitions_v3.json`.
    - λ = 0. **Deviation from §5:** λ was to be tuned on validation, but the validation hosts have no attack windows, and test is never used for tuning.
@@ -375,3 +376,17 @@ Always prioritize using tools to provide the most accurate and helpful response.
 - **4×4:** R prior actor × plan, per model. For each plan (column), which actor's chain gives the highest likelihood.
 - **Sensitivity:** α = 0.01 and 0.1.
 - **Case study A:** the same score for each prior against the executed OTRF APT29 sequence (37 transitions, `ctit.experiments.otrf_case`).
+
+## 2026-10-27 22:04 EDT: case study B, collapsed (consistent) scoring added beside the as-run scoring: POST HOC (Jack; logged before any re-scoring)
+- **Why:** the as-run case B scoring is inconsistent with how the priors are built. Extraction forbids self-transitions and the ground truth collapses repeats, but case B scored uncollapsed windows. There, self-transitions are 77% of positive-window transitions, and the report priors give them only smoothing mass.
+- **As-run results stay exactly as they are.** The collapsed version is added alongside. Neither replaces the other; both go in the report.
+1. **"Case B, collapsed":**
+   - Consecutive repeated tactics are collapsed within each window, and only the off-diagonal transitions are scored: the mean log-LR over them. A window with none scores 0 under every LR prior, i.e. tied.
+   - Every prior: (counts + α) with the self cell dropped, each row renormalized over the 13 other tactics (as in the likelihood analysis), then projected onto K for Reconnaissance. The self cell that projection creates is dropped and each row renormalized again.
+   - The benign baseline: pooled K × K fit counts with the self cell dropped, + α, renormalized.
+   - Same 4,428/46 test set, host bootstrap (1,000, seed 20261027) and λ = 0.
+2. **Conditions scored:** U (unchanged: DRIFT as published, on the uncollapsed window), Uni, ATTK ×4, R-F, R-Q, R-Q5, the oracle (Q, Q5), and the Ministral priors once they exist. Same columns as the case B table.
+3. **Also reported:** the number of off-diagonal transitions per window after collapsing, as a distribution for positive and negative windows separately, and the number of positive windows with none (tied under every prior).
+4. **Diagnosis:** item 2b splits every as-run score difference into its self-transition part and its off-diagonal part. Items 2c and 2d run on both versions.
+5. The case B method note above now says exactly what the as-run scorer did.
+- Run after the diagnosis prep finishes. The Ministral runs are not touched.
