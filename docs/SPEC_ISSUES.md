@@ -475,3 +475,35 @@ Applies to replies of class *multiple_values* (01:06 entry): two or more JSON va
 - **Identical values** (every JSON value in the reply equal, including `[]` twice): the reply counts as parsed, using that value. Nothing changes numerically (all such cases are `[]`).
 - **Values differ:** the reply stays a failure in the primary (as-run) numbers. A sensitivity is reported for the two content-bearing cases (S-M t0 R/OilRig-P01 chunk 0; S-M3 s1 B/menuPass), taking (a) the first value and (b) the last value, for every affected table: extraction, H3, R−B, H4, likelihood, and case A/B if affected.
 - As with the wrapping fix, the value taken goes through the run-time parser and validation unchanged; no content is repaired. The wrapping-only fix (21:14 rule) is applied in the same replays, so the variants are as-run + wrapping fix + this rule.
+
+## 2026-10-28 08:42 EDT: multiple-JSON-value results (POST HOC; rule logged 08:21) and paper tables
+- **Replay:** `results/20261028T122317Z-schema_failures-6b29976`. Variants: `__mv` (identical values parsed), `__mvfirst`, `__mvlast`. All three include the wrapping-only fix. As run stays primary.
+- **Identical values** (21 S-M t0/sampled replies, both attempts where retried; 2 S-M3 sampled): counted as parsed, and no prior's counts change, confirmed.
+  - One S-M3 case (s1 R/Sandworm-P01) was a first attempt with identical `[]` whose retry had succeeded as run. Under the rule the first attempt stands and no retry is made. The retry had yielded no valid transitions, so counts and rejections are unchanged.
+  - Chunk statuses change (skipped_schema → ok), so the schema-failure counts under the rule are S-M 40 → 17 first attempts and S-M3 14 → 12.
+- **Values differ, S-M t0 R/OilRig-P01 chunk 0** (a list of 25, then a list of 9):
+  - First and last both add the same new edge (Execution → Discovery not in the plan, i.e. a false positive) and differ in 2 count cells.
+  - Extraction: edge-F1 .375 → .367; F1/chance 3.31 → 3.20.
+  - H3 S-M/OilRig: .946 → .927 (dropping F-refused chunks: 1.009 → .988).
+  - R−B (S-M, ratio) OilRig: 3.31 → 3.20; H2b Spearman unchanged (−0.8).
+  - H4 S-M: row margin OilRig −.106 → −.105; column-wise OilRig .067 → .060, Sandworm −.315 → −.306. Positive counts unchanged (row 2/4, column 3/4).
+  - Likelihood R-M/OilRig own plan, α 0.5: .373 [.05, .70] → .342 [−.00, .70]; α 0.01: .16 → .08; α 0.1: .42 → .36. Column-best unchanged (R-M 3/4 at every α).
+  - Case B R-M/OilRig: as run AUPRC .147 → .153 (AUROC .796 → .790, Det@1% unchanged .174); collapsed .179 → .168 (Det@1% .239 → .217). No other condition changes.
+  - Case A: unaffected (APT29 only).
+- **Values differ, S-M3 s1 B/menuPass** (`[]`, then a list of 8):
+  - First value = `[]`: nothing changes.
+  - Last value: that sample gets 8 edges. S-M35 B/menuPass mean edge-F1 0 → .029 (ratio defined for s1 only: 3.89). R−B S-M35 menuPass becomes defined (.17, from one sample).
+  - The 3B is in the extraction table and H3 only, so nothing else changes.
+- **Results:**
+  - extraction `…T122436Z/…T122443Z-extraction_report-3d74201` (first/last);
+  - likelihood `…T122451Z/…T122516Z-prior_likelihood-3d74201`;
+  - case B `…T122544Z/…T122740Z` (as run) and `…T122938Z/…T123134Z` (collapsed) `-redteam_scoring-3d74201`.
+  - Likelihood with M3 under first/last: `…T123443Z/…T123509Z-prior_likelihood-ecf227b`.
+- **Paper tables** (`ctit.experiments.paper_tables`, `results/paper_tables/`, run `…-paper_tables-5a5ee02`):
+  - Sources rerun at `ecf227b`; they reproduce every earlier number exactly.
+  - Additions, purely additive, existing numbers unchanged:
+    - case B gains ATTK-all, the all-groups ATT&CK prior, as a condition (matches the diagnosis c3 control, .306 / .285);
+    - likelihood gains M3 and 4×4 matrices for every prior family.
+  - Table (a) recomputes F1/chance with one shared chance draw (common random numbers: 10,000 orderings of the 182 off-diagonal cells, seed 20261027), so its ratios differ from the report's in the second decimal.
+  - Table (f): Qwen's request also carried `think: false` outside `options` (from the cache keys; not in calls.jsonl).
+  - Table (g): plan release dates are in `configs/plan_release_dates.yaml` (changelogs; GitHub commit dates for OilRig and Sandworm, which have no changelog).

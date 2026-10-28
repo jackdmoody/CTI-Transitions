@@ -108,3 +108,9 @@
 - All S analyses rerun with S-Q and S-M side by side. F and Qwen numbers reproduce. Private Ollama server stopped.
 - Tests: 150 passed, 3 skipped.
 - **Open (Jack):** the multiple_values class (2 substantive chunks); whether the wrapping-fix numbers replace as-run anywhere.
+
+## 2026-10-28: multiple-JSON-value rule; paper tables
+- Jack's rule (SPEC_ISSUES 08:21, logged before computing). Identical values = parsed: no count changes. First/last-value sensitivity for the two content-bearing cases, run through extraction, H3, R−B, H4, likelihood and case B. Small changes, confined to S-M OilRig and S-M35 B/menuPass (SPEC_ISSUES 08:42).
+- Paper tables (a)–(g) as CSV in `results/paper_tables/` with a README. Sources rerun at `ecf227b`, and they reproduce.
+- Tests: 160 passed, 3 skipped.
+- **Open (Jack):** whether the wrapping fix or the identical-values reading becomes primary anywhere (numerically the same except F B/Sandworm s4).
