@@ -11,7 +11,9 @@ Writes to `out_dir` (results/paper_tables/, gitignored) with a README line per f
   c  fabricated_evidence.csv   strict and fragment-aware hallucinated-span rates, R priors (extraction_report)
   d  refusals.csv              first-attempt calls and refusals per model and condition (response cache)
   e  case_b.csv                both versions: AUPRC [CI], AUROC [CI], Det@1% [CI] with realized FPR and ties
-  f  open_models.csv           options as sent (calls.jsonl) and Ollama digests (configs/models.yaml)
+  f  open_models.csv           options as sent (calls.jsonl), request fields outside `options` (from the cache
+                               keys, e.g. Qwen's think=false), the model's own default parameters (its Ollama
+                               params layer, applied to anything not sent) and Ollama digests (configs/models.yaml)
   g  report_dates.csv          each CTI report's publication date next to its plan's release date
 Every source result must come from a commit at or after `min_commit` (checked).
 """
@@ -33,6 +35,7 @@ from ctit.experiments.extraction import ALIASES, MODELS, PRIORS, REPO_ROOT, jobs
 from ctit.experiments.extraction_report import _caches
 from ctit.experiments.redteam_scoring import run_dir
 from ctit.experiments.schema_failures import _job_prompts
+from ctit.llm.ollama import MANIFESTS
 
 RESULTS = REPO_ROOT / "results"
 
@@ -191,6 +194,31 @@ def case_b(results: dict[str, dict]) -> list[dict]:
     return rows
 
 
+def ollama_params(tag: str, manifests: Path = MANIFESTS) -> tuple[str | None, dict | None]:
+    """(digest, contents) of the model's params layer: its defaults for any option not sent."""
+    name, t = tag.split(":")
+    f = manifests / name / t
+    if not f.exists():
+        return None, None
+    for layer in json.loads(f.read_text())["layers"]:
+        if layer["mediaType"].endswith(".params"):
+            blob = manifests.parents[2] / "blobs" / layer["digest"].replace(":", "-")
+            return layer["digest"], json.loads(blob.read_text())
+    return None, None
+
+
+def _request_extras(tag: str, setting_sampled: bool) -> dict:
+    """Request fields sent outside `options` (OllamaModel.chat pops `think`), from the cache keys."""
+    out = {}
+    for d in (PRIORS / "cache").iterdir():
+        k = (d / "KEY.txt").read_text() if (d / "KEY.txt").exists() else ""
+        if '"tag"' in k:
+            key = json.loads(k)
+            if key["tag"] == tag and ("seed" in key["o"]) == setting_sampled and "think" in key["o"]:
+                out["think"] = key["o"]["think"]
+    return out
+
+
 def open_models(config: dict) -> list[dict]:
     pins = yaml.safe_load(MODELS.read_text())
     by_tag = {p["tag"]: p for p in pins["open_weight"].values()}
@@ -210,9 +238,22 @@ def open_models(config: dict) -> list[dict]:
     rows = []
     for (tag, o), e in sorted(seen.items()):
         p = by_tag.get(tag, {})
+        pd_digest, pd = ollama_params(tag) if p else (None, None)
+        if pd is None and p.get("modelfile"):  # built on the private server: its committed, pinned Modelfile
+            pd_digest = "modelfile sha256:" + p["modelfile_sha256"]
+            pd = {}
+            for line in (REPO_ROOT / p["modelfile"]).read_text().splitlines():
+                if line.startswith("PARAMETER "):
+                    _, k, v = line.split(None, 2)
+                    pd.setdefault(k, []).append(v)
+            pd = {k: v[0] if len(v) == 1 else v for k, v in pd.items()}
         rows.append({"model": config["model_labels"].get(tag, tag), "tag": tag,
-                     "setting": "sampled" if e["seeds"] else "temperature 0" if '"temperature": 0' in o else "default",
-                     "options_sent": o, "seeds": " ".join(map(str, sorted(e["seeds"]))), "calls": e["calls"],
+                     "setting": ("sampled" if e["seeds"] else "temperature 0" if '"temperature": 0' in o
+                                 else "no sampling parameters"),
+                     "options_sent": o,
+                     "request_fields_outside_options": json.dumps(_request_extras(tag, bool(e["seeds"]))) if p else None,
+                     "model_default_params": json.dumps(pd, sort_keys=True) if pd else None,
+                     "default_params_source": pd_digest, "seeds": " ".join(map(str, sorted(e["seeds"]))), "calls": e["calls"],
                      "runs": " ".join(sorted(e["runs"])), "ollama_id": p.get("ollama_id"),
                      "weights_sha256": p.get("weights_sha256"), "template_sha256": p.get("template_sha256"),
                      "modelfile_sha256": p.get("modelfile_sha256"), "quantization": p.get("quantization"),

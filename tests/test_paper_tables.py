@@ -27,3 +27,15 @@ def test_no_edges():
     order = pt.chance_orderings(100, 1)
     r = pt.chance_row(np.zeros(recovery.OFF_DIAG.shape), _edges([(0, 1)]), order)
     assert (r["edges"], r["chance_mean"], r["f1_over_chance"]) == (0, 0.0, None)
+
+
+def test_ollama_params(tmp_path):
+    import json
+    man = tmp_path / "models" / "manifests" / "registry.ollama.ai" / "library"
+    (man / "m").mkdir(parents=True)
+    (man / "m" / "t").write_text(json.dumps({"layers": [{"mediaType": "application/vnd.ollama.image.params",
+                                                          "digest": "sha256:ab"}]}))
+    (tmp_path / "models" / "blobs").mkdir()
+    (tmp_path / "models" / "blobs" / "sha256-ab").write_text('{"temperature": 0.6}')
+    assert pt.ollama_params("m:t", man) == ("sha256:ab", {"temperature": 0.6})
+    assert pt.ollama_params("x:y", man) == (None, None)
