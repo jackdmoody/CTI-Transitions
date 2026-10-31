@@ -10,4 +10,4 @@ chunk: {tokens: 6000, overlap: 300}
 alpha: 0.5
 modes: [G]
 workers: {G: 4}
-budget: {cap_usd: 150, prior_runs: []}   # spend of earlier G runs (the smoke test) counts toward the cap
+budget: {cap_usd: 150, prior_runs: [20261031T155204Z-extraction-17e8f85]}   # spend of earlier G runs (the smoke test) counts toward the cap
