@@ -19,7 +19,7 @@ stats:  # label -> runs whose calls.jsonl hold its calls (Phase 3)
 sources:
   extraction: 20261031T172438Z-extraction_report-16049f4
   likelihood: 20261031T172516Z-prior_likelihood-a0bb280
-  reading: 20261031T172541Z-reading_bootstrap-a0bb280
+  reading: 20261031T174610Z-reading_bootstrap-d195210
   ig_dependence: 20261031T172545Z-ig_dependence-a0bb280
   case_a: 20261031T172546Z-case_a_v2-a0bb280
   case_b_scripted: 20261031T172645Z-case_b_scripted-a0bb280
