@@ -476,7 +476,7 @@ for f in glob.glob(str(ROOT / QWEN_PRIORS / "S-sampled" / "R_*.json")) + glob.gl
     if c and max(c.values()) > loops:
         loops, loopsrc = max(c.values()), f"{Path(f).parent.name}/{Path(f).name} {c.most_common(1)[0][0]}"
 docm, docf = dline("docs/SPEC_ISSUES.md", r"up to (\d+) transitions from one chunk")
-cnt(S, "(up to 123 transitions from one chunk)", 123, loops, QWEN_PRIORS + "/S{,-sampled}/R_*.json",
+cnt(S, "(up to 115 transitions from one chunk)", 115, loops, QWEN_PRIORS + "/S{,-sampled}/R_*.json",
     "max transitions (valid + rejected) per (doc, chunk)",
     note=f"max at {loopsrc}; {docf} states {docm.group(1) if docm else '?'} (pre-fix run 121707Z gives the same 115)")
 sens = E["h3_sensitivity"]
@@ -490,7 +490,7 @@ add(S, "moves its sampled F1 by at most 0.007", "0.007", fmt(q5_diff), EXT,
 fq = FAB[FAB.model == "Q"].fragment_aware
 fm = FAB[FAB.model == "M"].fragment_aware
 f3 = FAB[FAB.model == "M3"].fragment_aware
-rng(S, "the fabricated-evidence rate is .07--.30 by actor for Qwen", ".07--.30", float(fq.min()), float(fq.max()),
+rng(S, "the fabricated-evidence rate is .07--.29 by actor for Qwen", ".07--.29", float(fq.min()), float(fq.max()),
     f"{PT}/c_fabricated_evidence.csv", "fragment_aware, model Q (t0), min/max",
     note="Qwen max is APT29 %.4f (modes['S-Q']['R/APT29'].summary.hallucinated_fragments = %.4f) -> .29, not .30; Q5 range is %.2f-%.2f"
     % (float(fq.max()), E["modes"]["S-Q"]["R/APT29"]["summary"]["hallucinated_fragments"]["mean"],

@@ -33,7 +33,7 @@ Abstract,In two case studies on public telemetry,2,2,results/20261028T044412Z-ot
 5 Method,we use the pre-registered $\alpha=0.5$,0.5,0.5,configs/extraction_report.yaml,alpha,yes,
 5 Method,so each extraction runs five times,5,5,configs/models.yaml,frontier.F.samples,yes,
 5 Method,Effort is pinned at \emph{high},high,high,configs/models.yaml,frontier.F.options.effort,yes,
-5 Method,"24\,GB of unified memory",24,24,CLAUDE.md,CLAUDE.md:48,yes,hardware; from project doc
+5 Method,"24\,GB of unified memory",24,24,CLAUDE.md,CLAUDE.md:49,yes,hardware; from project doc
 5 Method,with 16k context,16k,16384,configs/models.yaml,"open_weight.{S,S_3B,S_qwen3_14b}.options.num_ctx",yes,16384 tokens = 16k
 5 Method,"Q, M, and M3 run at temperature 0",0,"[0, 0, 0]",configs/models.yaml,"open_weight.{S_qwen3_14b,S,S_3B}.options.temperature",yes,
 5 Method,"\emph{Q5}, \emph{M5}, and the sampled 3B runs are five samples",5,5,configs/models.yaml,open_weight.*.sampled.seeds (length),yes,
@@ -132,7 +132,7 @@ Table 2,[table] Table 2 B-Q APT29 edge-F1,.200,0.2,results/20261028T123410Z-extr
 Table 2,[table] Table 2 B-Q APT29 F1/chance,2.17,2.1717,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-Q,APT29]",yes,
 Table 2,[table] Table 2 B-M APT29 edge-F1,.100,0.1,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M/B/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1
 Table 2,[table] Table 2 B-M APT29 F1/chance,1.09,1.0858,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-M,APT29]",yes,
-Table 2,[table] Table 2 ATTK APT29 edge-F1,.237,0.2375,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['baseline/ATTK/APT29'].f1.mean,no,paper_tables a_support_recovery edge_f1 = 0.2375; exact half-way value (rounds up half-up and half-even); paper shows it rounded down
+Table 2,[table] Table 2 ATTK APT29 edge-F1,.238,0.2375,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['baseline/ATTK/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2375
 Table 2,[table] Table 2 ATTK APT29 F1/chance,0.94,0.9356,results/paper_tables/a_support_recovery.csv,"f1_over_chance [ATTK,APT29]",yes,
 Table 2,[table] Table 2 OilRig row label GT edges (block 2),15,15,results/paper_tables/a_support_recovery.csv,truth_edges,yes,
 Table 2,[table] Table 2 B-F OilRig edge-F1,.116,0.115861,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['F/B/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1159
@@ -155,7 +155,7 @@ Table 2,[table] Table 2 ATTK Sandworm F1/chance,1.00,1,results/paper_tables/a_su
 Table 2,[table] Table 2 menuPass row label GT edges (block 2),6,6,results/paper_tables/a_support_recovery.csv,truth_edges,yes,
 Table 2,[table] Table 2 B-F menuPass edge-F1,.495,0.494737,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['F/B/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.4947
 Table 2,[table] Table 2 B-F menuPass F1/chance,11.02,11.0169,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-F,menuPass]",yes,
-Table 2,[table] Table 2 B-Q menuPass edge-F1,.210,0.210526,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q/B/menuPass'].f1.mean,no,paper_tables a_support_recovery edge_f1 = 0.2105
+Table 2,[table] Table 2 B-Q menuPass edge-F1,.211,0.210526,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q/B/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2105
 Table 2,[table] Table 2 B-Q menuPass F1/chance,4.74,4.7371,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-Q,menuPass]",yes,
 Table 2,[table] Table 2 B-M menuPass edge-F1,.222,0.222222,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M/B/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2222
 Table 2,[table] Table 2 B-M menuPass F1/chance,5.14,5.1387,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-M,menuPass]",yes,
@@ -167,9 +167,9 @@ Table 3,[table] Table 3 ATT&CK refs. APT29,44,44,results/20261028T123410Z-extrac
 Table 3,[table] Table 3 ATT&CK refs. OilRig,28,28,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.r_minus_b.F.OilRig.attack_references,yes,
 Table 3,[table] Table 3 ATT&CK refs. Sandworm,26,26,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.r_minus_b.F.Sandworm.attack_references,yes,
 Table 3,[table] Table 3 ATT&CK refs. menuPass,20,20,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.r_minus_b.F.menuPass.attack_references,yes,
-Table 3,[table] Table 3 F: R-B APT29,+0.04,0.0347,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [APT29],rounding,paper = 1.99 - 1.95 (difference of rounded Table-2 ratios); exact difference rounds to 0.03
-Table 3,[table] Table 3 F: R-B OilRig,+1.86,1.8667,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [OilRig],rounding,paper = 3.23 - 1.37 (difference of rounded Table-2 ratios); exact difference rounds to 1.87
-Table 3,[table] Table 3 F: R-B Sandworm,+0.81,0.8033,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [Sandworm],rounding,paper = 2.66 - 1.85 (difference of rounded Table-2 ratios); exact difference rounds to 0.80
+Table 3,[table] Table 3 F: R-B APT29,+0.03,0.0347,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [APT29],yes,
+Table 3,[table] Table 3 F: R-B OilRig,+1.87,1.8667,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [OilRig],yes,
+Table 3,[table] Table 3 F: R-B Sandworm,+0.80,0.8033,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [Sandworm],yes,
 Table 3,[table] Table 3 F: R-B menuPass,-5.23,-5.2302,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [menuPass],yes,
 Table 3,[table] Table 3 Q: R-B APT29,-0.17,-0.1677,results/paper_tables/a_support_recovery.csv,f1_over_chance R-Q minus B-Q [APT29],yes,
 Table 3,[table] Table 3 Q: R-B OilRig,+1.09,1.0901,results/paper_tables/a_support_recovery.csv,f1_over_chance R-Q minus B-Q [OilRig],yes,
@@ -213,10 +213,10 @@ Table 3,[table] Table 3 M: R-B menuPass,-0.08,-0.0824,results/paper_tables/a_sup
 7 Results,each meets H3's 80\% criterion for three of four actors,3,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,"h3 s_over_f >= 0.8 (S-Q, S-M)",yes,"Qwen 3, Ministral 3"
 7 Results,The 3B model meets it for none,0,0,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h3['S-M3'].*.s_over_f >= 0.8),yes,
 7 Results,meets it for none (36--76\%),36--76,35.9042–76.2786,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3['S-M3'].*.s_over_f min/max,yes,
-7 Results,(up to 123 transitions from one chunk),123,115,"data/priors/20261027T223928Z-extraction-a686409/S{,-sampled}/R_*.json","max transitions (valid + rejected) per (doc, chunk)",no,"max at S-sampled/R_menuPass_s3.json ('menuPass-P06', 1); docs/SPEC_ISSUES.md:210 states 123 (pre-fix run 121707Z gives the same 115)"
+7 Results,(up to 115 transitions from one chunk),115,115,"data/priors/20261027T223928Z-extraction-a686409/S{,-sampled}/R_*.json","max transitions (valid + rejected) per (doc, chunk)",yes,"max at S-sampled/R_menuPass_s3.json ('menuPass-P06', 1); docs/SPEC_ISSUES.md:210 states 123 (pre-fix run 121707Z gives the same 115)"
 7 Results,leaves Qwen's temperature-0 priors unchanged,unchanged,0,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,max |h3_sensitivity['S-Q'].R.<a>.f1.mean - modes['S-Q']['R/<a>'].summary.f1_all.mean|,yes,
 7 Results,moves its sampled F1 by at most 0.007,0.007,0.00701851,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,max |h3_sensitivity['S-Q-sampled'].R.<a>.f1.mean - modes['S-Q-sampled']['R/<a>'].summary.f1_all.mean|,yes,upper bound
-7 Results,the fabricated-evidence rate is .07--.30 by actor for Qwen,.07--.30,0.0659–0.2949,results/paper_tables/c_fabricated_evidence.csv,"fragment_aware, model Q (t0), min/max",no,"Qwen max is APT29 0.2949 (modes['S-Q']['R/APT29'].summary.hallucinated_fragments = 0.2949) -> .29, not .30; Q5 range is 0.15-0.46"
+7 Results,the fabricated-evidence rate is .07--.29 by actor for Qwen,.07--.29,0.0659–0.2949,results/paper_tables/c_fabricated_evidence.csv,"fragment_aware, model Q (t0), min/max",yes,"Qwen max is APT29 0.2949 (modes['S-Q']['R/APT29'].summary.hallucinated_fragments = 0.2949) -> .29, not .30; Q5 range is 0.15-0.46"
 7 Results,.20--.30 for Ministral,.20--.30,0.2027–0.2985,results/paper_tables/c_fabricated_evidence.csv,"fragment_aware, model M (t0), min/max",yes,
 7 Results,.50--.68 for the 3B,.50--.68,0.5–0.6825,results/paper_tables/c_fabricated_evidence.csv,"fragment_aware, model M3 (t0), min/max",yes,
 7 Results,against at most .005 for Opus,.005,0.005,results/paper_tables/c_fabricated_evidence.csv,"max fragment_aware, model F",yes,
@@ -306,7 +306,7 @@ Table 5,[table] Table 5 R-M5 menuPass,\textbf{+1.07},"1.0650 [ci 0.5477, 1.5727]
 Table 5,[table] Table 5 R-M5 Attr.,2/4,2,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-M5, alpha 0.5]",yes,
 Table 5,[table] Table 5 R-M3 APT29,-.24\vf,"-0.2373 [ci -0.4293, -0.0490]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M3,APT29,alpha 0.5]",yes,"\dag here = interval below zero (caption), not a corpus-check dagger"
 Table 5,[table] Table 5 R-M3 OilRig,+.08,"0.0776 [ci -0.3191, 0.4911]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M3,OilRig,alpha 0.5]",yes,
-Table 5,[table] Table 5 R-M3 Sandworm,+.02,"0.0145 [ci -0.1373, 0.2047]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M3,Sandworm,alpha 0.5]",no,value mismatch: unrounded 0.014499 rounds to 0.01 (4-dp CSV value 0.0145 double-rounded gives the paper value); 
+Table 5,[table] Table 5 R-M3 Sandworm,+.01,"0.0145 [ci -0.1373, 0.2047]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M3,Sandworm,alpha 0.5]",yes,
 Table 5,[table] Table 5 R-M3 menuPass,\textbf{+.89},"0.8904 [ci 0.2960, 1.3901]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M3,menuPass,alpha 0.5]",yes,
 Table 5,[table] Table 5 R-M3 Attr.,0/4,0,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-M3, alpha 0.5]",yes,
 Table 5,[table] Table 5 B-F APT29,+.06,"0.0561 [ci -0.0864, 0.2243]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-F,APT29,alpha 0.5]",yes,
