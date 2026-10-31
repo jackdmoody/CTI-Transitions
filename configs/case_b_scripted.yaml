@@ -1,0 +1,13 @@
+# Item 5 (POST HOC, 2026-10-31): case B collapsed, (i) the five xx01/xx51 hosts dropped and (ii) only the
+# scripted job's two rules removed (diagnosis item d), for U, Uni, ATTK, every label's R priors and oracles.
+experiment: case_b_scripted
+priors_from: configs/v2_priors.yaml
+actors: [APT29, menuPass, OilRig, Sandworm]
+labels: [F, Q, Q5, M, M5, M3]
+oracle_modes: [F, Q, Q5, M, M5, M3]   # refused or missing oracles are reported, not scored
+alpha: 0.5
+scripted_rules:              # "Process Creation Using Sysnative Folder", "Recon Command Output Piped To Findstr"
+  - 3c1b5fb0-c72f-45ba-abd1-4d4c353144ab
+  - ccb5742c-c248-4982-8c5c-5571b9275ad3
+bootstrap: {n: 1000, seed: 20261027}
+workers: 3

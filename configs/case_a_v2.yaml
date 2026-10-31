@@ -1,0 +1,9 @@
+# Item 4 (POST HOC, 2026-10-31): case A, every Table 5 prior (all actors) against the executed OTRF APT29
+# sequence: IG with 95% i.i.d. intervals (prior_likelihood's draw), edge-F1 / chance and percentile.
+experiment: case_a_v2
+priors_from: configs/v2_priors.yaml
+actors: [APT29, menuPass, OilRig, Sandworm]   # order matters for the i.i.d. draw (as prior_likelihood)
+families: [R-F, R-Q, R-Q5, R-M, R-M5, R-M3, B-F, B-Q, B-M, ATTK, Uni]
+alpha: 0.5
+iid: {n_boot: 1000, seed: 20261027}
+chance: {draws: 10000, seed: 20261027}

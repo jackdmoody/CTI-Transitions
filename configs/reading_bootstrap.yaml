@@ -1,0 +1,10 @@
+# Item 1 (POST HOC, 2026-10-31): report-level bootstrap of reading vs. remembering (R - B) in
+# F1/chance and own-plan IG bits. Models: configs/v2_priors.yaml (`priors_from`); `pairs` = labels with R and B.
+experiment: reading_bootstrap
+priors_from: configs/v2_priors.yaml
+actors: [APT29, menuPass, OilRig, Sandworm]
+pairs: [F, Q, Q5, M, M5, M3]
+alpha: 0.5
+n_boot: 2000
+seed: 20261031
+chance: {draws: 10000, seed: 20261027}   # the shared draw of paper table a

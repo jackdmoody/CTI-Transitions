@@ -1,0 +1,13 @@
+# Item 3 (POST HOC, 2026-10-31): fixed-seed sample of R evidence spans failing the fragment-aware check,
+# for Jack's hand labels. `n: all` = every failing span. Output holds CTI text: audit/ is gitignored.
+experiment: evidence_audit
+priors_from: configs/v2_priors.yaml
+actors: [APT29, menuPass, OilRig, Sandworm]
+models:
+  F: {n: all}
+  Q: {n: 40}
+  M: {n: 40}
+  M3: {n: 40}
+seed: 20261031
+chunk: {tokens: 6000, overlap: 300}
+out: audit/evidence_sample.csv

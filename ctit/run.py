@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 
 from ctit.calls import CallLogger
-from ctit.experiments import baseline_priors, benign_breakdown, benign_windows, drift_parity, extraction, extraction_report, mapper_report, mapper_v3, otrf_case, paper_tables, prior_likelihood, redteam_day, redteam_diag, redteam_diagnosis, redteam_scoring, redteam_testset, schema_failures, wp5_gate
+from ctit.experiments import baseline_priors, benign_breakdown, benign_windows, case_a_v2, case_b_scripted, drift_parity, evidence_audit, extraction, extraction_report, ig_dependence, mapper_report, mapper_v3, otrf_case, paper_tables, paper_tables_v2, prior_likelihood, reading_bootstrap, redteam_day, redteam_diag, redteam_diagnosis, redteam_scoring, redteam_testset, schema_failures, wp5_gate
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RESULTS_ROOT = REPO_ROOT / "results"
@@ -42,6 +42,13 @@ EXPERIMENTS = {
     "prior_likelihood": prior_likelihood.run,
     "schema_failures": schema_failures.run,
     "paper_tables": paper_tables.run,
+    # v2 analyses (POST HOC, 2026-10-31)
+    "reading_bootstrap": reading_bootstrap.run,
+    "ig_dependence": ig_dependence.run,
+    "evidence_audit": evidence_audit.run,
+    "case_a_v2": case_a_v2.run,
+    "case_b_scripted": case_b_scripted.run,
+    "paper_tables_v2": paper_tables_v2.run,
 }
 
 
@@ -60,6 +67,8 @@ def git_state() -> tuple[str, bool]:
 def load_config(path: Path) -> dict:
     config = yaml.safe_load(Path(path).read_text())
     config.pop("_provenance", None)
+    if "priors_from" in config and "priors" not in config:  # shared model list (v2 analyses); resolved here
+        config["priors"] = yaml.safe_load((REPO_ROOT / config["priors_from"]).read_text())["priors"]
     return config
 
 

@@ -1,0 +1,12 @@
+# Shared model list for the v2 analyses (POST HOC, 2026-10-31). Included by every v2 config via `priors_from`.
+# label -> saved priors {run, mode} under data/priors/. Add a model by adding a line here and rerunning.
+# F = Opus 5.5 (5 samples); Q / Q5 = Qwen3-14B temperature 0 / 5 sampled; M / M5 = Ministral 3 14B;
+# M3 / M35 = Ministral 3 3B.
+priors:
+  F: {run: 20261027T223842Z-extraction-a686409, mode: F}
+  Q: {run: 20261027T223928Z-extraction-a686409, mode: S}
+  Q5: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled}
+  M: {run: 20261028T005130Z-extraction-5528fd6, mode: S}
+  M5: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled}
+  M3: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B}
+  M35: {run: 20261028T040137Z-extraction-d032eae, mode: S_3B-sampled}

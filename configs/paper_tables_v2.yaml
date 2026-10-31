@@ -1,0 +1,21 @@
+# Paper and supplement tables v2, CSV + LaTeX (POST HOC packaging, 2026-10-31; Jack's final coding pass).
+# Models from configs/v2_priors.yaml; computed tables use the shared chance draw of paper table a.
+# Output: results/paper_tables_v2/ (gitignored). Sources must be clean runs at or after min_commit.
+experiment: paper_tables_v2
+priors_from: configs/v2_priors.yaml
+min_commit: 6f321e7
+out_dir: results/paper_tables_v2
+actors: [APT29, menuPass, OilRig, Sandworm]
+alpha: 0.5
+chance: {draws: 10000, seed: 20261027}
+families_t2: [R-F, R-Q, R-Q5, R-M, R-M5, R-M3, B-F, B-Q, B-M, B-M5, ATTK]
+h4_labels: [F, Q, Q5, M, M5, M3]
+jsd_alphas: [0.01, 0.1, 0.5]
+fabricated_modes: {F: F, Q: S-Q, Q5: S-Q-sampled, M: S-M, M5: S-M-sampled, M3: S-M3}  # label -> extraction_report mode
+sources:
+  extraction: 20261028T123410Z-extraction_report-ecf227b
+  likelihood: 20261028T123417Z-prior_likelihood-ecf227b
+  reading: RUN_ID_READING
+  ig_dependence: RUN_ID_IGDEP
+  case_a: RUN_ID_CASEA
+  case_b_scripted: RUN_ID_CASEB
