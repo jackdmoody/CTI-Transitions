@@ -195,3 +195,51 @@ R-G OilRig's i.i.d. lower bound is +0.001. Block bootstrap status changes: R-G O
 **Case A (executed OTRF APT29), IG [95%]; F1/chance (pct):** R-G APT29 −.04 [−.27, +.19]; 1.80 (98.8). R-F APT29 −.12 [−.33, +.10]; 1.45 (85.1). B-G APT29 −.06 [−.18, +.09]; 1.11 (57.1). Off-target R-G: OilRig −.33 [−.60, −.07] (below), Sandworm −.21, menuPass +.00.
 
 **Case B, AUPRC [95% host-cluster]:** collapsed: R-G .179–.469 (APT29 .398, OilRig .469, Sandworm .179, menuPass .444), oracle-G .174 [.08, .26]; R-F .278–.432; Uni .178. As run: R-G .126–.140, oracle-G .111 [.08, .29]; R-F .133–.143; Uni .147. Scripted hosts dropped (collapsed): R-G APT29/OilRig/menuPass .680 [.56, .82], Sandworm .153; oracle-G .187; Uni .187; U .656. Scripted rules removed: R-G .124–.268 (menuPass .268 [.14, .37]); oracle-G .128; Uni .146; U .662.
+
+## Leave-one-report-out jackknife of R − B (POST HOC, 2026-10-31; after the bootstrap's downward shift was seen)
+Run `20261031T174610Z-reading_bootstrap-d195210` (the bootstrap numbers are unchanged; the jackknife uses no generator). Each R report left out in turn (n = 7 / 5 / 5 / 6 for APT29 / menuPass / OilRig / Sandworm); every R sample kept (no resampling of samples), B at its point estimate (for F and G the mean of their 5 B samples). SE = sqrt((n − 1)/n Σ (θ₋ᵢ − θ̄)²); 95% interval = point ± t(0.975, n − 1)·SE (t = 2.45 / 2.78 / 2.78 / 2.57). Table: `results/paper_tables_v2/t3_reading_jackknife.{csv,tex}`.
+
+
+**R − B, F1/chance**
+
+| Model | Actor | Point | Bootstrap 95% | Bootstrap median | LOO min … max | Jackknife SE | Jackknife 95% |
+|---|---|---|---|---|---|---|---|
+| F | APT29 | +0.03 | [-0.86, +0.47] | +0.05 | -0.30 … +0.19 | 0.37 | [-0.86, +0.93] |
+| F | menuPass | -5.23 | [-10.84, -1.56] | -4.91 | -7.35 … -3.59 | 2.49 | [-12.15, +1.69] |
+| F | OilRig | +1.87 | [+1.33, +2.95] | +1.98 | +1.67 … +2.35 | 0.52 | [+0.43, +3.30] |
+| F | Sandworm | +0.80 | [-0.10, +1.84] | +0.93 | +0.61 … +1.16 | 0.43 | [-0.30, +1.91] |
+| G | APT29 | +0.56 | [-0.41, +1.32] | +0.55 | +0.20 … +0.73 | 0.44 | [-0.50, +1.63] |
+| G | menuPass | -5.87 | [-9.05, -3.76] | -5.93 | -6.14 … -5.54 | 0.47 | [-7.18, -4.56] |
+| G | OilRig | +0.37 | [-0.56, +2.19] | +0.65 | +0.23 … +0.81 | 0.41 | [-0.78, +1.51] |
+| G | Sandworm | -0.25 | [-1.73, +0.62] | -0.24 | -1.28 … +0.05 | 0.97 | [-2.75, +2.25] |
+| Q | APT29 | -0.17 | [-1.03, +0.38] | -0.07 | -0.82 … +0.06 | 0.68 | [-1.84, +1.51] |
+| Q | menuPass | +0.16 | [-1.36, +1.12] | +0.16 | -1.36 … +1.12 | 1.67 | [-4.48, +4.80] |
+| Q | OilRig | +1.09 | [+0.00, +1.75] | +0.98 | +0.34 … +1.37 | 0.72 | [-0.92, +3.10] |
+| Q | Sandworm | +1.10 | [+0.11, +1.31] | +1.10 | +0.70 … +1.31 | 0.42 | [+0.03, +2.17] |
+| M | APT29 | +0.95 | [-0.28, +1.51] | +0.97 | +0.66 … +1.23 | 0.42 | [-0.08, +1.98] |
+| M | menuPass | -0.08 | [-2.33, +5.29] | +0.92 | -0.08 … +0.97 | 0.78 | [-2.26, +2.09] |
+| M | OilRig | +3.30 | [+2.84, +3.88] | +3.41 | +2.88 … +3.51 | 0.46 | [+2.03, +4.57] |
+| M | Sandworm | +0.40 | [+0.11, +3.00] | +0.52 | +0.40 … +0.85 | 0.38 | [-0.59, +1.38] |
+
+**R − B, IG bits**
+
+| Model | Actor | Point | Bootstrap 95% | Bootstrap median | LOO min … max | Jackknife SE | Jackknife 95% |
+|---|---|---|---|---|---|---|---|
+| F | APT29 | +0.06 | [-0.28, +0.11] | -0.04 | -0.05 … +0.10 | 0.14 | [-0.28, +0.39] |
+| F | menuPass | -0.09 | [-1.21, +0.37] | -0.14 | -0.73 … -0.05 | 0.51 | [-1.50, +1.32] |
+| F | OilRig | +0.61 | [+0.07, +0.69] | +0.47 | +0.41 … +0.58 | 0.12 | [+0.28, +0.94] |
+| F | Sandworm | +0.33 | [-0.11, +0.46] | +0.28 | +0.06 … +0.38 | 0.23 | [-0.27, +0.93] |
+| G | APT29 | +0.30 | [-0.20, +0.41] | +0.17 | +0.16 … +0.34 | 0.18 | [-0.15, +0.75] |
+| G | menuPass | -0.01 | [-0.67, +0.20] | -0.10 | -0.22 … +0.07 | 0.23 | [-0.63, +0.62] |
+| G | OilRig | +0.50 | [+0.03, +0.65] | +0.41 | +0.33 … +0.54 | 0.15 | [+0.10, +0.90] |
+| G | Sandworm | +0.17 | [-0.25, +0.32] | +0.14 | -0.12 … +0.23 | 0.27 | [-0.53, +0.86] |
+| Q | APT29 | +0.02 | [-0.30, +0.09] | -0.05 | -0.13 … +0.09 | 0.16 | [-0.36, +0.40] |
+| Q | menuPass | +0.68 | [-0.16, +1.07] | +0.66 | +0.00 … +0.68 | 0.52 | [-0.77, +2.12] |
+| Q | OilRig | -0.06 | [-0.31, +0.08] | -0.11 | -0.10 … +0.04 | 0.12 | [-0.38, +0.27] |
+| Q | Sandworm | +0.25 | [-0.05, +0.25] | +0.21 | +0.06 … +0.25 | 0.15 | [-0.15, +0.64] |
+| M | APT29 | +0.17 | [-0.18, +0.22] | +0.12 | +0.02 … +0.20 | 0.14 | [-0.16, +0.51] |
+| M | menuPass | +0.72 | [-0.12, +0.96] | +0.70 | +0.34 … +0.73 | 0.29 | [-0.09, +1.53] |
+| M | OilRig | +0.56 | [+0.14, +0.64] | +0.42 | +0.36 … +0.60 | 0.18 | [+0.06, +1.06] |
+| M | Sandworm | -0.03 | [-0.14, +0.05] | -0.04 | -0.03 … +0.01 | 0.04 | [-0.12, +0.07] |
+
+Status differences (interval excluding zero under one method only): F1/chance F menuPass (bootstrap below, jackknife spans) and M Sandworm (bootstrap above, jackknife spans); Q OilRig's bootstrap lower bound is +0.001 (spans under both). Every IG cell has the same status under both methods (above zero: F, G and M on OilRig).
