@@ -16,9 +16,11 @@ stats:  # label -> runs whose calls.jsonl hold its calls (Phase 3)
   F: [20261027T121723Z-extraction-a53c21c, 20261027T223842Z-extraction-a686409]
   G: [20261031T155204Z-extraction-17e8f85, 20261031T155558Z-extraction-50913f7]
 sources:
-  extraction: 20261028T123410Z-extraction_report-ecf227b
-  likelihood: 20261028T123417Z-prior_likelihood-ecf227b
-  reading: 20261031T153631Z-reading_bootstrap-84bbb70
-  ig_dependence: 20261031T153635Z-ig_dependence-84bbb70
-  case_a: 20261031T153636Z-case_a_v2-84bbb70
-  case_b_scripted: 20261031T153736Z-case_b_scripted-84bbb70
+  extraction: 20261031T172438Z-extraction_report-16049f4
+  likelihood: 20261031T172516Z-prior_likelihood-a0bb280
+  reading: 20261031T172541Z-reading_bootstrap-a0bb280
+  ig_dependence: 20261031T172545Z-ig_dependence-a0bb280
+  case_a: 20261031T172546Z-case_a_v2-a0bb280
+  case_b_scripted: 20261031T172645Z-case_b_scripted-a0bb280
+  case_b_as_run: 20261031T172917Z-redteam_scoring-a0bb280
+  case_b_collapsed: 20261031T173148Z-redteam_scoring-a0bb280

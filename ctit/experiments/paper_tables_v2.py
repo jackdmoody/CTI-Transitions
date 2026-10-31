@@ -17,6 +17,7 @@ Read from the source runs (each must be from a clean commit at or after `min_com
   t_fabricated_evidence       strict and fragment-aware failing-span rates (extraction_report)
   t_case_a                    every Table 5 prior vs. the executed OTRF APT29 sequence (case_a_v2)
   t_extraction_stats          refusals, first-attempt schema failures, time per call, tokens, cost per label
+  t_case_b                    case B as run and collapsed, every condition (redteam_scoring runs)
   t_case_b_scripted           case B collapsed, scripted hosts dropped / scripted rules removed (case_b_scripted)
 """
 from __future__ import annotations
@@ -32,7 +33,7 @@ from ctit.eval import recovery
 from ctit.experiments import v2_common as v2
 from ctit.experiments.extraction import REPO_ROOT
 from ctit.experiments.extraction_report import reference_count
-from ctit.experiments.paper_tables import _source
+from ctit.experiments.paper_tables import _source, case_b as paper_case_b
 
 
 def _fmt(v):
@@ -272,6 +273,8 @@ def run(config: dict, calls=None) -> dict:
         "t_case_a": (case_a(src["case_a"]), "Case A: every Table 5 prior vs. the executed OTRF APT29 sequence"),
         "t_extraction_stats": (extraction_stats(config),
             "Refusals, first-attempt schema failures (saved priors), time per call, tokens and cost (calls.jsonl)"),
+        "t_case_b": (paper_case_b({"as_run": src["case_b_as_run"], "collapsed": src["case_b_collapsed"]}),
+            "Case B, as run and collapsed: AUPRC, AUROC, Det@1%FPR with 95% host-cluster intervals, realized FPR and ties"),
         "t_case_b_scripted": (case_b(src["case_b_scripted"]),
             "Case B collapsed, scripted hosts dropped and scripted rules removed, host-cluster 95% intervals"),
     }
