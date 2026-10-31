@@ -1,0 +1,397 @@
+section,claim_text,value_in_paper,value_in_source,source_path,source_field,match,note
+Abstract,using 23 reports that the plans do not cite,23,23,data/cti/manifest.csv,count(used_for == prior),yes,
+Abstract,ground truth for four actors,4,4,results/paper_tables/a_support_recovery.csv,nunique(actor),yes,
+Abstract,recover plan transitions at 2.0--5.8$\times$ an edge-count-matched chance level,2.0--5.8,1.9868–5.7867,results/paper_tables/a_support_recovery.csv,"f1_over_chance, prior R-F, min/max over actors",yes,
+Abstract,(95\% intervals above zero for two of four),2,2,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"count(ci95_lo > 0), prior R-F, alpha 0.5",yes,
+Abstract,"for two of four actors, Opus's memory alone matches the plan about as well as the reports do",2,2,results/paper_tables/a_support_recovery.csv,count(actors with R-F minus B-F f1_over_chance <= +0.05),yes,"criterion 'about as well or better' operationalised as R-B <= 0.05; actors: APT29, menuPass"
+Abstract,Two 14B open-weight models,2,2,configs/models.yaml,count(open_weight models with parameters 13.x/14.x B that are in extraction_report ollama_labels),yes,
+Abstract,each reach at least 80\% of Opus's edge-F1,80,80,docs/W2_EXPERIMENT_SPEC.md,H3 threshold (definitional),yes,"threshold, not a result"
+Abstract,for three of four actors (not the same three),3,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3.S-Q / h3.S-M .<actor>.s_over_f >= 0.8,yes,"Qwen passes ['APT29', 'Sandworm', 'menuPass'], Ministral ['APT29', 'OilRig', 'menuPass']; sets differ: True"
+Abstract,fabricate 7--30\% of their evidence quotes,7--30,6.59–29.85,results/paper_tables/c_fabricated_evidence.csv,"fragment_aware, models Q and M (temperature 0), min/max",yes,
+Abstract,against at most 0.5\% for Opus,0.5,0.5,results/paper_tables/c_fabricated_evidence.csv,"max fragment_aware, model F",yes,
+Abstract,a 3B model never reaches 80\%,never reaches 80%,0.762786,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,max h3.S-M3*/<actor>.s_over_f,yes,
+Abstract,tags 0.07\% of one intrusion's malicious events,0.07,0.0678835,results/20261027T124122Z-redteam_diag-59998a9/metrics.json,totals.tagged_malicious / totals.malicious_events,yes,
+Abstract,In two case studies on public telemetry,2,2,results/20261028T044412Z-otrf_case-ce77e76/metrics.json ; results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,"number of case-study runs (A, B)",yes,structural count
+1 Introduction,"for APT29 and menuPass, a strong model's memory already matches the ground truth at least as well as the reports do","APT29, menuPass","APT29, menuPass",results/paper_tables/a_support_recovery.csv,actors with R-F minus B-F f1_over_chance <= +0.05,yes,"R-B: APT29 +0.0347, menuPass -5.2302"
+1 Introduction,Two 14B open models running locally each reach at least 80\% of the frontier model's edge-F1 for three of four actors,3,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3.S-Q / h3.S-M s_over_f >= 0.8,yes,
+1 Introduction,\item A leakage-controlled benchmark\flag{F4}: four actors,4,4,results/paper_tables/a_support_recovery.csv,nunique(actor),yes,
+1 Introduction,a comparison of a frontier model against two 14B open-weight models and a 3B model,2,2,configs/models.yaml,count(open_weight models with parameters 13.x/14.x B that are in extraction_report ollama_labels),yes,
+1 Introduction,a comparison of a frontier model against two 14B open-weight models and a 3B model,1,1,configs/models.yaml,count(open_weight 3.x B models in extraction_report),yes,
+3 Problem Setup,We use the 14 Enterprise ATT\&CK tactics,14,14,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,len(tactics),yes,
+3 Problem Setup,there are 182 possible transitions,182,182,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,len(tactics)*(len(tactics)-1),yes,
+3 Problem Setup,(204 links across the four plans\vf),204,204,data/eval/plans/*_cited_sources.txt,"non-empty, non-comment lines, summed over actors",yes,"dagger; per actor {'APT29': 78, 'OilRig': 34, 'Sandworm': 26, 'menuPass': 66}; also results/20261027T023611Z-wp5_gate-a44d741/metrics.json cited_sources sum = 204"
+4 Adversary Behavior Model,Let $\mathcal{T}$ be the $K=14$ tactics,14,14,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,len(tactics),yes,
+4 Adversary Behavior Model,the other $K-1=13$ tactics,13,13,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,len(tactics) - 1,yes,
+4 Adversary Behavior Model,$\alpha=0.5$ is the Jeffreys prior,0.5,0.5,configs/extraction_report.yaml,alpha,yes,
+4 Adversary Behavior Model,about 0.52 for $n_a=6$ and $\alpha=0.5$,0.52,0.52,(formula),"(n+alpha)/(n+(K-1)alpha), n=6, alpha=0.5 (config), K=14",yes,recomputed from the formula
+4 Adversary Behavior Model,or 2.8 bits for $n_a=6$,2.8,2.75702,(formula),"log2((K-1)(n+alpha)/(n+(K-1)alpha)), n=6, alpha=0.5, K=14",yes,"recomputed from the formula, in bits"
+5 Method,"chunks of about 6,000 tokens",6000,6000,configs/extraction_report.yaml,chunk.tokens,yes,
+5 Method,with 300 tokens of overlap,300,300,configs/extraction_report.yaml,chunk.overlap,yes,
+5 Method,restricted to the 14 tactic names,14,14,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,len(tactics),yes,
+5 Method,use only the 14 tactic names,14,14,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,len(tactics),yes,
+5 Method,every fragment of at least 8 characters,8,8,ctit/cti/extract.py,MIN_FRAGMENT,yes,
+5 Method,we use the pre-registered $\alpha=0.5$,0.5,0.5,configs/extraction_report.yaml,alpha,yes,
+5 Method,so each extraction runs five times,5,5,configs/models.yaml,frontier.F.samples,yes,
+5 Method,Effort is pinned at \emph{high},high,high,configs/models.yaml,frontier.F.options.effort,yes,
+5 Method,"24\,GB of unified memory",24,24,CLAUDE.md,CLAUDE.md:48,yes,hardware; from project doc
+5 Method,with 16k context,16k,16384,configs/models.yaml,"open_weight.{S,S_3B,S_qwen3_14b}.options.num_ctx",yes,16384 tokens = 16k
+5 Method,"Q, M, and M3 run at temperature 0",0,"[0, 0, 0]",configs/models.yaml,"open_weight.{S_qwen3_14b,S,S_3B}.options.temperature",yes,
+5 Method,"\emph{Q5}, \emph{M5}, and the sampled 3B runs are five samples",5,5,configs/models.yaml,open_weight.*.sampled.seeds (length),yes,
+5 Method,(Qwen: temperature 0.6,0.6,0.6,results/paper_tables/f_open_models.csv,Q sampled model_default_params.temperature,yes,
+5 Method,top-$k$ 20,20,20,results/paper_tables/f_open_models.csv,Q sampled model_default_params.top_k,yes,
+5 Method,top-$p$ 0.95,0.95,0.95,results/paper_tables/f_open_models.csv,Q sampled model_default_params.top_p,yes,
+5 Method,Ministral: temperature 0.15,0.15,0.15,configs/models.yaml,open_weight.S.sampled.options.temperature,yes,S_3B also 0.15
+5 Method,its ATT\&CK v18.1 aliases,18.1,18.1,configs/actor_aliases.yaml,attack_version,yes,
+5 Method,(counts up to 225),225,225,ctit/cti/prior.py + configs/actors.yaml,max over actors of attk_counts(attack_group)[0].max(),yes,"per actor {'APT29': 225.0, 'OilRig': 225.0, 'Sandworm': 144.0, 'menuPass': 144.0}"
+Table 1,[table] Table 1 APT29 Steps,79,79,data/eval/plans/APT29.yaml,"len(plans.load_plan(actor, platforms=None))",yes,
+Table 1,[table] Table 1 APT29 GT edges,28,28,data/eval/plans/APT29.yaml,(recovery.ground_truth_counts(actor) > 0).sum(),yes,extraction_report ground_truth.all.APT29.edges = 28
+Table 1,[table] Table 1 OilRig Steps,44,44,data/eval/plans/OilRig.yaml,"len(plans.load_plan(actor, platforms=None))",yes,
+Table 1,[table] Table 1 OilRig GT edges,15,15,data/eval/plans/OilRig.yaml,(recovery.ground_truth_counts(actor) > 0).sum(),yes,extraction_report ground_truth.all.OilRig.edges = 15
+Table 1,[table] Table 1 Sandworm Steps,40,40,data/eval/plans/Sandworm.yaml,"len(plans.load_plan(actor, platforms=None))",yes,
+Table 1,[table] Table 1 Sandworm GT edges,21,21,data/eval/plans/Sandworm.yaml,(recovery.ground_truth_counts(actor) > 0).sum(),yes,extraction_report ground_truth.all.Sandworm.edges = 21
+Table 1,[table] Table 1 menuPass Steps,15,15,data/eval/plans/menuPass.yaml,"len(plans.load_plan(actor, platforms=None))",yes,
+Table 1,[table] Table 1 menuPass GT edges,6,6,data/eval/plans/menuPass.yaml,(recovery.ground_truth_counts(actor) > 0).sum(),yes,extraction_report ground_truth.all.menuPass.edges = 6
+6 Experimental Design,We assembled 24 candidate reports,24,24,data/cti/manifest.csv,row count,yes,
+6 Experimental Design,candidate reports (2018--2025),2018--2025,2018–2025,data/cti/manifest.csv,min/max year(pub_date),yes,
+6 Experimental Design,One was excluded because it does not name the actor,1,1,data/cti/manifest.csv,count(used_for == excluded),yes,excluded: menuPass-P01
+6 Experimental Design,leaving 23,23,23,data/cti/manifest.csv,count(used_for == prior),yes,
+6 Experimental Design,APT29 7,7,7,data/cti/manifest.csv,"count(used_for == prior, actor == APT29)",yes,
+6 Experimental Design,menuPass 5,5,5,data/cti/manifest.csv,"count(used_for == prior, actor == menuPass)",yes,
+6 Experimental Design,OilRig 5,5,5,data/cti/manifest.csv,"count(used_for == prior, actor == OilRig)",yes,
+6 Experimental Design,Sandworm 6,6,6,data/cti/manifest.csv,"count(used_for == prior, actor == Sandworm)",yes,
+6 Experimental Design,All but one (a 2019 APT29 report) postdate the plan,1,1,results/paper_tables/g_report_dates.csv,count(used_for == prior and published_after_plan == False),yes,that report: APT29-P01 2019-10-17
+6 Experimental Design,one Sandworm report appeared the day after its plan,1,1,results/paper_tables/g_report_dates.csv,count(actor == Sandworm and days_before_plan == -1),yes,Sandworm-P01
+6 Experimental Design,one report covers core APT10 and four cover the MirrorFace/Earth Kasha subgroup,1 + 4,,data/cti/manifest.csv,(no subgroup field),no source,"searched manifest.csv (no subgroup column), g_report_dates.csv; total menuPass prior docs = 5"
+6 Experimental Design,Two Sandworm documents are thin,2,2,docs/W2_EXPERIMENT_SPEC.md,docs/W2_EXPERIMENT_SPEC.md:109,yes,doc ids named in the spec bullet
+6 Experimental Design,a 492-word landing page,492,492,data/cti/reports/Sandworm-P05.txt,whitespace word count,yes,
+6 Experimental Design,"10,000 random edge sets of the same size",10000,10000,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.draws,yes,
+6 Experimental Design,drawn from the 182 edges,182,182,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,len(tactics)*(len(tactics)-1),yes,
+6 Experimental Design,APT29 45,45,45,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,transitions.APT29,yes,also ground_truth.all.APT29.transitions = 45
+6 Experimental Design,OilRig 17,17,17,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,transitions.OilRig,yes,also ground_truth.all.OilRig.transitions = 17
+6 Experimental Design,Sandworm 25,25,25,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,transitions.Sandworm,yes,also ground_truth.all.Sandworm.transitions = 25
+6 Experimental Design,menuPass 6,6,6,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,transitions.menuPass,yes,also ground_truth.all.menuPass.transitions = 6
+6 Experimental Design,Specificity (H4) is a $4\times4$ matrix,4,4,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,len(h4.F.f1),yes,
+6 Experimental Design,"(descriptive, $n=4$",4,4,results/paper_tables/a_support_recovery.csv,nunique(actor),yes,
+6 Experimental Design,a 14B open model recovers $\geq$80\% of F's edge-F1,80,80,docs/W2_EXPERIMENT_SPEC.md,H3 threshold (definitional),yes,"threshold, not a result"
+Table 2,[table] Table 2 APT29 row label GT edges (block 1),28,28,results/paper_tables/a_support_recovery.csv,truth_edges,yes,
+Table 2,[table] Table 2 R-F APT29 edge-F1,.371,0.371359,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['F/R/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.3714
+Table 2,[table] Table 2 R-F APT29 F1/chance,1.99,1.9868,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-F,APT29]",yes,
+Table 2,[table] Table 2 R-Q APT29 edge-F1,.358,0.358209,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q/R/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.3582
+Table 2,[table] Table 2 R-Q APT29 F1/chance,2.00,2.004,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-Q,APT29]",yes,
+Table 2,[table] Table 2 R-Q5 APT29 edge-F1,.359,0.35944,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q-sampled/R/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.3594
+Table 2,[table] Table 2 R-Q5 APT29 F1/chance,1.98,1.9847,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-Q5,APT29]",yes,
+Table 2,[table] Table 2 R-M APT29 edge-F1,.333,0.333333,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M/R/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.3333
+Table 2,[table] Table 2 R-M APT29 F1/chance,2.04,2.0355,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M,APT29]",yes,
+Table 2,[table] Table 2 R-M5 APT29 edge-F1,.311,0.311233,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M-sampled/R/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.3112
+Table 2,[table] Table 2 R-M5 APT29 F1/chance,1.71,1.7073,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M5,APT29]",yes,
+Table 2,[table] Table 2 R-M3 APT29 edge-F1,.133,0.133333,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M3/R/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1333
+Table 2,[table] Table 2 R-M3 APT29 F1/chance,0.81,0.8142,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M3,APT29]",yes,
+Table 2,[table] Table 2 OilRig row label GT edges (block 1),15,15,results/paper_tables/a_support_recovery.csv,truth_edges,yes,
+Table 2,[table] Table 2 R-F OilRig edge-F1,.396,0.396243,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['F/R/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.3962
+Table 2,[table] Table 2 R-F OilRig F1/chance,3.23,3.2337,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-F,OilRig]",yes,
+Table 2,[table] Table 2 R-Q OilRig edge-F1,.205,0.205128,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q/R/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2051
+Table 2,[table] Table 2 R-Q OilRig F1/chance,2.02,2.0195,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-Q,OilRig]",yes,
+Table 2,[table] Table 2 R-Q5 OilRig edge-F1,.199,0.199388,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q-sampled/R/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1994
+Table 2,[table] Table 2 R-Q5 OilRig F1/chance,1.87,1.8712,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-Q5,OilRig]",yes,
+Table 2,[table] Table 2 R-M OilRig edge-F1,.375,0.375,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M/R/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.375
+Table 2,[table] Table 2 R-M OilRig F1/chance,3.30,3.3041,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M,OilRig]",yes,
+Table 2,[table] Table 2 R-M5 OilRig edge-F1,.250,0.249843,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M-sampled/R/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2498
+Table 2,[table] Table 2 R-M5 OilRig F1/chance,2.21,2.2082,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M5,OilRig]",yes,
+Table 2,[table] Table 2 R-M3 OilRig edge-F1,.204,0.204082,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M3/R/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2041
+Table 2,[table] Table 2 R-M3 OilRig F1/chance,1.78,1.7827,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M3,OilRig]",yes,
+Table 2,[table] Table 2 Sandworm row label GT edges (block 1),21,21,results/paper_tables/a_support_recovery.csv,truth_edges,yes,
+Table 2,[table] Table 2 R-F Sandworm edge-F1,.372,0.372022,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['F/R/Sandworm'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.372
+Table 2,[table] Table 2 R-F Sandworm F1/chance,2.66,2.6577,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-F,Sandworm]",yes,
+Table 2,[table] Table 2 R-Q Sandworm edge-F1,.340,0.339623,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q/R/Sandworm'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.3396
+Table 2,[table] Table 2 R-Q Sandworm F1/chance,2.44,2.4443,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-Q,Sandworm]",yes,
+Table 2,[table] Table 2 R-Q5 Sandworm edge-F1,.236,0.235765,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q-sampled/R/Sandworm'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2358
+Table 2,[table] Table 2 R-Q5 Sandworm F1/chance,1.72,1.7157,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-Q5,Sandworm]",yes,
+Table 2,[table] Table 2 R-M Sandworm edge-F1,.167,0.166667,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M/R/Sandworm'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1667
+Table 2,[table] Table 2 R-M Sandworm F1/chance,1.74,1.7386,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M,Sandworm]",yes,
+Table 2,[table] Table 2 R-M5 Sandworm edge-F1,.265,0.265038,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M-sampled/R/Sandworm'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.265
+Table 2,[table] Table 2 R-M5 Sandworm F1/chance,2.49,2.488,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M5,Sandworm]",yes,
+Table 2,[table] Table 2 R-M3 Sandworm edge-F1,.162,0.162162,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M3/R/Sandworm'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1622
+Table 2,[table] Table 2 R-M3 Sandworm F1/chance,1.63,1.6291,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M3,Sandworm]",yes,
+Table 2,[table] Table 2 menuPass row label GT edges (block 1),6,6,results/paper_tables/a_support_recovery.csv,truth_edges,yes,
+Table 2,[table] Table 2 R-F menuPass edge-F1,.300,0.299653,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['F/R/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2997
+Table 2,[table] Table 2 R-F menuPass F1/chance,5.79,5.7867,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-F,menuPass]",yes,
+Table 2,[table] Table 2 R-Q menuPass edge-F1,.270,0.27027,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q/R/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2703
+Table 2,[table] Table 2 R-Q menuPass F1/chance,4.90,4.8972,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-Q,menuPass]",yes,
+Table 2,[table] Table 2 R-Q5 menuPass edge-F1,.239,0.239058,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q-sampled/R/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2391
+Table 2,[table] Table 2 R-Q5 menuPass F1/chance,4.45,4.4468,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-Q5,menuPass]",yes,
+Table 2,[table] Table 2 R-M menuPass edge-F1,.267,0.266667,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M/R/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2667
+Table 2,[table] Table 2 R-M menuPass F1/chance,5.06,5.0563,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M,menuPass]",yes,
+Table 2,[table] Table 2 R-M5 menuPass edge-F1,.290,0.290029,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M-sampled/R/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.29
+Table 2,[table] Table 2 R-M5 menuPass F1/chance,5.51,5.5084,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M5,menuPass]",yes,
+Table 2,[table] Table 2 R-M3 menuPass edge-F1,.229,0.228571,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M3/R/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2286
+Table 2,[table] Table 2 R-M3 menuPass F1/chance,4.17,4.1728,results/paper_tables/a_support_recovery.csv,"f1_over_chance [R-M3,menuPass]",yes,
+Table 2,[table] Table 2 APT29 row label GT edges (block 2),28,28,results/paper_tables/a_support_recovery.csv,truth_edges,yes,
+Table 2,[table] Table 2 B-F APT29 edge-F1,.234,0.234251,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['F/B/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2343
+Table 2,[table] Table 2 B-F APT29 F1/chance,1.95,1.9521,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-F,APT29]",yes,
+Table 2,[table] Table 2 B-Q APT29 edge-F1,.200,0.2,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q/B/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2
+Table 2,[table] Table 2 B-Q APT29 F1/chance,2.17,2.1717,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-Q,APT29]",yes,
+Table 2,[table] Table 2 B-M APT29 edge-F1,.100,0.1,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M/B/APT29'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1
+Table 2,[table] Table 2 B-M APT29 F1/chance,1.09,1.0858,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-M,APT29]",yes,
+Table 2,[table] Table 2 ATTK APT29 edge-F1,.237,0.2375,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['baseline/ATTK/APT29'].f1.mean,no,paper_tables a_support_recovery edge_f1 = 0.2375; exact half-way value (rounds up half-up and half-even); paper shows it rounded down
+Table 2,[table] Table 2 ATTK APT29 F1/chance,0.94,0.9356,results/paper_tables/a_support_recovery.csv,"f1_over_chance [ATTK,APT29]",yes,
+Table 2,[table] Table 2 OilRig row label GT edges (block 2),15,15,results/paper_tables/a_support_recovery.csv,truth_edges,yes,
+Table 2,[table] Table 2 B-F OilRig edge-F1,.116,0.115861,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['F/B/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1159
+Table 2,[table] Table 2 B-F OilRig F1/chance,1.37,1.367,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-F,OilRig]",yes,
+Table 2,[table] Table 2 B-Q OilRig edge-F1,.071,0.0714286,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q/B/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.0714
+Table 2,[table] Table 2 B-Q OilRig F1/chance,0.93,0.9294,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-Q,OilRig]",yes,
+Table 2,[table] Table 2 B-M OilRig edge-F1,.000,0,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M/B/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.0
+Table 2,[table] Table 2 B-M OilRig F1/chance,0.00,0,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-M,OilRig]",yes,
+Table 2,[table] Table 2 ATTK OilRig edge-F1,.204,0.204082,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['baseline/ATTK/OilRig'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2041
+Table 2,[table] Table 2 ATTK OilRig F1/chance,1.38,1.3809,results/paper_tables/a_support_recovery.csv,"f1_over_chance [ATTK,OilRig]",yes,
+Table 2,[table] Table 2 Sandworm row label GT edges (block 2),21,21,results/paper_tables/a_support_recovery.csv,truth_edges,yes,
+Table 2,[table] Table 2 B-F Sandworm edge-F1,.183,0.183402,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['F/B/Sandworm'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1834
+Table 2,[table] Table 2 B-F Sandworm F1/chance,1.85,1.8544,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-F,Sandworm]",yes,
+Table 2,[table] Table 2 B-Q Sandworm edge-F1,.118,0.117647,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q/B/Sandworm'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1176
+Table 2,[table] Table 2 B-Q Sandworm F1/chance,1.34,1.3427,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-Q,Sandworm]",yes,
+Table 2,[table] Table 2 B-M Sandworm edge-F1,.118,0.117647,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M/B/Sandworm'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.1176
+Table 2,[table] Table 2 B-M Sandworm F1/chance,1.34,1.3427,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-M,Sandworm]",yes,
+Table 2,[table] Table 2 ATTK Sandworm edge-F1,.207,0.206897,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['baseline/ATTK/Sandworm'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2069
+Table 2,[table] Table 2 ATTK Sandworm F1/chance,1.00,1,results/paper_tables/a_support_recovery.csv,"f1_over_chance [ATTK,Sandworm]",yes,
+Table 2,[table] Table 2 menuPass row label GT edges (block 2),6,6,results/paper_tables/a_support_recovery.csv,truth_edges,yes,
+Table 2,[table] Table 2 B-F menuPass edge-F1,.495,0.494737,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['F/B/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.4947
+Table 2,[table] Table 2 B-F menuPass F1/chance,11.02,11.0169,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-F,menuPass]",yes,
+Table 2,[table] Table 2 B-Q menuPass edge-F1,.210,0.210526,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-Q/B/menuPass'].f1.mean,no,paper_tables a_support_recovery edge_f1 = 0.2105
+Table 2,[table] Table 2 B-Q menuPass F1/chance,4.74,4.7371,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-Q,menuPass]",yes,
+Table 2,[table] Table 2 B-M menuPass edge-F1,.222,0.222222,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['S-M/B/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.2222
+Table 2,[table] Table 2 B-M menuPass F1/chance,5.14,5.1387,results/paper_tables/a_support_recovery.csv,"f1_over_chance [B-M,menuPass]",yes,
+Table 2,[table] Table 2 ATTK menuPass edge-F1,.069,0.0689655,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.chance['baseline/ATTK/menuPass'].f1.mean,yes,paper_tables a_support_recovery edge_f1 = 0.069
+Table 2,[table] Table 2 ATTK menuPass F1/chance,1.10,1.0974,results/paper_tables/a_support_recovery.csv,"f1_over_chance [ATTK,menuPass]",yes,
+Table 2,"[table] Table 2 caption: 10,000 random edge sets",10000,10000,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.draws,yes,
+Table 2,"[table] Table 2 caption: F, Q5, and M5 are means over five samples",5,5,results/paper_tables/a_support_recovery.csv,"samples (R-F, R-Q5, R-M5)",yes,
+Table 3,[table] Table 3 ATT&CK refs. APT29,44,44,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.r_minus_b.F.APT29.attack_references,yes,
+Table 3,[table] Table 3 ATT&CK refs. OilRig,28,28,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.r_minus_b.F.OilRig.attack_references,yes,
+Table 3,[table] Table 3 ATT&CK refs. Sandworm,26,26,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.r_minus_b.F.Sandworm.attack_references,yes,
+Table 3,[table] Table 3 ATT&CK refs. menuPass,20,20,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.r_minus_b.F.menuPass.attack_references,yes,
+Table 3,[table] Table 3 F: R-B APT29,+0.04,0.0347,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [APT29],rounding,paper = 1.99 - 1.95 (difference of rounded Table-2 ratios); exact difference rounds to 0.03
+Table 3,[table] Table 3 F: R-B OilRig,+1.86,1.8667,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [OilRig],rounding,paper = 3.23 - 1.37 (difference of rounded Table-2 ratios); exact difference rounds to 1.87
+Table 3,[table] Table 3 F: R-B Sandworm,+0.81,0.8033,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [Sandworm],rounding,paper = 2.66 - 1.85 (difference of rounded Table-2 ratios); exact difference rounds to 0.80
+Table 3,[table] Table 3 F: R-B menuPass,-5.23,-5.2302,results/paper_tables/a_support_recovery.csv,f1_over_chance R-F minus B-F [menuPass],yes,
+Table 3,[table] Table 3 Q: R-B APT29,-0.17,-0.1677,results/paper_tables/a_support_recovery.csv,f1_over_chance R-Q minus B-Q [APT29],yes,
+Table 3,[table] Table 3 Q: R-B OilRig,+1.09,1.0901,results/paper_tables/a_support_recovery.csv,f1_over_chance R-Q minus B-Q [OilRig],yes,
+Table 3,[table] Table 3 Q: R-B Sandworm,+1.10,1.1016,results/paper_tables/a_support_recovery.csv,f1_over_chance R-Q minus B-Q [Sandworm],yes,
+Table 3,[table] Table 3 Q: R-B menuPass,+0.16,0.1601,results/paper_tables/a_support_recovery.csv,f1_over_chance R-Q minus B-Q [menuPass],yes,
+Table 3,[table] Table 3 M: R-B APT29,+0.95,0.9497,results/paper_tables/a_support_recovery.csv,f1_over_chance R-M minus B-M [APT29],yes,
+Table 3,[table] Table 3 M: R-B OilRig,+3.30,3.3041,results/paper_tables/a_support_recovery.csv,f1_over_chance R-M minus B-M [OilRig],yes,
+Table 3,[table] Table 3 M: R-B Sandworm,+0.40,0.3959,results/paper_tables/a_support_recovery.csv,f1_over_chance R-M minus B-M [Sandworm],yes,
+Table 3,[table] Table 3 M: R-B menuPass,-0.08,-0.0824,results/paper_tables/a_support_recovery.csv,f1_over_chance R-M minus B-M [menuPass],yes,
+7 Results,lies at or above the 99.7th percentile of its chance distribution,99.7,99.789,results/paper_tables/a_support_recovery.csv,"min percentile, prior R-F",yes,claim is a lower bound: source min must be >= 99.7
+7 Results,of its chance distribution (2.0--5.8$\times$),2.0--5.8,1.9868–5.7867,results/paper_tables/a_support_recovery.csv,"f1_over_chance, prior R-F, min/max",yes,
+7 Results,both 14B models' report priors exceed the chance mean for every actor,> 1 (all),1.7073,results/paper_tables/a_support_recovery.csv,"min f1_over_chance over R-Q, R-Q5, R-M, R-M5",yes,
+7 Results,performs at chance (0.94--1.38$\times$),0.94--1.38,0.9356–1.3809,results/paper_tables/a_support_recovery.csv,"f1_over_chance, prior ATTK, min/max",yes,
+7 Results,its edge set comprises all 182 edges,182,182,results/paper_tables/a_support_recovery.csv,"edges_mean [ATTK,Sandworm]",yes,
+7 Results,R priors list 1.2 to 3.3 times as many edges as B priors,1.2--3.3,1.15385–3.25,results/paper_tables/a_support_recovery.csv,"edges_mean R-x / B-x for x in F,Q,M, min/max over actor",yes,cross-check modes[*].summary.edges in results/20261028T123410Z-extraction_report-ecf227b/metrics.json
+7 Results,whereas Ministral gains from reading ($+0.95$),+0.95,0.9497,results/paper_tables/a_support_recovery.csv,"f1_over_chance R-M minus B-M, APT29",yes,
+7 Results,recalling on average 80\% of the plan's six edges,80,80,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,modes.F['B/menuPass'].summary.recall_all.mean,yes,
+7 Results,of the plan's six edges,6,6,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,ground_truth.all.menuPass.edges,yes,
+7 Results,with about 13 predicted edges,13,13.4,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,mean modes.F['B/menuPass'].summary.edges,yes,mean 13.4
+7 Results,H2 therefore holds fully for two of four actors,2,2,results/paper_tables/a_support_recovery.csv,"count(actors with R-B f1_over_chance > 0 for F, Q, M)",yes,"actors: OilRig, Sandworm"
+7 Results,rank correlations of $-0.4$ for Opus,-0.4,-0.4,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.r_minus_b['F']._spearman_ratio_gap_vs_fewer_references,yes,"key is Spearman vs FEWER references (sign = against coverage shrinkage, see flag F12); key uses per-sample chance (post_hoc.r_minus_b ratio_gap), where Qwen's OilRig/Sandworm gaps order differently from Table 3; see [recomputed] row"
+7 Results,$+0.4$ for Qwen,+0.4,0.2,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.r_minus_b['S-Q']._spearman_ratio_gap_vs_fewer_references,no,"key is Spearman vs FEWER references (sign = against coverage shrinkage, see flag F12); key uses per-sample chance (post_hoc.r_minus_b ratio_gap), where Qwen's OilRig/Sandworm gaps order differently from Table 3; see [recomputed] row"
+7 Results,$-0.8$ for Ministral,-0.8,-0.8,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,post_hoc.r_minus_b['S-M']._spearman_ratio_gap_vs_fewer_references,yes,"key is Spearman vs FEWER references (sign = against coverage shrinkage, see flag F12); key uses per-sample chance (post_hoc.r_minus_b ratio_gap), where Qwen's OilRig/Sandworm gaps order differently from Table 3; see [recomputed] row"
+7 Results,[recomputed] H2b Spearman for Opus from Table 3 gaps vs fewer references,-0.4,-0.4,results/paper_tables/a_support_recovery.csv + results/20261028T123410Z-extraction_report-ecf227b/metrics.json,"spearman(-attack_references, R-B f1_over_chance)",yes,cross-check of the metrics key using the paper's Table-2 ratios
+7 Results,[recomputed] H2b Spearman for Qwen from Table 3 gaps vs fewer references,+0.4,0.4,results/paper_tables/a_support_recovery.csv + results/20261028T123410Z-extraction_report-ecf227b/metrics.json,"spearman(-attack_references, R-B f1_over_chance)",yes,cross-check of the metrics key using the paper's Table-2 ratios
+7 Results,[recomputed] H2b Spearman for Ministral from Table 3 gaps vs fewer references,-0.8,-0.8,results/paper_tables/a_support_recovery.csv + results/20261028T123410Z-extraction_report-ecf227b/metrics.json,"spearman(-attack_references, R-B f1_over_chance)",yes,cross-check of the metrics key using the paper's Table-2 ratios
+7 Results,by 0.61 bits per transition on OilRig,0.61,0.608576,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition R-F minus B-F, OilRig, alpha 0.5",yes,
+7 Results,0.33 on Sandworm,0.33,0.332471,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition R-F minus B-F, Sandworm, alpha 0.5",yes,
+7 Results,by only 0.06 on APT29,0.06,0.0559519,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition R-F minus B-F, APT29, alpha 0.5",yes,
+7 Results,trail them by 0.09 on menuPass,-0.09,-0.0922315,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition R-F minus B-F, menuPass, alpha 0.5",yes,'trail by 0.09' = -0.09
+7 Results,the 3B model returned an empty list in 19 of 24 calls,19,19,"data/priors/20261028T040137Z-extraction-d032eae/S_3B{,-sampled}/B_*.json","count(chunk ok, 0 transitions, 0 rejected items)",yes,"of 24 no-report calls; 22 priors have 0 valid transitions (1 schema skip, 2 all-rejected)"
+7 Results,returned an empty list in 19 of 24 calls,24,24,"data/priors/20261028T040137Z-extraction-d032eae/S_3B{,-sampled}/B_*.json",number of B prior files (t0 + 5 samples x 4 actors),yes,
+7 Results,"Qwen reaches 96\%, 52\%, 91\%, and 90\%",96,96.459,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3['S-Q'].APT29.s_over_f,yes,APT29
+7 Results,"Qwen reaches 96\%, 52\%, 91\%, and 90\%",52,51.7683,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3['S-Q'].OilRig.s_over_f,yes,OilRig
+7 Results,"Qwen reaches 96\%, 52\%, 91\%, and 90\%",91,91.2909,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3['S-Q'].Sandworm.s_over_f,yes,Sandworm
+7 Results,"Qwen reaches 96\%, 52\%, 91\%, and 90\%",90,90.1943,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3['S-Q'].menuPass.s_over_f,yes,menuPass
+7 Results,"Ministral 90\%, 95\%, 45\%, and 89\%",90,89.7605,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3['S-M'].APT29.s_over_f,yes,APT29
+7 Results,"Ministral 90\%, 95\%, 45\%, and 89\%",95,94.639,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3['S-M'].OilRig.s_over_f,yes,OilRig
+7 Results,"Ministral 90\%, 95\%, 45\%, and 89\%",45,44.8002,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3['S-M'].Sandworm.s_over_f,yes,Sandworm
+7 Results,"Ministral 90\%, 95\%, 45\%, and 89\%",89,88.9917,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3['S-M'].menuPass.s_over_f,yes,menuPass
+7 Results,each meets H3's 80\% criterion for three of four actors,3,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,"h3 s_over_f >= 0.8 (S-Q, S-M)",yes,"Qwen 3, Ministral 3"
+7 Results,The 3B model meets it for none,0,0,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h3['S-M3'].*.s_over_f >= 0.8),yes,
+7 Results,meets it for none (36--76\%),36--76,35.9042–76.2786,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h3['S-M3'].*.s_over_f min/max,yes,
+7 Results,(up to 123 transitions from one chunk),123,115,"data/priors/20261027T223928Z-extraction-a686409/S{,-sampled}/R_*.json","max transitions (valid + rejected) per (doc, chunk)",no,"max at S-sampled/R_menuPass_s3.json ('menuPass-P06', 1); docs/SPEC_ISSUES.md:210 states 123 (pre-fix run 121707Z gives the same 115)"
+7 Results,leaves Qwen's temperature-0 priors unchanged,unchanged,0,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,max |h3_sensitivity['S-Q'].R.<a>.f1.mean - modes['S-Q']['R/<a>'].summary.f1_all.mean|,yes,
+7 Results,moves its sampled F1 by at most 0.007,0.007,0.00701851,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,max |h3_sensitivity['S-Q-sampled'].R.<a>.f1.mean - modes['S-Q-sampled']['R/<a>'].summary.f1_all.mean|,yes,upper bound
+7 Results,the fabricated-evidence rate is .07--.30 by actor for Qwen,.07--.30,0.0659–0.2949,results/paper_tables/c_fabricated_evidence.csv,"fragment_aware, model Q (t0), min/max",no,"Qwen max is APT29 0.2949 (modes['S-Q']['R/APT29'].summary.hallucinated_fragments = 0.2949) -> .29, not .30; Q5 range is 0.15-0.46"
+7 Results,.20--.30 for Ministral,.20--.30,0.2027–0.2985,results/paper_tables/c_fabricated_evidence.csv,"fragment_aware, model M (t0), min/max",yes,
+7 Results,.50--.68 for the 3B,.50--.68,0.5–0.6825,results/paper_tables/c_fabricated_evidence.csv,"fragment_aware, model M3 (t0), min/max",yes,
+7 Results,against at most .005 for Opus,.005,0.005,results/paper_tables/c_fabricated_evidence.csv,"max fragment_aware, model F",yes,
+7 Results,Opus refused 11 of 185 calls,11,11,results/paper_tables/d_refusals.csv,"sum refused_calls, model F",yes,
+7 Results,Opus refused 11 of 185 calls,185,185,results/paper_tables/d_refusals.csv,"sum first_attempt_calls, model F",yes,
+7 Results,all five samples of the OpTC red-team ground-truth document,5,5,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,refusals.F['oracle#0'],yes,
+7 Results,and of one OilRig chunk,5,5,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,refusals.F['OilRig-P02#1'] (all five samples),yes,'one OilRig chunk' = 1 chunk: 1
+7 Results,one sample of an APT29 chunk,1,1,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,refusals.F['APT29-P03#0'],yes,
+7 Results,no open model refused anything,0,0,results/paper_tables/d_refusals.csv,"sum refused_calls, models != F",yes,
+7 Results,First-attempt schema failures were 1 of 185 for Opus,1,1,results/20261028T122317Z-schema_failures-6b29976/metrics.json,sum counts[F].attempt1,yes,
+7 Results,First-attempt schema failures were 1 of 185 for Opus,185,185,results/paper_tables/d_refusals.csv,"sum first_attempt_calls, models F",yes,
+7 Results,8 of 222 for Qwen,8,8,results/20261028T122317Z-schema_failures-6b29976/metrics.json,"sum counts[S-Q,S-Q-sampled].attempt1",yes,
+7 Results,8 of 222 for Qwen,222,222,results/paper_tables/d_refusals.csv,"sum first_attempt_calls, models Q,Q5",yes,
+7 Results,40 of 222 for Ministral 14B,40,40,results/20261028T122317Z-schema_failures-6b29976/metrics.json,"sum counts[S-M,S-M-sampled].attempt1",yes,
+7 Results,40 of 222 for Ministral 14B,222,222,results/paper_tables/d_refusals.csv,"sum first_attempt_calls, models M,M5",yes,
+7 Results,14 of 216 for the 3B,14,14,results/20261028T122317Z-schema_failures-6b29976/metrics.json,"sum counts[S-M3,S-M3-sampled].attempt1",yes,
+7 Results,14 of 216 for the 3B,216,216,results/paper_tables/d_refusals.csv,"sum first_attempt_calls, models M3,M35",yes,
+7 Results,(18 if replies repeating one identical JSON value count as parsed),18,18,results/20261028T122317Z-schema_failures-6b29976/metrics.json,40 minus attempt-1 failures with class multiple_values and '(identical)' in detail,yes,identical multiple-value failures = 22
+7 Results,"Mean time per call was 17\,s for Opus via the API",17,17.1924,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,timing['20261027T121723Z-extraction-a53c21c']['claude-opus-5-5'].sec_per_call,yes,
+7 Results,"41--57\,s for the 14B models",41--57,40.7173–57.1536,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,"timing[121707Z qwen3:14b{, (sampled)}; 005130Z ministral 14b{, (sampled)}].sec_per_call min/max",yes,first-call runs only; the retry-only run 223928Z (1 and 7 calls) has 78 s and 124 s
+7 Results,"and 9\,s for the 3B on the laptop",9,9.11–9.30,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,"timing['20261028T040137Z-extraction-d032eae'].*.sec_per_call (t0, sampled)",yes,
+7 Results,Opus cost \$11.92 for its first 185 calls,11.92,11.9194,results/20261027T121723Z-extraction-a53c21c/calls.jsonl,sum cost_usd,yes,
+7 Results,Opus cost \$11.92 for its first 185 calls,185,185,results/20261027T121723Z-extraction-a53c21c/calls.jsonl,number of calls,yes,
+Table 4,[table] Table 4 prior APT29 x plan APT29,.371,0.371359,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.APT29.APT29,yes,
+Table 4,[table] Table 4 prior APT29 x plan OilRig,.286,0.286348,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.APT29.OilRig,yes,
+Table 4,[table] Table 4 prior APT29 x plan Sandworm,.252,0.251959,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.APT29.Sandworm,yes,
+Table 4,[table] Table 4 prior APT29 x plan menuPass,.183,0.183356,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.APT29.menuPass,yes,
+Table 4,[table] Table 4 prior OilRig x plan APT29,.341,0.340585,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.OilRig.APT29,yes,
+Table 4,[table] Table 4 prior OilRig x plan OilRig,.396,0.396243,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.OilRig.OilRig,yes,
+Table 4,[table] Table 4 prior OilRig x plan Sandworm,.328,0.328335,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.OilRig.Sandworm,yes,
+Table 4,[table] Table 4 prior OilRig x plan menuPass,.145,0.145026,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.OilRig.menuPass,yes,
+Table 4,[table] Table 4 prior Sandworm x plan APT29,.296,0.296224,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.Sandworm.APT29,yes,
+Table 4,[table] Table 4 prior Sandworm x plan OilRig,.285,0.284651,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.Sandworm.OilRig,yes,
+Table 4,[table] Table 4 prior Sandworm x plan Sandworm,.372,0.372022,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.Sandworm.Sandworm,yes,
+Table 4,[table] Table 4 prior Sandworm x plan menuPass,.052,0.0516195,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.Sandworm.menuPass,yes,
+Table 4,[table] Table 4 prior menuPass x plan APT29,.400,0.400221,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.menuPass.APT29,yes,
+Table 4,[table] Table 4 prior menuPass x plan OilRig,.367,0.367093,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.menuPass.OilRig,yes,
+Table 4,[table] Table 4 prior menuPass x plan Sandworm,.288,0.28801,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.menuPass.Sandworm,yes,
+Table 4,[table] Table 4 prior menuPass x plan menuPass,.300,0.299653,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.menuPass.menuPass,yes,
+Table 4,[table] Table 4 caption row-wise F,3/4,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h4['F'].diag_margin.*.f1 > 0),yes,
+Table 4,[table] Table 4 caption row-wise Q,2/4,2,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h4['S-Q'].diag_margin.*.f1 > 0),yes,
+Table 4,[table] Table 4 caption row-wise Q5,1/4,1,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h4['S-Q-sampled'].diag_margin.*.f1 > 0),yes,
+Table 4,[table] Table 4 caption row-wise M,2/4,2,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h4['S-M'].diag_margin.*.f1 > 0),yes,
+Table 4,[table] Table 4 caption row-wise M5,2/4,2,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h4['S-M-sampled'].diag_margin.*.f1 > 0),yes,
+Table 4,[table] Table 4 caption row-wise M3,0/4,0,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h4['S-M3'].diag_margin.*.f1 > 0),yes,
+Table 4,[table] Table 4 caption column-wise F,3/4,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(post_hoc.h4_colwise['F'].f1.* > 0),yes,
+Table 4,[table] Table 4 caption column-wise Q,3/4,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(post_hoc.h4_colwise['S-Q'].f1.* > 0),yes,
+Table 4,[table] Table 4 caption column-wise M,3/4,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(post_hoc.h4_colwise['S-M'].f1.* > 0),yes,
+Table 4,[table] Table 4 caption column-wise M5,2/4,2,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(post_hoc.h4_colwise['S-M-sampled'].f1.* > 0),yes,
+Table 4,[table] Table 4 caption column-wise M3,0/4,0,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(post_hoc.h4_colwise['S-M3'].f1.* > 0),yes,
+7 Results,"by margins of .085, .047, and .076",.085,0.0850108,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.diag_margin.APT29.f1,yes,
+7 Results,"by margins of .085, .047, and .076",.047,0.046504,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.diag_margin.OilRig.f1,yes,
+7 Results,"by margins of .085, .047, and .076",.076,0.075798,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.diag_margin.Sandworm.f1,yes,
+7 Results,it scores higher against the APT29 and OilRig plans than against its own six-edge plan,"APT29, OilRig","APT29, OilRig",results/20261028T123410Z-extraction_report-ecf227b/metrics.json,h4.F.f1.menuPass.* > h4.F.f1.menuPass.menuPass,yes,
+7 Results,Qwen and Ministral pass two rows each and the 3B none,2,2,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h4['S-Q'].diag_margin.*.f1 > 0),yes,Qwen
+7 Results,Qwen and Ministral pass two rows each and the 3B none,2,2,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h4['S-M'].diag_margin.*.f1 > 0),yes,Ministral
+7 Results,Qwen and Ministral pass two rows each and the 3B none,0,0,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h4['S-M3'].diag_margin.*.f1 > 0),yes,3B
+7 Results,"at $\alpha\in\{0.01, 0.1\}$ (post hoc), F passes two or three rows",2 or 3,"2 (alpha 0.01), 3 (alpha 0.1)",results/20261028T123410Z-extraction_report-ecf227b/metrics.json,"count(post_hoc.h4.F.jsd_alpha_{0.01,0.1}_margin.* > 0)",yes,margin > 0 = diagonal closer (ctit/eval/recovery.py:65)
+7 Results,JSD at the pre-registered $\alpha=0.5$ is uninformative,0.5,0.5,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,alpha,yes,
+7 Results,"gives F, Qwen, and Ministral 3/4 each",3/4,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(post_hoc.h4_colwise['F'].f1.* > 0),yes,F
+7 Results,"gives F, Qwen, and Ministral 3/4 each",3/4,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(post_hoc.h4_colwise['S-Q'].f1.* > 0),yes,Qwen
+7 Results,"gives F, Qwen, and Ministral 3/4 each",3/4,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(post_hoc.h4_colwise['S-M'].f1.* > 0),yes,Ministral
+Table 5,[table] Table 5 R-F APT29,+.11,"0.1121 [ci -0.1416, 0.3702]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-F,APT29,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-F OilRig,\textbf{+.62},"0.6218 [ci 0.1689, 1.0436]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-F,OilRig,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-F Sandworm,+.31,"0.3120 [ci -0.0404, 0.6918]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-F,Sandworm,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-F menuPass,\textbf{+.91},"0.9132 [ci 0.3217, 1.4878]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-F,menuPass,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-F Attr.,3/4,3,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-F, alpha 0.5]",yes,
+Table 5,[table] Table 5 R-Q APT29,+.12,"0.1216 [ci -0.1244, 0.3706]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-Q,APT29,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-Q OilRig,-.17,"-0.1684 [ci -0.4268, 0.1159]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-Q,OilRig,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-Q Sandworm,+.17,"0.1739 [ci -0.0923, 0.4519]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-Q,Sandworm,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-Q menuPass,\textbf{+1.00},"0.9991 [ci 0.5079, 1.3718]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-Q,menuPass,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-Q Attr.,1/4,1,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-Q, alpha 0.5]",yes,
+Table 5,[table] Table 5 R-Q5 APT29,+.10,"0.0957 [ci -0.1470, 0.3514]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-Q5,APT29,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-Q5 OilRig,-.21,"-0.2068 [ci -0.4258, 0.0202]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-Q5,OilRig,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-Q5 Sandworm,-.02,"-0.0176 [ci -0.1902, 0.1666]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-Q5,Sandworm,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-Q5 menuPass,\textbf{+.86},"0.8633 [ci 0.3680, 1.3585]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-Q5,menuPass,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-Q5 Attr.,1/4,1,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-Q5, alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M APT29,+.16,"0.1598 [ci -0.1005, 0.4179]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M,APT29,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M OilRig,\textbf{+.37},"0.3733 [ci 0.0459, 0.7010]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M,OilRig,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M Sandworm,-.04,"-0.0375 [ci -0.2639, 0.2287]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M,Sandworm,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M menuPass,\textbf{+1.04},"1.0415 [ci 0.3883, 1.6658]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M,menuPass,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M Attr.,3/4,3,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-M, alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M5 APT29,+.13,"0.1342 [ci -0.1043, 0.3768]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M5,APT29,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M5 OilRig,+.07,"0.0722 [ci -0.2795, 0.4274]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M5,OilRig,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M5 Sandworm,+.06,"0.0552 [ci -0.1706, 0.3078]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M5,Sandworm,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M5 menuPass,\textbf{+1.07},"1.0650 [ci 0.5477, 1.5727]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M5,menuPass,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M5 Attr.,2/4,2,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-M5, alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M3 APT29,-.24\vf,"-0.2373 [ci -0.4293, -0.0490]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M3,APT29,alpha 0.5]",yes,"\dag here = interval below zero (caption), not a corpus-check dagger"
+Table 5,[table] Table 5 R-M3 OilRig,+.08,"0.0776 [ci -0.3191, 0.4911]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M3,OilRig,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M3 Sandworm,+.02,"0.0145 [ci -0.1373, 0.2047]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M3,Sandworm,alpha 0.5]",no,value mismatch: unrounded 0.014499 rounds to 0.01 (4-dp CSV value 0.0145 double-rounded gives the paper value); 
+Table 5,[table] Table 5 R-M3 menuPass,\textbf{+.89},"0.8904 [ci 0.2960, 1.3901]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [R-M3,menuPass,alpha 0.5]",yes,
+Table 5,[table] Table 5 R-M3 Attr.,0/4,0,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-M3, alpha 0.5]",yes,
+Table 5,[table] Table 5 B-F APT29,+.06,"0.0561 [ci -0.0864, 0.2243]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-F,APT29,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-F OilRig,+.01,"0.0132 [ci -0.1792, 0.2305]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-F,OilRig,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-F Sandworm,-.02,"-0.0205 [ci -0.1690, 0.1545]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-F,Sandworm,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-F menuPass,\textbf{+1.01},"1.0054 [ci 0.5672, 1.3250]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-F,menuPass,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-F Attr.,2/4,2,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [B-F, alpha 0.5]",yes,
+Table 5,[table] Table 5 B-Q APT29,+.10,"0.1028 [ci -0.0565, 0.2790]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-Q,APT29,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-Q OilRig,-.11,"-0.1132 [ci -0.2065, 0.0732]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-Q,OilRig,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-Q Sandworm,-.07,"-0.0714 [ci -0.2065, 0.1105]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-Q,Sandworm,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-Q menuPass,+.32,"0.3219 [ci -0.2065, 0.8502]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-Q,menuPass,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-Q Attr.,1/4,1,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [B-Q, alpha 0.5]",yes,
+Table 5,[table] Table 5 B-M APT29,-.01,"-0.0136 [ci -0.1147, 0.1135]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-M,APT29,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-M OilRig,-.19\vf,"-0.1882 [ci -0.2550, -0.1199]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-M,OilRig,alpha 0.5]",yes,"\dag here = interval below zero (caption), not a corpus-check dagger"
+Table 5,[table] Table 5 B-M Sandworm,-.01,"-0.0080 [ci -0.1982, 0.1905]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-M,Sandworm,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-M menuPass,+.32,"0.3219 [ci -0.2065, 0.8502]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [B-M,menuPass,alpha 0.5]",yes,
+Table 5,[table] Table 5 B-M Attr.,1/4,1,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [B-M, alpha 0.5]",yes,
+Table 5,[table] Table 5 ATTK APT29,-.61\vf,"-0.6061 [ci -1.2619, -0.0047]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [ATTK,APT29,alpha 0.5]",yes,"\dag here = interval below zero (caption), not a corpus-check dagger"
+Table 5,[table] Table 5 ATTK OilRig,-.05,"-0.0463 [ci -0.7091, 0.5630]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [ATTK,OilRig,alpha 0.5]",yes,
+Table 5,[table] Table 5 ATTK Sandworm,-.30\vf,"-0.3014 [ci -0.5916, -0.0494]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [ATTK,Sandworm,alpha 0.5]",yes,"\dag here = interval below zero (caption), not a corpus-check dagger"
+Table 5,[table] Table 5 ATTK menuPass,-.92,"-0.9198 [ci -2.9877, 0.3699]",results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"bits_per_transition, ci95_lo/hi [ATTK,menuPass,alpha 0.5]",yes,
+Table 5,[table] Table 5 ATTK Attr.,1/4,1,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [ATTK, alpha 0.5]",yes,
+Table 5,[table] Table 5 caption: means over five samples,5,5,results/paper_tables/b_information_gain_own_plan.csv,"samples (R-F, R-Q5, R-M5)",yes,
+7 Results,with intervals above zero for OilRig and menuPass,2,2,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"count(ci95_lo > 0), R-F",yes,"actors: OilRig, menuPass"
+7 Results,Opus's chains predict their own plan's next tactic better than the uniform chain for all four actors,4,4,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"count(bits > 0), R-F",yes,
+7 Results,Ministral's do so for three,3,3,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"count(bits > 0), R-M",yes,
+7 Results,Qwen's only clearly for menuPass,1,1,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"count(ci95_lo > 0), R-Q",yes,actor: menuPass
+7 Results,recovers the right actor for 3 of 4 plans with Opus and with Ministral,3,3,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-F, alpha 0.5]",yes,R-F
+7 Results,recovers the right actor for 3 of 4 plans with Opus and with Ministral,3,3,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-M, alpha 0.5]",yes,R-M
+7 Results,2 with sampled Ministral,2,2,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-M5, alpha 0.5]",yes,R-M5
+7 Results,1 with Qwen,1,1,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-Q, alpha 0.5]",yes,R-Q
+7 Results,and none with the 3B,0,0,results/paper_tables/b_attribution_counts.csv,"plans_own_actor_best [R-M3, alpha 0.5]",yes,R-M3
+7 Results,memory chains manage at most 2,2,2,results/paper_tables/b_attribution_counts.csv,"max plans_own_actor_best over B-F, B-Q, B-M, B-M5 (alpha 0.5)",yes,
+7 Results,"With Opus, the APT29 plan goes to the menuPass chain",menuPass,menuPass,results/paper_tables/b_attribution_counts.csv,"plan_APT29_best_prior [R-F, alpha 0.5]",yes,
+7 Results,"At $\alpha=0.01$, most chains fall below uniform",most,31 of 40,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,"count(bits < 0) at alpha 0.01, extracted priors",yes,
+8 Hunting on Public Telemetry,release r2026-07-01,r2026-07-01,r2026-07-01,docs/MAPPER_POLICY.md,docs/MAPPER_POLICY.md:20,yes,results/20261024T145254Z-mapper_report-714f999/metrics.json records sigma_commit 552f3fe only
+8 Hunting on Public Telemetry,"2,017 rules\vf",2017,2017,results/20261024T145254Z-mapper_report-714f999/metrics.json,n_rules,yes,dagger
+8 Hunting on Public Telemetry,excluded 56 actor- or malware-specific rules,56,56,docs/MAPPER_POLICY.md,docs/MAPPER_POLICY.md:28,yes,dagger-era doc value (no metrics field); docs/REVIEW_QUEUE.md:6 also says 56
+8 Hunting on Public Telemetry,"(707 of 3,174 queries\vf)",707,707,results/20261027T021514Z-mapper_v3-ca50242/metrics.json,steps.c3_no_remote_thread.queries,yes,dagger
+8 Hunting on Public Telemetry,"(707 of 3,174 queries\vf)",3174,3174,results/20261027T021514Z-mapper_v3-ca50242/metrics.json,steps.v2.queries,yes,dagger; also ctit/map/compiled_rules.jsonl has 3174 lines
+8 Hunting on Public Telemetry,tags $3\times10^{-6}$ of benign events,3e-6,3.013e-06,results/20261027T021514Z-mapper_v3-ca50242/metrics.json,steps.c3_no_remote_thread.optc (sysmon+security tagged / events),yes,dagger; sysmon tag_rate 3.014e-06
+8 Hunting on Public Telemetry,"of benign events, in one tactic",1,1,results/20261027T021514Z-mapper_v3-ca50242/metrics.json,len(steps.c3_no_remote_thread.optc.K),yes,dagger; K = ['Defense Evasion']
+8 Hunting on Public Telemetry,"leaves the injected chains 27, 3, 3, and 1 visible transitions per actor\vf","27, 3, 3, 1","27, 3, 1, 3",results/20261027T023611Z-wp5_gate-a44d741/metrics.json,"jsd['alpha=0.0'].visible_extended.n_transitions (APT29, OilRig, Sandworm, menuPass)",no,"dagger; same multiset but in the paper's actor order the source is 27/3/1/3 (Sandworm 1, menuPass 3); order unstated in text"
+8 Hunting on Public Telemetry,(pairwise JSD $\leq 0.009$\vf),0.009,0.00908735,results/20261027T023611Z-wp5_gate-a44d741/metrics.json,max jsd['alpha=0.0'].visible_brims.jsd,yes,dagger; upper bound
+8 Hunting on Public Telemetry,ATLASv2 \citep{riddle2024atlasv2} has five scorable benign windows,5,5,results/20261027T021709Z-benign_windows-e3e96e8/metrics.json,atlasv2.windows_sysmon,yes,windows_sysmon_security = 5
+8 Hunting on Public Telemetry,we turn to two real intrusions,2,2,results/20261028T044412Z-otrf_case-ce77e76/metrics.json ; results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,number of case-study runs,yes,structural count
+8 Hunting on Public Telemetry,the frozen mapper recovers 8 tactics,8,8,results/20261028T044412Z-otrf_case-ce77e76/metrics.json,len(tactics_observed),yes,
+8 Hunting on Public Telemetry,8 tactics and 37 transitions,37,37,results/20261028T044412Z-otrf_case-ce77e76/metrics.json,executed_transitions,yes,
+8 Hunting on Public Telemetry,"with no Discovery, Command and Control, Exfiltration, or Initial Access",Discovery; Command and Control; Exfiltration; Initial Access,Reconnaissance; Initial Access; Discovery; Command and Control; Exfiltration; Impact,results/20261028T044412Z-otrf_case-ce77e76/metrics.json,tactics not in tactics_observed,yes,"also unobserved: Reconnaissance, Impact"
+8 Hunting on Public Telemetry,matches the plan at 2.07$\times$ chance,2.07,2.06807,results/20261028T044412Z-otrf_case-ce77e76/metrics.json,executed_vs_plan.plan_all.f1_over_chance,yes,
+8 Hunting on Public Telemetry,Opus's APT29 prior reaches 1.45$\times$ chance,1.45,1.44642,results/20261028T044412Z-otrf_case-ce77e76/metrics.json,priors_vs_executed['R-F/APT29'].f1_over_chance,yes,
+8 Hunting on Public Telemetry,no better than its OilRig prior,no better,APT29 1.4464 vs OilRig 1.4447,results/20261028T044412Z-otrf_case-ce77e76/metrics.json,priors_vs_executed['R-F/OilRig'].f1_over_chance,yes,qualitative; APT29 exceeds OilRig by 0.0017
+8 Hunting on Public Telemetry,($+0.76$ bits per transition,+0.76,0.75781,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,case_a['0.5']['ATTK/APT29'].bits,yes,
+8 Hunting on Public Telemetry,"95\% interval $[0.50, 0.98]$)",0.50,0.497663,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,case_a['0.5']['ATTK/APT29'].ci95[0],yes,
+8 Hunting on Public Telemetry,"95\% interval $[0.50, 0.98]$)",0.98,0.977209,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,case_a['0.5']['ATTK/APT29'].ci95[1],yes,
+8 Hunting on Public Telemetry,ATTK is the only prior clearly above uniform,ATTK,ATTK,results/20261028T123417Z-prior_likelihood-ecf227b/metrics.json,case_a['0.5'] families with ci95[0] > 0,yes,"ATTK/APT29, /OilRig, /menuPass all have lo > 0"
+8 Hunting on Public Telemetry,"The basis, 37 transitions from one recording",37,37,results/20261028T044412Z-otrf_case-ce77e76/metrics.json,executed_transitions,yes,
+8 Hunting on Public Telemetry,"235,698 events on the 29 red-team hosts are malicious",235698,235698,results/20261027T124122Z-redteam_diag-59998a9/metrics.json,totals.malicious_events,yes,
+8 Hunting on Public Telemetry,"235,698 events on the 29 red-team hosts are malicious",29,29,results/20261027T124122Z-redteam_diag-59998a9/metrics.json,distinct per_host_day[].host,yes,results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json hosts = 29
+8 Hunting on Public Telemetry,the mapper tags 160 of them,160,160,results/20261027T124122Z-redteam_diag-59998a9/metrics.json,totals.tagged_malicious,yes,
+8 Hunting on Public Telemetry,the mapper tags 160 of them (0.07\%),0.07,0.0678835,results/20261027T124122Z-redteam_diag-59998a9/metrics.json,totals.tagged_malicious / totals.malicious_events,yes,
+8 Hunting on Public Telemetry,"the test set has 4,428 windows of eight tagged events",4428,4428,results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,windows,yes,
+8 Hunting on Public Telemetry,windows of eight tagged events,8,8,results/20261027T021709Z-benign_windows-e3e96e8/metrics.json,window,yes,
+8 Hunting on Public Telemetry,"4,428 windows of eight tagged events, 46 positive",46,46,results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,positive,yes,
+8 Hunting on Public Telemetry,which lets ATTK lead (AUPRC .19--.37),.19--.37,0.188866–0.369185,results/20261028T123535Z-redteam_scoring-ecf227b/metrics.json,conditions['ATTK/<actor>'].point.auprc min/max,yes,
+8 Hunting on Public Telemetry,a prior built from all ATT\&CK groups matches (.306),.306,0.306262,results/20261028T123535Z-redteam_scoring-ecf227b/metrics.json,conditions['ATTK-all'].point.auprc,yes,
+8 Hunting on Public Telemetry,Opus's four report priors reach .28--.43,.28--.43,0.278316–0.431999,results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,conditions['R-F/<actor>'].point.auprc min/max,yes,
+8 Hunting on Public Telemetry,against .18 for uniform,.18,0.177898,results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,conditions['Uni'].point.auprc,yes,
+8 Hunting on Public Telemetry,survives dropping the five hosts that run one scripted benign job,5,5,results/20261028T044917Z-redteam_diagnosis-ce77e76/metrics.json,d_scripted_removed.collapsed.i_drop_xx01_xx51_hosts.hosts_dropped,yes,
+8 Hunting on Public Telemetry,(91\% of negative windows),91,91.4879,results/20261028T044917Z-redteam_diagnosis-ce77e76/metrics.json,"1 - (i_drop.windows - i_drop.positive)/(primary.windows - primary.positive), collapsed",yes,4009 of 4382 negative windows
+9 Discussion,one scripted job supplied 91\% of the negative windows,91,91.4879,results/20261028T044917Z-redteam_diagnosis-ce77e76/metrics.json,"1 - (i_drop.windows - i_drop.positive)/(primary.windows - primary.positive), collapsed",yes,4009 of 4382 negative windows
+8 Hunting on Public Telemetry,vanishes when only that job's two rules are removed,2,2,results/20261028T044917Z-redteam_diagnosis-ce77e76/metrics.json,d_scripted_removed.collapsed.ii_drop_scripted_rule_tags.rules,yes,
+8 Hunting on Public Telemetry,11 of the 46 positive windows contain no tactic change,11,11,results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,positive_windows_without_offdiag,yes,offdiag_transitions_per_window.positive['0'] = 11
+8 Hunting on Public Telemetry,11 of the 46 positive windows contain no tactic change,46,46,results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,positive,yes,
+8 Hunting on Public Telemetry,and 7 contain one,7,7,results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,offdiag_transitions_per_window.positive['1'],yes,
+9 Discussion,(R$-$B $+0.16$ and $-0.08$),+0.16,0.1601,results/paper_tables/a_support_recovery.csv,"f1_over_chance R-Q minus B-Q, menuPass",yes,
+9 Discussion,(R$-$B $+0.16$ and $-0.08$),-0.08,-0.0824,results/paper_tables/a_support_recovery.csv,"f1_over_chance R-M minus B-M, menuPass",yes,
+9 Discussion,Two 14B models on a laptop each recovered most of the ordering for three of four actors,3,3,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,"h3 s_over_f >= 0.8 (S-Q, S-M)",yes,
+9 Discussion,(the 3B model met H3 for no actor),0,0,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,count(h3['S-M3'].*.s_over_f >= 0.8),yes,
+9 Discussion,a quarter of OpTC's attack windows contain no tactic change at all,a quarter,0.239,results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,positive_windows_without_offdiag / positive,yes,11/46
+11 Limitations,menuPass's plan yields six edges,6,6,results/20261028T123410Z-extraction_report-ecf227b/metrics.json,ground_truth.all.menuPass.edges,yes,
+11 Limitations,"with four actors, cross-actor patterns are descriptive",4,4,results/paper_tables/a_support_recovery.csv,nunique(actor),yes,
+11 Limitations,two Sandworm documents are thin,2,2,docs/W2_EXPERIMENT_SPEC.md,docs/W2_EXPERIMENT_SPEC.md:109,yes,
+11 Limitations,Ministral 14B failed the output schema on 40 of 222 first attempts,40,40,results/20261028T122317Z-schema_failures-6b29976/metrics.json,"sum counts[S-M,S-M-sampled].attempt1",yes,
+11 Limitations,Ministral 14B failed the output schema on 40 of 222 first attempts,222,222,results/paper_tables/d_refusals.csv,"sum first_attempt_calls, models M, M5",yes,
+11 Limitations,Hunting evidence rests on two case studies,2,2,results/20261028T044412Z-otrf_case-ce77e76/metrics.json ; results/20261028T123734Z-redteam_scoring-ecf227b/metrics.json,number of case-study runs,yes,structural count
+12 Conclusion,Two 14B local models recover much of the structure,2,2,configs/models.yaml,count(open_weight models with parameters 13.x/14.x B that are in extraction_report ollama_labels),yes,
+Supplement (S3),"[supplement] all numbers in the supplement (S3), incl. case study B detail",,,,,n/a (supplement not in repo),the supplement is not in this repository; not audited

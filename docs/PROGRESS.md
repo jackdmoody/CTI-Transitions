@@ -114,3 +114,9 @@
 - Paper tables (a)–(g) as CSV in `results/paper_tables/` with a README. Sources rerun at `ecf227b`, and they reproduce.
 - Tests: 160 passed, 3 skipped.
 - Parsing decision (Jack, SPEC_ISSUES 18:43, closed): as run is primary everywhere; the wrapping fix and the multiple-JSON-value variants go to Appendix B as sensitivity analyses only. Nothing rerun.
+
+## 2026-10-31: final coding pass, Phase 1 (ALL POST HOC; SPEC_ISSUES 2026-10-31)
+- New config-driven analyses (model list `configs/v2_priors.yaml`): report-level bootstrap of R − B, circular block-bootstrap IG intervals, evidence audit sample (`audit/`, gitignored), case A for every prior, case B with the scripted job removed, tables v2 (CSV + LaTeX in `results/paper_tables_v2/`). Every point estimate checked against the existing runs reproduces exactly.
+- Lookups, Phase 1 results and the number audit: `docs/V2_SUMMARY.md`; `paper/number_audit.csv` (+ `scripts/number_audit.py`).
+- Release readiness (no push): `README.md`, `release/cti_manifest.csv`. `git ls-files` has nothing under `data/`, `results/` or `audit/`, and history has no data or real keys. Scrub before going public: absolute paths (home-directory paths in CLAUDE.md, both Ministral Modelfiles' FROM lines, the OpTC config, docs and fetch script, and the default `CTIT_OPTC_ROOT`/`CTIT_OPTC_INDEX`; done 2026-11-06); references to the private STRATA-E conversion (ctit/ingest/optc.py, ecar.py, optc_split.py, redteam_testset.py, CORPUS_CHECK) that a public user can't reproduce; range-data mentions in CLAUDE.md, configs/drift_parity.yaml, ctit/experiments/drift_parity.py; internal docs (REVIEW_QUEUE, STATUS, status_map.html, CLAUDE.md) to keep or drop; the untracked `paper/` draft.
+- Tests: 169 passed, 3 skipped.
