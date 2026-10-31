@@ -146,3 +146,52 @@ Oracle F: refused 5/5, no row. M3 has no oracle run.
 Rounding (difference of rounded ratios vs rounded exact difference), Table 3 F row: APT29 +0.04 (exact +0.03), OilRig +1.86 (+1.87), Sandworm +0.81 (+0.80).
 No source: "one report covers core APT10 and four cover the MirrorFace/Earth Kasha subgroup" (no subgroup field anywhere; only the count of 5 checks).
 Approximate matches worth a look: case A R-F APT29 1.4464 vs OilRig 1.4447 ("no better than"); "41–57 s" holds for first-call runs only; "19 of 24" counts empty-list replies (22 of 24 priors are empty).
+
+### Wrapping-only parser fix, Sandworm (Jack's request, 2026-10-31; shared chance draw)
+B-F Sandworm F1/chance: as run 1.854374, wrapping fix 2.056986 (only s4 changes: the retry's 15 edges, F1 .111, ratio 1.1591 → the first attempt's 16 edges, F1 .216, ratio 2.1721). R-F unchanged (2.657712). R − B Sandworm: as run +0.803338, wrapping fix +0.600726. The supplement's +0.80 → +0.60 holds.
+
+## Phase 2: G = GPT-6 Astra (POST HOC)
+Smoke run `20261031T155204Z-extraction-17e8f85` (2 R chunks, s0): both parsed; model returned `gpt-6-astra`; $0.69; projected $63.10. Full run `20261031T155558Z-extraction-50913f7`: 185 first-attempt calls (2 replayed from the smoke cache), 0 refusals (oracle included), 0 schema failures, 0 incomplete, 0 retries; 113 s mean / 108 s median per call; tokens (both runs) 707,780 in, 1,265,035 out (948,042 reasoning). Total $70.33 of the $150 cap. F for comparison: 11/185 refused, 1/185 first-attempt schema failure, 17 s per call, $11.98 (incl. the one retry).
+
+## Phase 3: G next to F (no interpretation)
+Runs at `16049f4`/`a0bb280`; tables `20261031T173445Z-paper_tables_v2-2c15ead`. Adding G changed no existing number (checked run by run). Number audit rerun against v14d: 392 match, 2 mismatch (Qwen H2b +0.4 vs the old per-draw metrics key, which is +0.2; v2's shared-draw value is +0.4; the 27/3/3/1 actor order), 1 no source (the APT10/MirrorFace split), 1 n/a (S3 not in repo).
+
+**Support recovery (all-platform GT): edge-F1 (F1/chance, percentile)**
+
+| Prior | APT29 | OilRig | Sandworm | menuPass |
+|---|---|---|---|---|
+| R-F | .371 (1.99, 99.8) | .396 (3.23, 100) | .372 (2.66, 99.9) | .300 (5.79, 100) |
+| R-G | .450 (2.21, 100) | .342 (2.72, 100) | .331 (2.23, 99.6) | .181 (3.30, 97.1) |
+| B-F | .234 (1.95, 95.3) | .116 (1.37, 66.5) | .183 (1.85, 80.8) | .495 (11.02, 100) |
+| B-G | .177 (1.65, 75.9) | .149 (2.35, 81.1) | .181 (2.48, 89.7) | .323 (9.17, 99.4) |
+
+**R − B, report-level bootstrap 95% intervals: F1/chance; IG bits**
+
+| | APT29 | OilRig | Sandworm | menuPass |
+|---|---|---|---|---|
+| F ratio | +0.03 [−0.86, +0.47] | +1.87 [+1.33, +2.95] | +0.80 [−0.10, +1.84] | −5.23 [−10.84, −1.56] |
+| G ratio | +0.56 [−0.41, +1.32] | +0.37 [−0.56, +2.19] | −0.25 [−1.73, +0.62] | −5.87 [−9.05, −3.76] |
+| F IG | +0.06 [−0.28, +0.11] | +0.61 [+0.07, +0.69] | +0.33 [−0.11, +0.46] | −0.09 [−1.21, +0.37] |
+| G IG | +0.30 [−0.20, +0.41] | +0.50 [+0.03, +0.65] | +0.17 [−0.25, +0.32] | −0.01 [−0.67, +0.20] |
+
+Does R-G beat B-G? After the chance control: no interval excludes zero for APT29, OilRig or Sandworm; menuPass is below zero (B-G beats R-G). In IG bits: OilRig above zero; APT29, Sandworm and menuPass span zero.
+H2b (ρ against fewer references; positive = H2b's direction): G −1.0 (F −0.4).
+
+**Specificity (H4, edge-F1):** R-G row-wise 2/4 (APT29, Sandworm), column-wise 4/4; F 3/4 and 3/4. R-G matrix (rows prior, columns plan APT29/menuPass/OilRig/Sandworm): APT29 .450/.165/.276/.264; menuPass .300/.181/.297/.143; OilRig .357/.148/.342/.329; Sandworm .212/.045/.301/.331.
+
+**Own-plan IG, bits [95% i.i.d.]; attribution (α = 0.5)**
+
+| Prior | APT29 | OilRig | Sandworm | menuPass | Attr. |
+|---|---|---|---|---|---|
+| R-F | +.11 [−.14, +.37] | +.62 [+.17, +1.04] | +.31 [−.04, +.69] | +.91 [+.32, +1.49] | 3/4 |
+| R-G | +.30 [+.03, +.53] | +.55 [+.00, +1.08] | +.18 [−.15, +.51] | +.39 [−.33, +1.11] | 3/4 |
+| B-F | +.06 [−.09, +.22] | +.01 [−.18, +.23] | −.02 [−.17, +.15] | +1.01 [+.57, +1.32] | 2/4 |
+| B-G | +.00 [−.13, +.15] | +.05 [−.06, +.23] | +.01 [−.13, +.21] | +.40 [−.12, +.93] | 2/4 |
+
+R-G OilRig's i.i.d. lower bound is +0.001. Block bootstrap status changes: R-G OilRig above → spans at b = 2, 3; R-G menuPass spans → above at b = 5; B-G menuPass spans → above at b = 2, 5. R-G attribution: the menuPass plan goes to the APT29 chain (R-F: the APT29 plan goes to the menuPass chain).
+
+**Failing evidence (R):** G 0.000 strict and 0.000 fragment-aware for every actor (F: strict .03–.13, fragment-aware ≤ .005). So the audit sample gets no G rows.
+
+**Case A (executed OTRF APT29), IG [95%]; F1/chance (pct):** R-G APT29 −.04 [−.27, +.19]; 1.80 (98.8). R-F APT29 −.12 [−.33, +.10]; 1.45 (85.1). B-G APT29 −.06 [−.18, +.09]; 1.11 (57.1). Off-target R-G: OilRig −.33 [−.60, −.07] (below), Sandworm −.21, menuPass +.00.
+
+**Case B, AUPRC [95% host-cluster]:** collapsed: R-G .179–.469 (APT29 .398, OilRig .469, Sandworm .179, menuPass .444), oracle-G .174 [.08, .26]; R-F .278–.432; Uni .178. As run: R-G .126–.140, oracle-G .111 [.08, .29]; R-F .133–.143; Uni .147. Scripted hosts dropped (collapsed): R-G APT29/OilRig/menuPass .680 [.56, .82], Sandworm .153; oracle-G .187; Uni .187; U .656. Scripted rules removed: R-G .124–.268 (menuPass .268 [.14, .37]); oracle-G .128; Uni .146; U .662.

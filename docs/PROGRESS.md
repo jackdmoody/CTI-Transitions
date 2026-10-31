@@ -120,3 +120,8 @@
 - Lookups, Phase 1 results and the number audit: `docs/V2_SUMMARY.md`; `paper/number_audit.csv` (+ `scripts/number_audit.py`).
 - Release readiness (no push): `README.md`, `release/cti_manifest.csv`. `git ls-files` has nothing under `data/`, `results/` or `audit/`, and history has no data or real keys. Scrub before going public: absolute paths (home-directory paths in CLAUDE.md, both Ministral Modelfiles' FROM lines, the OpTC config, docs and fetch script, and the default `CTIT_OPTC_ROOT`/`CTIT_OPTC_INDEX`; done 2026-11-06); references to the private STRATA-E conversion (ctit/ingest/optc.py, ecar.py, optc_split.py, redteam_testset.py, CORPUS_CHECK) that a public user can't reproduce; range-data mentions in CLAUDE.md, configs/drift_parity.yaml, ctit/experiments/drift_parity.py; internal docs (REVIEW_QUEUE, STATUS, status_map.html, CLAUDE.md) to keep or drop; the untracked `paper/` draft.
 - Tests: 169 passed, 3 skipped.
+
+## 2026-10-31: Phases 2–3, G = GPT-6 Astra (ALL POST HOC; SPEC_ISSUES 2026-10-31)
+- G extraction on F's protocol: 185/185 parsed first time, 0 refusals, 0 failing evidence spans, $70.33 of $150. Every analysis rerun with G by config only; no existing number changed. Results next to F: `docs/V2_SUMMARY.md`; tables `results/paper_tables_v2/`.
+- Number audit rerun against paper v14d (paper now read-only). Wrapping-fix Sandworm R − B: +0.6007.
+- Tests: 169 passed, 3 skipped.
