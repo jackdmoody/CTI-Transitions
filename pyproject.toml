@@ -12,6 +12,7 @@ description = "W2: CTI-conditioned ATT&CK transition hunting"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "anthropic==2.3.0",
+    "openai==3.42.0",  # G, second frontier model (POST HOC, 2026-10-31)
     "python-dotenv==1.2.4",
     "PyYAML==6.0.3",
     # Extended tactic mapper (docs/MAPPER_POLICY.md)

@@ -40,7 +40,7 @@ def test_run_builds_one_prior_per_sample(tmp_path, monkeypatch):
     monkeypatch.setattr(extraction, "jobs", lambda config: [
         {"cond": "R", "actor": "APT29", "doc_id": "APT29-P01", "text": "they phished and then ran a loader"},
         {"cond": "B", "actor": "APT29", "doc_id": "memory:APT29"}])
-    monkeypatch.setattr(extraction, "models_for", lambda mode, pins: [
+    monkeypatch.setattr(extraction, "models_for", lambda mode, pins, budget=None: [
         (f"s{i}", extraction.Cached(Replay("replay", RESP), f"k{i}", root=tmp_path / "cache")) for i in range(2)])
     (tmp_path / "run1").mkdir()
     calls = CallLogger(tmp_path / "run1" / "calls.jsonl")

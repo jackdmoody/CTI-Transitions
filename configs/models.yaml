@@ -22,6 +22,15 @@ frontier:
     options: {effort: high, max_tokens: 16000}   # no sampling parameters: Opus 5.5 rejects them
     samples: 5
     usd_per_mtok: {input: 4.0, output: 20.0}
+  G:  # POST HOC (2026-10-31, Jack): OpenAI GPT-6 Astra, a second frontier model chosen to test whether F's
+    # no-report results are specific to one vendor. F's protocol: frozen prompts as the only user message (no
+    # system prompt, no instructions field), no temperature / top_p, no structured outputs or JSON mode, the
+    # as-run parser; reasoning effort high (F ran at effort high); 5 samples. Responses API.
+    provider: openai
+    model: gpt-6-astra
+    options: {reasoning_effort: high, max_output_tokens: 32000}
+    samples: 5
+    usd_per_mtok: {input: 10.0, output: 50.0}   # OpenAI standard rates; reasoning tokens billed as output
 open_weight:
   S:  # primary (2026-10-27): Ministral 3 14B Instruct 2512 (Mistral AI, Apache 2.0), instruct, not reasoning
     # Built from the official ministral-3:14b-instruct-2512-q4_K_M (ollama_id 4760c35aeb9d, template

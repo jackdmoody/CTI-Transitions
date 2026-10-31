@@ -56,23 +56,30 @@ class Cached:
             rec = json.loads(path.read_text())
             if "refusal" in rec:
                 raise extract.Refusal(rec["refusal"])
+            if "incomplete" in rec:
+                raise extract.Incomplete(rec["incomplete"])
             return rec["text"]
         try:
             text = self.model.chat(prompt, calls, system=system, attempt=attempt)
         except extract.Refusal as e:
             path.write_text(json.dumps({"refusal": str(e)}))
             raise
+        except extract.Incomplete as e:  # G (POST HOC 2026-10-31): stored, so a replay is the same failure
+            path.write_text(json.dumps({"incomplete": str(e)}))
+            raise
         path.write_text(json.dumps({"text": text}))
         return text
 
 
-def models_for(mode: str, pins: dict) -> list[tuple[str, object]]:
-    """-> [(sample label, model)]."""
-    if mode == "F":
-        pin = pins["frontier"]["F"]
+def models_for(mode: str, pins: dict, budget: "extract.Budget | None" = None) -> list[tuple[str, object]]:
+    """-> [(sample label, model)]. Frontier modes (F; G since 2026-10-31) are keyed in the cache as F
+    always was: {"model", "options"} plus the sample."""
+    if mode in pins.get("frontier", {}):
+        pin = pins["frontier"][mode]
         key = json.dumps({"model": pin["model"], "options": pin["options"]}, sort_keys=True)
-        return [(f"s{i}", Cached(extract.AnthropicModel(pin), f"{key}#s{i}"))
-                for i in range(pin["samples"])]
+        make = (lambda: extract.OpenAIModel(pin, budget=budget)) if pin.get("provider") == "openai" \
+            else (lambda: extract.AnthropicModel(pin))
+        return [(f"s{i}", Cached(make(), f"{key}#s{i}")) for i in range(pin["samples"])]
     url = pins.get("ollama_server", {}).get("url", "http://127.0.0.1:11434")
     slot = mode.removesuffix("-sampled")
     if slot not in pins.get("open_weight", {}):
@@ -126,6 +133,61 @@ def _run_job(job, model, templates, aliases, calls, ck):
     return extract.extract_report(model, templates["report"], job["text"], job["doc_id"], calls, **ck)
 
 
+def make_budget(config: dict) -> "extract.Budget | None":
+    """`budget: {cap_usd, prior_runs}`: spend already logged by earlier runs of the same model counts
+    toward the cap (POST HOC, 2026-10-31, G)."""
+    b = config.get("budget")
+    if not b:
+        return None
+    spent = 0.0
+    for run in b.get("prior_runs", []):
+        f = REPO_ROOT / "results" / run / "calls.jsonl"
+        spent += sum(json.loads(x).get("cost_usd") or 0.0 for x in f.read_text().splitlines())
+    return extract.Budget(b["cap_usd"], spent)
+
+
+def smoke(config, pins, templates, todo, ck, calls, budget) -> dict:
+    """Smoke test (POST HOC, 2026-10-31, G): the first `smoke.chunks` report chunks, sample s0, through the
+    same cache as the full run (so these calls are reused there, not repeated). Reports per-call tokens,
+    latency and parse status, and projects the full run's cost from F's logged input tokens on the same
+    prompts (scaled by G/F input tokens on these chunks) and these calls' mean output tokens."""
+    mode = config["modes"][0]
+    _, model = models_for(mode, pins, budget)[0]
+    n0 = sum(1 for _ in calls.path.read_text().splitlines()) if calls.path.exists() else 0
+    rows = []
+    for j in [j for j in todo if "text" in j]:
+        for i, c in enumerate(extract.chunk(j["text"], **ck)):
+            if len(rows) == config["smoke"]["chunks"]:
+                break
+            r = extract.extract_chunk(model, templates["report"], c, j["doc_id"], i, calls)
+            rows.append({"chunk": f"{j['doc_id']}#{i}", "status": r.status, "attempts": r.attempts,
+                         "transitions": len(r.transitions), "rejected": len(r.rejected),
+                         "prompt_sha256": hashlib.sha256(extract.render(templates["report"], tactics=extract.tactic_list(),
+                                                                        text=c).encode()).hexdigest()})
+    recs = [json.loads(x) for x in calls.path.read_text().splitlines()][n0:]
+    out = {"smoke": rows, "calls": recs}
+    f_runs = config["smoke"].get("f_runs", [])
+    f_in = {}
+    for run in f_runs:
+        for x in (REPO_ROOT / "results" / run / "calls.jsonl").read_text().splitlines():
+            r = json.loads(x)
+            if r.get("attempt", 1) == 1:
+                f_in.setdefault(r["prompt_sha256"], []).append(r["input_tokens"])
+    if recs and f_in:
+        pin = pins["frontier"][mode]
+        price = pin["usd_per_mtok"]
+        ratio = np.mean([r["input_tokens"] / np.mean(f_in[r["prompt_sha256"]]) for r in recs if r["prompt_sha256"] in f_in])
+        f_total_in = sum(v[0] for v in f_in.values()) * pins["frontier"]["F"]["samples"]
+        n_calls = len(f_in) * pin["samples"]
+        out_tok = np.mean([r["output_tokens"] for r in recs])
+        proj = (ratio * f_total_in * price["input"] + n_calls * out_tok * price["output"]) / 1e6
+        out["projection"] = {"calls": n_calls, "g_over_f_input_tokens": float(ratio), "input_tokens": float(ratio * f_total_in),
+                             "output_tokens_per_call_assumed": float(out_tok), "usd": float(proj),
+                             "note": "every call assumed to emit the smoke calls' mean output (R chunks; B calls are shorter)"}
+    out["budget"] = {"cap_usd": budget.cap, "spent_usd": budget.spent} if budget else None
+    return out
+
+
 def run(config: dict, calls=None) -> dict:
     from scripts import check_leakage
     if check_leakage.main([]) != 0:
@@ -141,12 +203,18 @@ def run(config: dict, calls=None) -> dict:
     out: dict = {"prompt_sha256": {k: extract.template_sha256(v) for k, v in templates.items()},
                  "chunk": ck, "alpha": alpha, "modes": {},
                  "chunks_per_report": {j["doc_id"]: len(extract.chunk(j["text"], **ck)) for j in todo if "text" in j}}
+    budget = make_budget(config)
+    if "smoke" in config:
+        return smoke(config, pins, templates, todo, ck, calls, budget)
     for mode in config["modes"]:
-        samples = models_for(mode, pins)
+        samples = models_for(mode, pins, budget)
         results: dict = {}  # (cond, actor, sample) -> [ChunkResult]
         work = [(j, s, m) for s, m in samples for j in todo]
         with ThreadPoolExecutor(config.get("workers", {}).get(mode, 1)) as ex:
             futs = [(j, s, ex.submit(_run_job, j, m, templates, aliases, calls, ck)) for j, s, m in work]
+            stopped = [f.exception() for _, _, f in futs if isinstance(f.exception(), extract.BudgetExceeded)]
+            if stopped:  # stop cleanly: no priors written; completed responses stay cached, so a rerun resumes
+                raise RuntimeError(f"budget cap reached, run stopped: {stopped[0]}")
             for j, s, f in futs:
                 results.setdefault((j["cond"], j["actor"], s), []).extend(f.result())
         mo = {"hits_cached": sum(m.hits for _, m in samples), "priors": {}}

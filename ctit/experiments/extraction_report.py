@@ -27,11 +27,12 @@ import json
 from pathlib import Path
 
 import numpy as np
+import yaml
 
 from ctit.cti import extract, prior
 from ctit.cti.manifest import load_actors
 from ctit.eval import recovery
-from ctit.experiments.extraction import PRIORS, REPO_ROOT, jobs
+from ctit.experiments.extraction import MODELS, PRIORS, REPO_ROOT, jobs
 from ctit.experiments.redteam_scoring import run_dir
 from ctit.map import attack
 from ctit.map.attack import TACTICS
@@ -41,11 +42,13 @@ def _caches(root: Path, ollama_labels: dict[str, str] | None = None) -> dict[tup
     """(label, sample) -> cache dir, from each dir's KEY.txt. ollama_labels: Ollama tag -> label
     (its sampled runs get "<label>-sampled"); tags not listed are ignored."""
     labels = ollama_labels if ollama_labels is not None else {"qwen3:14b": "S"}
+    frontier = {json.dumps({"model": p["model"], "options": p["options"]}, sort_keys=True): label
+                for label, p in yaml.safe_load(MODELS.read_text()).get("frontier", {}).items()}
     out = {}
     for d in root.iterdir():
         k = (d / "KEY.txt").read_text() if (d / "KEY.txt").exists() else ""
-        if k.startswith('{"model": "claude'):
-            out[("F", "s" + k.rsplit("#s", 1)[1])] = d
+        if "#s" in k and k.rsplit("#s", 1)[0] in frontier:  # F, and G since 2026-10-31 (models.yaml frontier)
+            out[(frontier[k.rsplit("#s", 1)[0]], "s" + k.rsplit("#s", 1)[1])] = d
         elif '"tag"' in k:
             key = json.loads(k)
             if key["tag"] in labels:

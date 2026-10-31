@@ -22,8 +22,9 @@ def test_report(tmp_path, monkeypatch):
     monkeypatch.setattr(rep, "jobs", lambda c: [{"cond": "R", "actor": "APT29", "doc_id": "APT29-P01", "text": TEXT}])
     prompt = extract.render(extract.load_prompt("extract_v1.txt"), tactics=extract.tactic_list(), text=TEXT)
     h = hashlib.sha256(prompt.encode()).hexdigest()
-    for name, key, refused in (("f0", '{"model": "claude-opus-5-5", "options": {}}#s0', True),
-                               ("f1", '{"model": "claude-opus-5-5", "options": {}}#s1', False),
+    F = '{"model": "claude-opus-5-5", "options": {"effort": "high", "max_tokens": 16000}}'  # the F pin (models.yaml)
+    for name, key, refused in (("f0", F + "#s0", True),
+                               ("f1", F + "#s1", False),
                                ("s0", json.dumps({"tag": "q", "w": "x", "o": {"temperature": 0}}), False)):
         d = tmp_path / "cache" / name
         d.mkdir(parents=True)

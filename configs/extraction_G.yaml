@@ -1,0 +1,13 @@
+# G extraction (POST HOC, 2026-10-31, Jack): GPT-6 Astra on exactly F's jobs. Same frozen prompts, chunks, B
+# aliases and validation/retry rule as F; R = 23 prior reports, B = 4 actors, oracle = OpTC red-team ground
+# truth (G's own case B oracle). 37 jobs x 5 samples = 185 first-attempt calls. G's outputs feed only G's priors.
+experiment: extraction
+actors: [APT29, menuPass, OilRig, Sandworm]
+conditions: [R, B, oracle]
+oracle_text: data/optc_check/groundtruth/OpTCRedTeamGroundTruth.txt
+prompts: {report: extract_v1.txt, memory: memory_v1.txt}
+chunk: {tokens: 6000, overlap: 300}
+alpha: 0.5
+modes: [G]
+workers: {G: 4}
+budget: {cap_usd: 150, prior_runs: []}   # spend of earlier G runs (the smoke test) counts toward the cap

@@ -23,7 +23,8 @@
    built per model sample; F and S-sampled report mean ± sd over their 5 samples.
 
 Models are anything with .name and .chat(prompt, calls, system=None) -> str. AnthropicModel
-wraps the pinned frontier model; ctit.llm.ollama.OllamaModel already has that shape.
+wraps the pinned frontier model F, OpenAIModel the second frontier model G (POST HOC, 2026-10-31);
+ctit.llm.ollama.OllamaModel already has that shape.
 """
 from __future__ import annotations
 
@@ -175,6 +176,103 @@ class Refusal(RuntimeError):
     pass
 
 
+class Incomplete(RuntimeError):
+    """A response that ended incomplete (e.g. max_output_tokens): a schema failure, retried as one."""
+
+
+class BudgetExceeded(RuntimeError):
+    """The next call could take spend past the cap: no call is made."""
+
+
+class Budget:
+    """Spend cap across threads (POST HOC, 2026-10-31, for G). Before a call, its worst case (input
+    estimate at the input price, plus the full output allowance at the output price) is reserved; the
+    call is refused if spent + reserved + worst case would exceed the cap. After it, the reservation is
+    replaced by the actual cost."""
+
+    def __init__(self, cap_usd: float, spent_usd: float = 0.0):
+        import threading
+        self.cap, self.spent, self.reserved = cap_usd, spent_usd, 0.0
+        self._lock = threading.Lock()
+
+    def reserve(self, worst: float) -> None:
+        with self._lock:
+            if self.spent + self.reserved + worst > self.cap:
+                raise BudgetExceeded(f"spent ${self.spent:.2f} + reserved ${self.reserved:.2f} + next call up to "
+                                     f"${worst:.2f} > cap ${self.cap:.2f}")
+            self.reserved += worst
+
+    def settle(self, worst: float, actual: float) -> None:
+        with self._lock:
+            self.reserved -= worst
+            self.spent += actual
+
+
+class OpenAIModel:
+    """Second frontier model G (POST HOC, 2026-10-31; configs/models.yaml: frontier.G), via the
+    Responses API, matched to F's protocol: the prompt is the only user message (no system prompt, no
+    instructions field), no temperature or top_p, no structured outputs or JSON mode; only
+    `reasoning.effort` and `max_output_tokens` are sent. A refusal content item raises Refusal; a
+    response with status "incomplete" raises Incomplete (a schema failure). Spend is capped by Budget."""
+
+    def __init__(self, pin: dict, client=None, budget: Budget | None = None):
+        self.pin = pin
+        self.name = pin["model"]
+        self._client = client
+        self.budget = budget
+
+    @property
+    def client(self):
+        if self._client is None:
+            import openai
+
+            from ctit.env import openai_api_key
+            self._client = openai.OpenAI(api_key=openai_api_key(), max_retries=8, timeout=1800)
+        return self._client
+
+    def request(self, prompt: str) -> dict:
+        opts = self.pin.get("options", {})
+        return {"model": self.name, "input": [{"role": "user", "content": prompt}],
+                "reasoning": {"effort": opts["reasoning_effort"]}, "max_output_tokens": int(opts["max_output_tokens"])}
+
+    def chat(self, prompt: str, calls=None, *, system: str | None = None, attempt: int = 1) -> str:
+        import time
+        if system:
+            raise ValueError("G runs with no system prompt (F's protocol)")
+        req = self.request(prompt)
+        price = self.pin["usd_per_mtok"]
+        worst = (len(prompt) / 2 * price["input"] + req["max_output_tokens"] * price["output"]) / 1e6
+        if self.budget is not None:
+            self.budget.reserve(worst)
+        cost = 0.0
+        try:
+            t0 = time.monotonic()
+            resp = self.client.responses.create(**req)
+            latency = time.monotonic() - t0
+            u = resp.usage
+            cost = (u.input_tokens * price["input"] + u.output_tokens * price["output"]) / 1e6  # reasoning in output
+        finally:
+            if self.budget is not None:
+                self.budget.settle(worst, cost)
+        refusal = [c.refusal for o in resp.output if o.type == "message" for c in o.content if c.type == "refusal"]
+        incomplete = getattr(resp.incomplete_details, "reason", None) if resp.status == "incomplete" else None
+        if calls is not None:
+            calls.log(model=self.name, prompt=prompt, input_tokens=u.input_tokens, output_tokens=u.output_tokens,
+                      reasoning_tokens=getattr(u.output_tokens_details, "reasoning_tokens", None),
+                      cached_input_tokens=getattr(u.input_tokens_details, "cached_tokens", None),
+                      latency_s=latency, cost_usd=cost, status=resp.status, incomplete_reason=incomplete,
+                      refusal=bool(refusal), response_id=resp.id, model_returned=resp.model,
+                      request={k: v for k, v in req.items() if k != "input"} | {"input": "[user message: prompt]"},
+                      server_temperature=resp.temperature, server_top_p=resp.top_p,
+                      budget_spent_usd=self.budget.spent if self.budget is not None else None,
+                      options=self.pin.get("options", {}), attempt=attempt)
+        if refusal:
+            raise Refusal(" ".join(refusal))
+        if incomplete is not None:
+            raise Incomplete(f"{incomplete}\n{resp.output_text}")
+        return resp.output_text
+
+
 # ----------------------------------------------------------------------------- extraction
 
 @dataclass
@@ -196,6 +294,8 @@ def ask(model, prompt: str, calls=None, retries: int = 1) -> tuple[list[dict] | 
             text = model.chat(prompt, calls, attempt=attempt)
         except Refusal:
             return None, attempt, "refused"
+        except Incomplete:  # G only (F never raises it): an incomplete response is a schema failure
+            continue
         try:
             return schema.parse(text), attempt, "ok"
         except schema.SchemaError:

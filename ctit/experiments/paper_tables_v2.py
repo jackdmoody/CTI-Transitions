@@ -16,11 +16,13 @@ Read from the source runs (each must be from a clean commit at or after `min_com
                               (prior_likelihood); s_ig_matrix: full IG matrices at every alpha
   t_fabricated_evidence       strict and fragment-aware failing-span rates (extraction_report)
   t_case_a                    every Table 5 prior vs. the executed OTRF APT29 sequence (case_a_v2)
+  t_extraction_stats          refusals, first-attempt schema failures, time per call, tokens, cost per label
   t_case_b_scripted           case B collapsed, scripted hosts dropped / scripted rules removed (case_b_scripted)
 """
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
 
 import numpy as np
@@ -216,6 +218,32 @@ def case_b(m: dict) -> list[dict]:
     return rows
 
 
+def extraction_stats(config: dict) -> list[dict]:
+    """Per label and condition, from the saved priors' chunk outcomes: first-attempt calls, refusals,
+    first-attempt schema failures (a chunk that needed the retry or was skipped), and from the listed
+    runs' calls.jsonl: calls, mean and median seconds per call, tokens and cost (all calls, retries included)."""
+    rows = []
+    for label, runs in config["stats"].items():
+        spec = config["priors"][label]
+        recs = [json.loads(x) for run in runs for x in (v2.results_root() / run / "calls.jsonl").read_text().splitlines()]
+        for cond in ("R", "B", "oracle"):
+            ch = [c for f in sorted(v2.prior_dir(spec).glob(f"{cond}_*.json")) for c in json.loads(f.read_text())["chunks"]]
+            if not ch:
+                continue
+            rows.append({"model": label, "condition": cond, "first_attempt_calls": len(ch),
+                         "refused": sum(c["status"] == "refused" for c in ch),
+                         "schema_failures_first_attempt": sum(c["attempts"] > 1 or c["status"] == "skipped_schema" for c in ch),
+                         "skipped_schema": sum(c["status"] == "skipped_schema" for c in ch)})
+        lat = [r["latency_s"] for r in recs]
+        rows.append({"model": label, "condition": "all calls (calls.jsonl)", "calls": len(recs),
+                     "sec_per_call_mean": float(np.mean(lat)) if lat else None,
+                     "sec_per_call_median": float(np.median(lat)) if lat else None,
+                     "input_tokens": sum(r["input_tokens"] for r in recs), "output_tokens": sum(r["output_tokens"] for r in recs),
+                     "reasoning_tokens": sum(r.get("reasoning_tokens") or 0 for r in recs) if any("reasoning_tokens" in r for r in recs) else None,
+                     "cost_usd": sum(r.get("cost_usd") or 0.0 for r in recs), "runs": " ".join(runs)})
+    return rows
+
+
 def run(config: dict, calls=None) -> dict:
     src = {k: _source(v, config["min_commit"]) for k, v in config["sources"].items()}
     out_dir = REPO_ROOT / config["out_dir"]
@@ -242,6 +270,8 @@ def run(config: dict, calls=None) -> dict:
         "t_fabricated_evidence": (fabricated(src["extraction"], config["fabricated_modes"], actors),
             "Failing-evidence rates of R priors, strict and fragment-aware"),
         "t_case_a": (case_a(src["case_a"]), "Case A: every Table 5 prior vs. the executed OTRF APT29 sequence"),
+        "t_extraction_stats": (extraction_stats(config),
+            "Refusals, first-attempt schema failures (saved priors), time per call, tokens and cost (calls.jsonl)"),
         "t_case_b_scripted": (case_b(src["case_b_scripted"]),
             "Case B collapsed, scripted hosts dropped and scripted rules removed, host-cluster 95% intervals"),
     }

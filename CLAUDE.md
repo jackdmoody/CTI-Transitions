@@ -18,6 +18,7 @@ DRIFT (github.com/jackdmoody/DRIFT, SBP-BRiMS 2026) is a **pinned, read-only dep
 1. **The spec is fixed.** Do not change hypotheses (H1–H4, H2b), conditions, metrics, or table definitions. If something in the spec is wrong or infeasible, stop and write the issue to `docs/SPEC_ISSUES.md` with a proposed fix. Don't work around it silently.
 2. **Never commit data.** Range telemetry, Zeek logs, OTRF and ATLASv2 data, CTI report text, model outputs over range data, and anything under `data/` stay out of git. Check `.gitignore` before every commit. If a file under `data/` is staged, unstage it and tell me.
 3. **No telemetry leaves this machine.** Do not send telemetry (open-corpus or, if ever used, range) or derived per-host sequences to any external API. Only CTI report text and prompts go to the frontier model API.
+   - 2026-10-31 (Jack): the OpenAI API is approved as a second frontier API under the same rule: only CTI report text and the frozen prompts are sent (key `OPENAI_API_KEY` in `.env`).
 4. **Leakage rule.** Prior sources and eval sources are disjoint per actor (spec §1). `scripts/check_leakage.py` must pass before any extraction or scoring run. Never build eval sequences from ATT&CK group mappings.
 5. **Tune on validation only.** The test split is touched once per final run. Any hyperparameter chosen by looking at test results is a bug.
 6. **Don't inflate visibility.** Never mark an emulation step `visible=y` without a concrete Sysmon event or Zeek log that the step's procedure produces. When unsure, mark `partial` and explain in `rationale`.
