@@ -13,6 +13,9 @@ For each label in `pairs` (R and B priors of one model) and each actor, `n_boot`
   * edge-F1 / chance, chance from the shared draw of paper table a, keyed by edge-set size;
   * own-plan information gain in bits per transition at alpha (ctit.experiments.prior_likelihood),
     the plan's transitions held fixed (this interval is report-level only).
+Also (POST HOC, 2026-10-31, after the bootstrap was seen to shift intervals down): a leave-one-report-out
+jackknife of R - B (every R sample kept, B at its point estimate): min and max over replicates, the jackknife
+SE and the 95% interval point +/- t(0.975, n - 1) SE; and the bootstrap median.
 Reported: point estimates (no resampling; these are paper tables a/b and Table 3), and 95%
 percentile intervals for R, B and R - B. A ratio is undefined when an edge set is empty (chance 0);
 a sample with an undefined ratio is left out of its mean (as paper table a); resamples where every
@@ -50,8 +53,22 @@ def _ci(x: np.ndarray) -> dict:
     ok = x[~np.isnan(x)]
     if not len(ok):
         return {"ci95": None, "undefined_resamples": int(len(x))}
-    return {"ci95": [float(np.percentile(ok, 2.5)), float(np.percentile(ok, 97.5))],
+    return {"ci95": [float(np.percentile(ok, 2.5)), float(np.percentile(ok, 97.5))], "median": float(np.median(ok)),
             "undefined_resamples": int(np.isnan(x).sum())}
+
+
+def jackknife(point: float, reps: np.ndarray) -> dict:
+    """Leave-one-report-out: min and max of the replicates, SE = sqrt((n-1)/n * sum (theta_i - mean)^2), and the
+    95% interval point +/- t(0.975, n-1) * SE."""
+    from scipy.stats import t
+    n = len(reps)
+    if point is None or np.isnan(reps).any():
+        return {"replicates": [None if np.isnan(x) else float(x) for x in reps], "min": None, "max": None,
+                "se": None, "ci95": None}
+    se = float(np.sqrt((n - 1) / n * ((reps - reps.mean()) ** 2).sum()))
+    q = float(t.ppf(0.975, n - 1))
+    return {"replicates": [float(x) for x in reps], "min": float(reps.min()), "max": float(reps.max()),
+            "se": se, "t_quantile": q, "ci95": [point - q * se, point + q * se]}
 
 
 def one(spec, actor: str, G: np.ndarray, pr: np.ndarray, ch: v2.ChanceTable, alpha: float,
@@ -76,6 +93,9 @@ def one(spec, actor: str, G: np.ndarray, pr: np.ndarray, ch: v2.ChanceTable, alp
         boot[b, 1] = _nanmean(B_ratio[idx_b])
         boot[b, 2] = np.mean([_ig(C, pr, alpha) for C in Cs])
         boot[b, 3] = B_ig[idx_b].mean()
+    # leave-one-report-out jackknife (POST HOC, 2026-10-31): every R sample kept, B at its point estimate;
+    # computed after the bootstrap and from no generator, so the bootstrap numbers are unchanged
+    jk = np.array([stat(E[:, np.arange(nR) != i].sum(axis=1)) for i in range(nR)])  # reports x (ratio, ig)
     pt = lambda x: None if x is None or np.isnan(x) else float(x)
     return {
         "reports": reports, "r_samples": nS, "b_samples": nB,
@@ -83,10 +103,13 @@ def one(spec, actor: str, G: np.ndarray, pr: np.ndarray, ch: v2.ChanceTable, alp
         "f1_over_chance": {
             "R": {"point": pt(r_pt[0]), **_ci(boot[:, 0])}, "B": {"point": pt(b_pt[0]), **_ci(boot[:, 1])},
             "R_minus_B": {"point": (pt(r_pt[0] - b_pt[0]) if not (np.isnan(r_pt[0]) or np.isnan(b_pt[0])) else None),
-                          **_ci(boot[:, 0] - boot[:, 1])}},
+                          **_ci(boot[:, 0] - boot[:, 1]),
+                          "jackknife": jackknife(pt(r_pt[0] - b_pt[0]) if not (np.isnan(r_pt[0]) or np.isnan(b_pt[0])) else None,
+                                                 jk[:, 0] - b_pt[0])}},
         "ig_bits": {
             "R": {"point": float(r_pt[1]), **_ci(boot[:, 2])}, "B": {"point": float(b_pt[1]), **_ci(boot[:, 3])},
-            "R_minus_B": {"point": float(r_pt[1] - b_pt[1]), **_ci(boot[:, 2] - boot[:, 3])}},
+            "R_minus_B": {"point": float(r_pt[1] - b_pt[1]), **_ci(boot[:, 2] - boot[:, 3]),
+                          "jackknife": jackknife(float(r_pt[1] - b_pt[1]), jk[:, 1] - b_pt[1])}},
     }
 
 

@@ -157,6 +157,27 @@ def reading(m: dict, actors: list[str]) -> tuple[list, list]:
     return rows, h2b
 
 
+def jackknife_rows(m: dict, labels: list[str], actors: list[str]) -> list[dict]:
+    """R - B per label and actor: point, bootstrap 95% interval and median, leave-one-report-out min / max,
+    jackknife SE and 95% interval, for F1/chance and IG bits."""
+    rows = []
+    for label in labels:
+        for a in actors:
+            r = m["results"][label][a]
+            row = {"model": label, "actor": a, "reports": len(r["reports"])}
+            for key, name in (("f1_over_chance", "ratio"), ("ig_bits", "ig")):
+                d = d0 = r[key]["R_minus_B"]
+                jk = d.get("jackknife") or {}
+                ci, jci = d0.get("ci95") or [None, None], jk.get("ci95") or [None, None]
+                row |= {f"{name}_point": d["point"], f"{name}_boot_lo": ci[0], f"{name}_boot_hi": ci[1],
+                        f"{name}_boot_median": d.get("median"), f"{name}_loo_min": jk.get("min"),
+                        f"{name}_loo_max": jk.get("max"), f"{name}_jk_se": jk.get("se"),
+                        f"{name}_jk_lo": jci[0], f"{name}_jk_hi": jci[1],
+                        f"{name}_jk_status": v2.status(*jci) if jci[0] is not None else None}
+            rows.append(row)
+    return rows
+
+
 def information_gain(dep: dict, lik: dict, actors: list[str], alpha: str) -> tuple[list, list, list]:
     own = []
     for name, by_a in dep["cells"].items():
@@ -260,6 +281,8 @@ def run(config: dict, calls=None) -> dict:
         "s_support_recovery_windows": (support_recovery(config, order, "windows"),
             "Supplement: the same against the Windows-only ground truth"),
         "t3_reading_vs_memory": (read, "Table 3: R - B in F1/chance and own-plan IG bits, report-level bootstrap 95% intervals"),
+        "t3_reading_jackknife": (jackknife_rows(src["reading"], config["jackknife_labels"], actors),
+            "R - B: bootstrap interval and median next to the leave-one-report-out jackknife (min, max, SE, 95% interval)"),
         "t3_h2b": (h2b, "H2b: rank correlation of the R - B F1/chance gap with the ATT&CK reference count, both signs"),
         "t4_h4_f1_matrix": (f1m, "Table 4: H4 edge-F1 matrices (prior actor x plan actor), mean over samples"),
         "t4_h4_tests": (tests, "H4 row-wise (pre-registered) and column-wise (post hoc) pass counts and margins"),

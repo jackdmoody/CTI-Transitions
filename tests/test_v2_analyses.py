@@ -63,3 +63,14 @@ def test_closest_finds_paraphrased_passage():
     src = "Intro text. The actor then used PowerShell to download a second-stage loader from its server. End."
     passage, score = evidence_audit.closest("the actor used PowerShell to download a second stage loader", src)
     assert "PowerShell to download" in passage and score > 0.85
+
+
+def test_jackknife_se_and_interval():
+    from scipy.stats import t
+    from ctit.experiments.reading_bootstrap import jackknife
+    reps = np.array([1.0, 2.0, 3.0, 4.0])
+    j = jackknife(2.5, reps)
+    se = np.sqrt(3 / 4 * 5.0)
+    assert np.isclose(j["se"], se) and j["min"] == 1.0 and j["max"] == 4.0
+    assert np.allclose(j["ci95"], [2.5 - t.ppf(0.975, 3) * se, 2.5 + t.ppf(0.975, 3) * se])
+    assert jackknife(None, reps)["ci95"] is None
