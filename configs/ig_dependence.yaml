@@ -3,7 +3,7 @@
 experiment: ig_dependence
 priors_from: configs/v2_priors.yaml
 actors: [APT29, menuPass, OilRig, Sandworm]   # order matters for the i.i.d. draw (as prior_likelihood)
-families: [R-F, R-Q, R-Q5, R-M, R-M5, R-M3, B-F, B-Q, B-M, ATTK]
+families: [R-F, R-Q, R-Q5, R-M, R-M5, R-M3, B-F, B-Q, B-M, R-G, B-G, ATTK]
 alpha: 0.5
 iid: {n_boot: 1000, seed: 20261027}     # prior_likelihood's draw: reproduces Table 5
 block: {lengths: [2, 3, 5], n_boot: 2000, seed: 20261031}

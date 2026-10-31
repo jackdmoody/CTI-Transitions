@@ -3,7 +3,7 @@
 experiment: reading_bootstrap
 priors_from: configs/v2_priors.yaml
 actors: [APT29, menuPass, OilRig, Sandworm]
-pairs: [F, Q, Q5, M, M5, M3]
+pairs: [F, Q, Q5, M, M5, M3, G]
 alpha: 0.5
 n_boot: 2000
 seed: 20261031

@@ -6,7 +6,7 @@
 experiment: redteam_scoring
 actors: [APT29, menuPass, OilRig, Sandworm]
 alpha: 0.5
-oracle_modes: [Q, Q5, M, M5]
+oracle_modes: [Q, Q5, M, M5, G]
 all_groups: true  # ATTK-all: the all-groups ATT&CK prior as a condition (2026-10-28, paper table e)
 bootstrap: {n: 1000, seed: 20261027}
 workers: 6
@@ -16,3 +16,4 @@ runs:
   Q5: {run: 20261027T223928Z-extraction-a686409, mode: S-sampled}
   M: {run: 20261028T005130Z-extraction-5528fd6, mode: S}
   M5: {run: 20261028T005130Z-extraction-5528fd6, mode: S-sampled}
+  G: {run: 20261031T155558Z-extraction-50913f7, mode: G}  # GPT-6 Astra (POST HOC, 2026-10-31)

@@ -8,10 +8,13 @@ out_dir: results/paper_tables_v2
 actors: [APT29, menuPass, OilRig, Sandworm]
 alpha: 0.5
 chance: {draws: 10000, seed: 20261027}
-families_t2: [R-F, R-Q, R-Q5, R-M, R-M5, R-M3, B-F, B-Q, B-M, B-M5, ATTK]
-h4_labels: [F, Q, Q5, M, M5, M3]
+families_t2: [R-F, R-Q, R-Q5, R-M, R-M5, R-M3, B-F, B-Q, B-M, B-M5, R-G, B-G, ATTK]
+h4_labels: [F, Q, Q5, M, M5, M3, G]
 jsd_alphas: [0.01, 0.1, 0.5]
-fabricated_modes: {F: F, Q: S-Q, Q5: S-Q-sampled, M: S-M, M5: S-M-sampled, M3: S-M3}  # label -> extraction_report mode
+fabricated_modes: {F: F, Q: S-Q, Q5: S-Q-sampled, M: S-M, M5: S-M-sampled, M3: S-M3, G: G}  # label -> extraction_report mode
+stats:  # label -> runs whose calls.jsonl hold its calls (Phase 3)
+  F: [20261027T121723Z-extraction-a53c21c, 20261027T223842Z-extraction-a686409]
+  G: [20261031T155204Z-extraction-17e8f85, 20261031T155558Z-extraction-50913f7]
 sources:
   extraction: 20261028T123410Z-extraction_report-ecf227b
   likelihood: 20261028T123417Z-prior_likelihood-ecf227b

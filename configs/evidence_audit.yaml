@@ -8,6 +8,7 @@ models:
   Q: {n: 40}
   M: {n: 40}
   M3: {n: 40}
+  G: {n: 40}   # up to 40 failing G spans (Phase 3)
 seed: 20261031
 chunk: {tokens: 6000, overlap: 300}
 out: audit/evidence_sample.csv

@@ -3,8 +3,8 @@
 experiment: case_b_scripted
 priors_from: configs/v2_priors.yaml
 actors: [APT29, menuPass, OilRig, Sandworm]
-labels: [F, Q, Q5, M, M5, M3]
-oracle_modes: [F, Q, Q5, M, M5, M3]   # refused or missing oracles are reported, not scored
+labels: [F, Q, Q5, M, M5, M3, G]
+oracle_modes: [F, Q, Q5, M, M5, M3, G]   # refused or missing oracles are reported, not scored
 alpha: 0.5
 scripted_rules:              # "Process Creation Using Sysnative Folder", "Recon Command Output Piped To Findstr"
   - 3c1b5fb0-c72f-45ba-abd1-4d4c353144ab
