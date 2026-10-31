@@ -15,7 +15,7 @@ fabricated_modes: {F: F, Q: S-Q, Q5: S-Q-sampled, M: S-M, M5: S-M-sampled, M3: S
 sources:
   extraction: 20261028T123410Z-extraction_report-ecf227b
   likelihood: 20261028T123417Z-prior_likelihood-ecf227b
-  reading: RUN_ID_READING
-  ig_dependence: RUN_ID_IGDEP
-  case_a: RUN_ID_CASEA
-  case_b_scripted: RUN_ID_CASEB
+  reading: 20261031T153631Z-reading_bootstrap-84bbb70
+  ig_dependence: 20261031T153635Z-ig_dependence-84bbb70
+  case_a: 20261031T153636Z-case_a_v2-84bbb70
+  case_b_scripted: 20261031T153736Z-case_b_scripted-84bbb70
