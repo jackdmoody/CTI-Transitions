@@ -17,6 +17,7 @@ from pathlib import Path
 import yaml
 
 from ctit.map import attack
+from ctit.map.frozen_tactics import to_frozen_tactic
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PLANS = REPO_ROOT / "data" / "eval" / "plans"
@@ -42,11 +43,13 @@ class Step:
     command: str
     cti_source: str | None
     scenario: int
+    platforms: tuple[str, ...] = ()  # the ability's platform keys, file order (2026-11-05, build_reference)
 
 
 def _tactic(label: str, technique: str) -> tuple[str, str]:
-    key = LABEL_ALIASES.get(label.strip().lower().replace(" ", "-"), label.strip().lower().replace(" ", "-"))
-    t = attack.tactic_from_shortname(key)
+    # One mapping for every source (ctit.map.frozen_tactics, 2026-11-05); same result as the old
+    # LABEL_ALIASES + shortname lookup (tests/test_frozen_tactics.py).
+    t = to_frozen_tactic(label, "plan")
     if t:
         return t, "plan_label"
     tactics = attack.technique_tactics(technique)
@@ -96,7 +99,7 @@ def load_plan(actor: str, path: Path | None = None, platforms: tuple[str, ...] |
             actor=actor, index=len(steps), step_id=step_id, ability_id=str(ab["id"]),
             name=str(ab.get("name", "")), technique=technique, plan_tactic_label=str(ab["tactic"]),
             tactic=tactic, tactic_source=source, executor=str(executor), command=command,
-            cti_source=ab.get("cti_source"), scenario=_scenario(actor, step_id),
+            cti_source=ab.get("cti_source"), scenario=_scenario(actor, step_id), platforms=tuple(plats),
         ))
     return steps
 

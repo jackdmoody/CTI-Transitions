@@ -10,7 +10,8 @@ from __future__ import annotations
 import json
 import re
 
-from ctit.map.attack import TACTICS
+from ctit.map.attack import TACTICS  # noqa: F401 (re-exported)
+from ctit.map.frozen_tactics import to_frozen_tactic
 
 TECHNIQUE_RE = re.compile(r"^T\d{4}(\.\d{3})?$")
 REQUIRED = ("from_tactic", "to_tactic", "evidence_span", "confidence")
@@ -42,7 +43,8 @@ def validate(items: list[dict]) -> tuple[list[dict], list[tuple[dict, str]]]:
         if missing:
             rejected.append((it, f"missing {missing}"))
             continue
-        bad = [k for k in ("from_tactic", "to_tactic") if it[k] not in TACTICS]
+        # exact names only (the frozen prompt's rule), via the shared mapping (2026-11-05)
+        bad = [k for k in ("from_tactic", "to_tactic") if to_frozen_tactic(it[k], "extraction") is None]
         if bad:
             rejected.append((it, f"not an Enterprise tactic: {[it[k] for k in bad]}"))
             continue
