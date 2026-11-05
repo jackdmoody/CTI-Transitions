@@ -125,3 +125,17 @@
 - G extraction on F's protocol: 185/185 parsed first time, 0 refusals, 0 failing evidence spans, $70.33 of $150. Every analysis rerun with G by config only; no existing number changed. Results next to F: `docs/V2_SUMMARY.md`; tables `results/paper_tables_v2/`.
 - Number audit rerun against paper v14d (paper now read-only). Wrapping-fix Sandworm R − B: +0.6007.
 - Tests: 169 passed, 3 skipped.
+
+## 2026-11-05: AICS-27 revision, internal review (ALL POST HOC; branch `revision/internal-review`, no model calls)
+- Phase 0 facts (`results/revision/facts.md`):
+  - Failed-quote edges are not filtered (`require_evidence=False`).
+  - Ministral 14B: 40/222 first-attempt schema failures, all lost.
+  - Local retries are deterministic.
+  - B = one binary edge set per generation, averaged.
+  - Old block marks were circular and boundary-crossing.
+- Phase 1 (`gt_audit.md`): one label→tactic mapping (`ctit/map/frozen_tactics.py`) and a segmented reference (`ctit/eval/reference.py`), identical to the old ground truth. Jack approved; Phase 2 skipped.
+- Sensitivities (scored, not adopted): evidence filter (fragment, strict), reference variants A and B.
+- Phase 3: exact enrichment, segment block bootstrap (9 marks vs 7), paired R−B IG, local report-level intervals, smoothing, case B 11/7 of 46.
+- Found: the MC percentile has a pre-existing float tie bug; exact values in `tables/t3a`.
+- Outputs: `results/revision/` (`changed_conclusions.md`, `tables/`).
+- Tests: 205 passed, 3 skipped.
