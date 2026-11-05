@@ -168,7 +168,7 @@ def main_tables(sc: dict) -> None:
           r"F1 $\div$ exact chance ($\Delta$enrichment), and information gain in bits per transition ($\Delta$IG). "
           r"95\% intervals from resampling reports, and the model's runs where there are several, with the plan held fixed "
           r"(10{,}000 resamples); bold: clear, i.e.\ that interval and a leave-one-report-out jackknife both exclude zero. "
-          r"Because a resample repeats some reports and omits others, these intervals sit below the point estimate; the "
+          r"Because a resample repeats some reports and omits others, these intervals tend to sit below the point estimate; the "
           r"jackknife guards against that. Refs.: ATT\&CK group-page references, the coverage proxy. Local models, and "
           r"$\Delta$IG intervals from resampling plan transitions, are in the supplement.}",
           r"\label{tab:h2}", r"\end{table*}"]
