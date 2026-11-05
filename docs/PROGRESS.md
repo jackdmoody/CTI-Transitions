@@ -139,3 +139,8 @@
 - Found: the MC percentile has a pre-existing float tie bug; exact values in `tables/t3a`.
 - Outputs: `results/revision/` (`changed_conclusions.md`, `tables/`).
 - Tests: 205 passed, 3 skipped.
+- Final, under Jack's adopted settings (2026-11-05):
+  - Settings: exact hypergeometric chance (Monte Carlo only as a tie-fixed test); 10,000 resamples everywhere; Table 3 `*` from the segment block rule.
+  - Outputs: `results/revision/final/` (drop-in Tables 2, 3, 5; supplement) and `results/revision/changed_conclusions.md` (final).
+  - Main-text changes: GPT-6 Astra OilRig loses bold in Table 3; 9 block marks, not 7; GPT-6 Astra's OilRig R−B IG no longer excludes zero (paired over transitions); small chance-ratio shifts (B Opus menuPass 11.02 → 10.87).
+  - release/ is unaffected. Tests: 210 passed, 3 skipped.
