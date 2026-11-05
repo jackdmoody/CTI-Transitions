@@ -143,11 +143,8 @@ def main_tables(sc: dict) -> None:
         s = tex_num(sg(g["point"], d, lead=True))
         return r"\textbf{" + s + "}" if g["clear"] in ("above", "below") else s
 
-    def igcell(lab, a):
-        c = pig[lab][a]
-        s = tex_num(sg(c["point"], 2, lead=True))
-        s = r"\textbf{" + s + "}" if c["iid"]["status"] != "spans" else s
-        return s + (r"\textsuperscript{*}" if c["mark"] else "")
+    def igcell(lab, a):  # report level, same rule as Delta-F1 and Delta-enrichment (facts.md, item 7)
+        return gapcell(lab, a, "ig_bits", 2)
 
     def ivcell(c, d):
         return r"{\scriptsize " + tex_num(iv(c, d)) + "}" if c else ""
@@ -165,15 +162,15 @@ def main_tables(sc: dict) -> None:
              for lab in ("F", "G")]) + r" \\")
         L.append(" & & " + " & ".join(
             [ivcell(rb[lab][a]["edge_f1"]["R_minus_B"]["ci95"], 3) + " & " + ivcell(rb[lab][a]["f1_over_chance"]["R_minus_B"]["ci95"], 2)
-             + " & " + ivcell(pig[lab][a]["iid"]["ci95"], 2) for lab in ("F", "G")]) + r" \\")
+             + " & " + ivcell(rb[lab][a]["ig_bits"]["R_minus_B"]["ci95"], 2) for lab in ("F", "G")]) + r" \\")
     L += [r"\bottomrule", r"\end{tabular}",
           r"\caption{Reading minus remembering (R $-$ B) for the two frontier models: raw edge-F1 ($\Delta$F1), "
           r"F1 $\div$ exact chance ($\Delta$enrichment), and information gain in bits per transition ($\Delta$IG). "
-          r"$\Delta$F1 and $\Delta$enrichment: 95\% intervals from resampling reports (10{,}000 resamples); bold: clear, "
-          r"i.e.\ that interval and a leave-one-report-out jackknife both exclude zero. $\Delta$IG: 95\% interval from "
-          r"resampling plan transitions, the same resamples for R and B (10{,}000); bold: excludes zero; *: status changes "
-          r"under the block rule of Table~\ref{tab:ig}. Refs.: ATT\&CK group-page references, the coverage proxy. "
-          r"Local models are in the supplement.}",
+          r"95\% intervals from resampling reports, and the model's runs where there are several, with the plan held fixed "
+          r"(10{,}000 resamples); bold: clear, i.e.\ that interval and a leave-one-report-out jackknife both exclude zero. "
+          r"Because a resample repeats some reports and omits others, these intervals sit below the point estimate; the "
+          r"jackknife guards against that. Refs.: ATT\&CK group-page references, the coverage proxy. Local models, and "
+          r"$\Delta$IG intervals from resampling plan transitions, are in the supplement.}",
           r"\label{tab:h2}", r"\end{table*}"]
     (MAIN / "table5.tex").write_text("\n".join(L) + "\n")
 
@@ -372,9 +369,14 @@ def main() -> int:
     cfg = yaml.safe_load((REPO / "configs" / "v2_priors.yaml").read_text())
     (OUT / "scenarios").mkdir(parents=True, exist_ok=True)
     scs = {}
+    tables_only = "--tables-only" in sys.argv[1:]  # rebuild tables from the saved scenarios (no rescoring)
     for key, (variant, filt) in SCENARIOS.items():
+        f = OUT / "scenarios" / f"{key}.json"
+        if tables_only:
+            scs[key] = json.loads(f.read_text())
+            continue
         scs[key] = R.scorecard(cfg, variant, filt)
-        (OUT / "scenarios" / f"{key}.json").write_text(json.dumps(scs[key], indent=1, default=float))
+        f.write_text(json.dumps(scs[key], indent=1, default=float))
         print("scored", key, flush=True)
     draft = json.loads((REPO / "results" / "revision" / "sensitivity" / "base.json").read_text())
     main_tables(scs["adopted"])
@@ -382,8 +384,8 @@ def main() -> int:
     cl = {k: claims(v) for k, v in scs.items()}
     (OUT / "claims.json").write_text(json.dumps(cl, indent=1, default=str))
     (OUT / "phase3.json").write_text(json.dumps(extra, indent=1, default=float))
-    (OUT / "config.yaml").write_text(yaml.safe_dump({
-        "script": "scripts/revision/final.py", **provenance(), "settings": R.SETTINGS, "priors": cfg["priors"],
+    (OUT / ("config_tables.yaml" if tables_only else "config.yaml")).write_text(yaml.safe_dump({
+        "script": "scripts/revision/final.py", **provenance(), "tables_only": tables_only, "settings": R.SETTINGS, "priors": cfg["priors"],
         "scenarios": {k: {"variant": v, "filter": f} for k, (v, f) in SCENARIOS.items()},
         "seeds": [R.SEED], "draft_record": "results/revision/sensitivity/base.json (c701c77)",
         "old_block_run": str(OLD_BLOCK_RUN.relative_to(REPO))}, sort_keys=False))
