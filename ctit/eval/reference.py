@@ -96,6 +96,29 @@ def build_reference(actor: str, steps: list | None = None, split_platforms: bool
     return segs
 
 
+MENUPASS_OPTIONAL = {"8.A": "doc Step 8 (Optional)", "7.1": "doc Step 9 (Optional; YAML id 7.1)"}
+VARIANTS = ("adopted", "A", "B")
+
+
+def variant_segments(actor: str, variant: str = "adopted") -> list[Segment]:
+    """The adopted reference, or a SENSITIVITY variant (scored, never adopted; Jack 2026-11-05):
+    A = split at every Linux <-> Windows handoff (build_reference(split_platforms=True));
+    B = menuPass's two Optional steps (doc Steps 8 and 9) as separate segments (other actors unchanged)."""
+    if variant == "adopted":
+        return build_reference(actor)
+    if variant == "A":
+        return build_reference(actor, split_platforms=True)
+    if variant == "B":
+        if actor != "menuPass":
+            return build_reference(actor)
+        steps = plans.load_plan(actor, platforms=None)
+        segs = build_reference(actor, [s for s in steps if s.step_id not in MENUPASS_OPTIONAL])
+        for sid, name in MENUPASS_OPTIONAL.items():
+            segs.append(Segment(actor, name, "optional", [s for s in steps if s.step_id == sid]))
+        return segs
+    raise ValueError(variant)
+
+
 def pairs_array(segments: list[Segment]) -> np.ndarray:
     """(L, 2) tactic-index pairs, segment by segment (no pair crosses a boundary)."""
     return np.array([(IDX[a], IDX[b]) for g in segments for a, b in g.pairs], dtype=int).reshape(-1, 2)

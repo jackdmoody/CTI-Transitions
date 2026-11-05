@@ -40,7 +40,7 @@ from ctit.map.frozen_tactics import drop_reason, to_frozen_tactic  # noqa: E402
 
 ACTORS = ["APT29", "OilRig", "Sandworm", "menuPass"]
 OLD_L = {"APT29": 45, "OilRig": 17, "Sandworm": 25, "menuPass": 6}  # the paper's stated L
-MENUPASS_OPTIONAL = {"8.A": "doc Step 8 (Optional)", "7.1": "doc Step 9 (Optional; YAML id 7.1)"}
+MENUPASS_OPTIONAL = ref.MENUPASS_OPTIONAL
 OUT = REPO / "results" / "revision"
 SHORT = {"Reconnaissance": "Recon", "Resource Development": "ResDev", "Initial Access": "InitAcc",
          "Execution": "Exec", "Persistence": "Persist", "Privilege Escalation": "PrivEsc",
@@ -72,12 +72,7 @@ def seams(segs_full, segs_split) -> list[dict]:
 
 
 def menupass_optional_segments():
-    steps = plans.load_plan("menuPass", platforms=None)
-    main = [s for s in steps if s.step_id not in MENUPASS_OPTIONAL]
-    segs = ref.build_reference("menuPass", main)
-    for sid, name in MENUPASS_OPTIONAL.items():
-        segs.append(ref.Segment("menuPass", name, "optional", [s for s in steps if s.step_id == sid]))
-    return segs
+    return ref.variant_segments("menuPass", "B")
 
 
 def variant_summary(old_C, old_L, segs) -> dict:
