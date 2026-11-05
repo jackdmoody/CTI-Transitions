@@ -48,32 +48,44 @@ def test_single_segment_menupass_degenerate():
     assert {tuple(r[:5]) for r in idx} <= {(0, 1, 2, 3, 4), (1, 2, 3, 4, 5)}
 
 
-# ----------------------------------------------------------------------------- enrichment identity
+# ----------------------------------------------------------------------------- exact chance vs tie-fixed Monte Carlo
 
-def test_exact_identity_and_mc_agreement():
+def _tie_fixed_mc(truth: np.ndarray, k: int, tp: int, draws: int, seed: int) -> tuple[float, float]:
+    """The draft's shared-ordering Monte Carlo with ties compared on TP (integers), not on float F1."""
+    order = np.argsort(np.random.default_rng(seed).random((draws, recovery.N_OFF)), axis=1)
+    t = ((truth > 0) & recovery.OFF_DIAG)[recovery.OFF_DIAG]
+    hits = t[order][:, :k].sum(axis=1)
+    g = int(t.sum())
+    return float((2 * hits / (k + g)).mean()), float(100 * ((hits < tp).mean() + 0.5 * (hits == tp).mean()))
+
+
+@pytest.mark.parametrize("g,k,tp", [(6, 13, 4), (15, 24, 4), (28, 44, 10), (21, 182, 21), (15, 13, 1)])
+def test_exact_chance_agrees_with_tie_fixed_mc(g, k, tp):
+    truth = np.zeros((14, 14))
+    off = np.argwhere(recovery.OFF_DIAG)[:g]
+    truth[off[:, 0], off[:, 1]] = 1
+    e = R.exact_chance(k, g, tp)
+    mean_mc, pct_mc = _tie_fixed_mc(truth, k, tp, 40000, 7)
+    assert mean_mc == pytest.approx(e["mean_f1"], rel=0.02)
+    assert pct_mc == pytest.approx(e["percentile"], abs=1.0)
+
+
+def test_identity_ratio_precision_tp():
     rng = np.random.default_rng(3)
-    order = np.argsort(rng.random((20000, recovery.N_OFF)), axis=1)
-    off = recovery.OFF_DIAG
+    cells = np.argwhere(recovery.OFF_DIAG)
     for g, k in [(6, 13), (15, 40), (28, 60), (21, 182)]:
         truth = np.zeros((14, 14))
-        truth[np.nonzero(off)[0][:g], np.nonzero(off)[1][:g]] = 1
-        ch = v2.ChanceTable(truth, order)
-        cells = np.argwhere(off)
+        truth[cells[:g, 0], cells[:g, 1]] = 1
         C = np.zeros((14, 14))
         pick = cells[rng.choice(len(cells), k, replace=False)]
         C[pick[:, 0], pick[:, 1]] = 1
-        r = recovery.edge_prf(C, truth)
-        e = R.exact_chance(k, g, r["tp"])
-        # identity: F1 / exact chance = precision / (g / 182) = TP / E[TP]
-        assert e["ratio"] == pytest.approx(r["f1"] / e["mean_f1"])
-        assert e["ratio"] == pytest.approx(r["precision"] / (g / 182))
-        assert e["ratio"] == pytest.approx(r["tp"] / (k * g / 182))
-        # Monte Carlo chance converges to the exact hypergeometric mean
-        assert ch.mean[k] == pytest.approx(e["mean_f1"], rel=0.02)
+        s = R.ExactChance(truth).score(C)
+        assert s["ratio"] == pytest.approx(s["f1"] / s["chance_mean_f1"])
+        assert s["ratio"] == pytest.approx(s["precision"] / (g / 182))
+        assert s["ratio"] == pytest.approx(s["tp"] / (k * g / 182))
 
 
-def test_exact_percentile_full_edge_set_is_a_tie():
-    # k = 182: every random set equals the prior's, so the percentile is 50 (all ties)
+def test_full_edge_set_is_a_tie():
     assert R.exact_chance(182, 21, 21)["percentile"] == pytest.approx(50.0)
     assert R.exact_chance(182, 21, 21)["ratio"] == pytest.approx(1.0)
 
@@ -90,34 +102,26 @@ def cfg():
     return c
 
 
-def test_reproduces_draft_opus(cfg):
+def test_reproduces_chance_independent_draft_numbers(cfg):
     sc = R.scorecard(cfg, with_rb=False)
-    f1 = [round(sc["t2"]["R-F"][a]["edge_f1"], 3) for a in R.ACTORS]
-    ratio = [round(sc["t2"]["R-F"][a]["f1_over_chance"], 2) for a in R.ACTORS]
-    ig = [round(sc["t3"]["R-F"][a]["bits"], 2) for a in R.ACTORS]
-    assert f1 == [0.371, 0.396, 0.372, 0.300]
-    assert ratio == [1.99, 3.23, 2.66, 5.79]
-    assert ig == [0.11, 0.62, 0.31, 0.91]
+    assert [round(sc["t2"]["R-F"][a]["edge_f1"], 3) for a in R.ACTORS] == [0.371, 0.396, 0.372, 0.300]
+    assert [round(sc["t3"]["R-F"][a]["point"], 2) for a in R.ACTORS] == [0.11, 0.62, 0.31, 0.91]
     assert sc["attr"]["R-F"]["n"] == 3 and sc["attr"]["R-G"]["n"] == 3 and sc["attr"]["R-M"]["n"] == 3
+    # exact ratios (Opus): TP / E[TP]
+    assert [round(sc["t2"]["R-F"][a]["f1_over_chance"], 2) for a in R.ACTORS] == [1.99, 3.23, 2.65, 5.78]
 
 
-def test_rb_reproduces_reading_bootstrap(cfg):
-    import zlib
+def test_rb_ig_jackknife_reproduces_draft(cfg):
     ref = R.reference("OilRig")
-    from ctit.experiments.paper_tables import chance_orderings
-    ch = v2.ChanceTable(ref.G, chance_orderings(10000, 20261027))
-    rng = np.random.default_rng([R.RB["seed"], zlib.crc32(b"F"), zlib.crc32(b"OilRig")])
-    e = R.rb_one(R.r_tensor(cfg, "F", "OilRig"), R.b_counts(cfg, "F", "OilRig"), ref, ch, 0.5, R.RB["n_boot"], rng)
+    e = R.rb_one(R.r_tensor(cfg, "F", "OilRig"), R.b_counts(cfg, "F", "OilRig"), ref, R.ExactChance(ref.G), 50,
+                 np.random.default_rng(0))
     g = e["ig_bits"]["R_minus_B"]
-    assert round(g["point"], 2) == 0.61 and [round(x, 2) for x in g["ci95"]] == [0.07, 0.69]
-    assert round(e["f1_over_chance"]["R_minus_B"]["point"], 2) == 1.87
+    assert round(g["point"], 2) == 0.61 and [round(x, 2) for x in g["jackknife"]["ci95"]] == [0.28, 0.94]
 
 
 def test_evidence_filter_only_removes(cfg):
     for lab in ("F", "M"):
         E0 = R.r_tensor(cfg, lab, "OilRig")
         for filt in ("fragments", "strict"):
-            E1 = R.r_tensor(cfg, lab, "OilRig", filt)
-            assert np.all(E1 <= E0)
-    # GPT-6 Astra has no failing quote: filtering changes nothing
+            assert np.all(R.r_tensor(cfg, lab, "OilRig", filt) <= E0)
     assert np.array_equal(R.r_tensor(cfg, "G", "APT29", "strict"), R.r_tensor(cfg, "G", "APT29"))
