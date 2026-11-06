@@ -20,6 +20,7 @@ from sigma.pipelines.sysmon import sysmon_pipeline
 from sigma.pipelines.windows import windows_audit_pipeline, windows_logsource_pipeline
 
 from ctit.map import attack
+from ctit.map.frozen_tactics import to_frozen_tactic
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SIGMA_ROOT = REPO_ROOT / "third_party" / "sigma"
@@ -62,7 +63,7 @@ def rule_tactics(tags: list[str]) -> tuple[list[str], list[str], str]:
     tactics, techniques = [], []
     for tag in tags:
         if tag.startswith("attack."):
-            t = attack.tactic_from_shortname(tag[len("attack."):])
+            t = to_frozen_tactic(tag, "sigma")  # shared mapping (2026-11-05); same result as before
             if t and t not in tactics:
                 tactics.append(t)
             m = TECHNIQUE_TAG.match(tag)

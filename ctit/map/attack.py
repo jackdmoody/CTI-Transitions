@@ -50,6 +50,7 @@ def _ext_id(obj: dict) -> str | None:
 
 @lru_cache(maxsize=None)
 def _technique_tactics(version: str) -> dict[str, list[str]]:
+    from ctit.map.frozen_tactics import to_frozen_tactic  # shared mapping (2026-11-05); no import cycle
     out: dict[str, list[str]] = {}
     for obj in _bundle(version):
         if obj["type"] != "attack-pattern" or obj.get("revoked") or obj.get("x_mitre_deprecated"):
@@ -57,7 +58,7 @@ def _technique_tactics(version: str) -> dict[str, list[str]]:
         ext_id = _ext_id(obj)
         tactics = []
         for phase in obj.get("kill_chain_phases", []):
-            t = tactic_from_shortname(phase["phase_name"])
+            t = to_frozen_tactic(phase["phase_name"], "attack")
             if phase["kill_chain_name"] == "mitre-attack" and t and t not in tactics:
                 tactics.append(t)
         out[ext_id] = tactics

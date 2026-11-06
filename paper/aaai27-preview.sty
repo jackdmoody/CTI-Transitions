@@ -1,0 +1,74 @@
+% aaai27-preview.sty -- UNOFFICIAL drafting stand-in for the AAAI-27 author kit.
+% Reproduces the AAAI page layout closely enough to judge length and look:
+% US letter, 7in x 9.25in text block, two columns with 0.375in gutter,
+% 10pt Times, unnumbered AAAI-style headings, 9pt abstract and captions.
+% Before submission, replace \usepackage{aaai27-preview} with the official
+% \usepackage[submission]{aaai27} (or camera-ready option) from the AAAI-27 kit
+% and use aaai27.bst for the bibliography.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{aaai27-preview}[2026/10/27 unofficial AAAI-style preview]
+
+\RequirePackage[letterpaper,textwidth=7in,textheight=9.25in,top=0.75in,
+  hcentering,columnsep=0.375in,headheight=0pt,headsep=0pt,footskip=0.4in]{geometry}
+\RequirePackage{times}
+\RequirePackage{helvet}
+\RequirePackage{courier}
+\RequirePackage[font=small,labelfont=bf]{caption}
+
+\setlength{\parindent}{10pt}
+\setlength{\parskip}{0pt}
+\setcounter{secnumdepth}{0}
+\frenchspacing
+
+% ---- title block -----------------------------------------------------------
+\def\@affiliations{}
+\newcommand{\affiliations}[1]{\gdef\@affiliations{#1}}
+\def\@draftnote{}
+\newcommand{\draftnote}[1]{\gdef\@draftnote{#1}}
+\renewcommand{\maketitle}{%
+  \twocolumn[{%
+    \ifx\@draftnote\@empty\else
+      {\centering\fontsize{8}{10}\selectfont\itshape \@draftnote\par}\vspace{0.12in}%
+    \fi
+    \begin{center}
+      {\fontsize{14.4}{17.28}\selectfont\bfseries \@title\par}
+      \vspace{0.22in}
+      {\fontsize{12}{14}\selectfont\bfseries \@author\par}
+      \vspace{0.04in}
+      {\fontsize{9}{11}\selectfont \@affiliations\par}
+    \end{center}
+    \vspace{0.25in}
+  }]%
+}
+
+% ---- abstract --------------------------------------------------------------
+\renewenvironment{abstract}{%
+  \begin{center}\normalfont\fontsize{10}{12}\selectfont\bfseries Abstract\end{center}%
+  \vspace{-0.6em}%
+  \begin{list}{}{\setlength{\leftmargin}{0.125in}\setlength{\rightmargin}{0.125in}%
+    \setlength{\topsep}{0pt}\fontsize{9}{11}\selectfont}\item\relax
+}{\end{list}\vspace{0.6em}}
+
+% ---- headings (AAAI: unnumbered; sections centered) ------------------------
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {-2.2ex plus -0.5ex minus -0.2ex}{1.0ex plus 0.2ex}%
+  {\centering\normalfont\fontsize{12}{14}\selectfont\bfseries}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+  {-1.8ex plus -0.4ex minus -0.2ex}{0.6ex plus 0.2ex}%
+  {\normalfont\fontsize{11}{13}\selectfont\bfseries}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+  {-1.5ex plus -0.4ex minus -0.2ex}{0.4ex plus 0.2ex}%
+  {\normalfont\fontsize{10}{12}\selectfont\bfseries}}
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+  {1.0ex plus 0.3ex minus 0.2ex}{-0.6em}%
+  {\normalfont\normalsize\bfseries}}
+
+% ---- lists a little tighter, as in AAAI papers ----------------------------
+\setlength{\itemsep}{1pt}
+\let\@oldlisti\@listi
+\def\@listi{\@oldlisti\setlength{\itemsep}{1pt}\setlength{\topsep}{3pt}\setlength{\parsep}{0pt}}
+\setlength{\leftmargini}{1.4em}
+\let\@listI\@listi
+
+\pagestyle{plain}
+\endinput
