@@ -180,6 +180,13 @@ No number changes. "Resample reports, not only transitions, and check that a res
 - Method, step 2: "Each surviving edge counts once per report" → "Each edge counts once per report". The evidence check is reported, not used to filter; §(b)1 gives the filtered sensitivity.
 - Method, step 2: "invalid output gets one retry" → note that the local models' retry repeats the request with the same settings (temperature 0, or the same seed). 56 of the 62 local retries were byte-identical, and 1 of 62 recovered a chunk.
 
+### Applied to the revised draft (2026-11-06, `paper/w2_aics_draft_REVISED_v2.tex`)
+The draft's four `% CHECK` lines were resolved against this file. Two still carried old values and were corrected in the text:
+- **Results, menuPass:** Claude Opus "negative whichever report is left out (−7.35 to −3.59)" → **(−7.21 to −3.47)** (exact chance; `claims.json` "T5 F menuPass LOO range").
+- **Case study A:** GPT-6 Astra's other actors' kernels "(1.09–1.64×)" → **(1.08–1.63×)**; Claude Opus "−0.12 [−0.33, 0.10]" → **[−0.34, 0.10]**; GPT-6 Astra "−0.04 [−0.27, 0.19]" → **[−0.28, 0.19]** (10,000 resamples; `final/case_a/metrics.json`).
+
+The other two CHECK lines needed no change: Ministral 14B Sandworm stays at the 84th percentile (84.1), the ATT&CK kernel stays at 0.94–1.38×, and the multi-tactic rule's numbers (26 steps plus 1 non-tactic label; no edge changes) match `gt_audit.md`. The multi-tactic sentence was then reworded (Jack, 2026-11-06). `scripts/revision/claims_check.py` checks every number and clear / not-clear statement in the draft, its tables and the supplement against `results/revision/final/`: 197 of 197 match (`results/revision/final/claims_check.csv`).
+
 ---
 
 ## (b) Sensitivity-only results (supplement)
