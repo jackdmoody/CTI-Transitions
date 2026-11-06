@@ -1,0 +1,28 @@
+% Table 3 (drop-in): 10,000 resamples; bold/dagger i.i.d.; * block bootstrap within segments
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Prior & APT29 & OilRig & Sandworm & menuPass & Attr. \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{Report-conditioned (R)}} \\
+Claude Opus & $+$.11 & \textbf{$+$.62} & $+$.31 & \textbf{$+$.91} & 3/4 \\
+GPT-6 Astra & \textbf{$+$.30} & $+$.55\textsuperscript{*} & $+$.18 & $+$.39\textsuperscript{*} & 3/4 \\
+Qwen 14B & $+$.12 & $-$.17\textsuperscript{*} & $+$.17 & \textbf{$+$1.00} & 1/4 \\
+\quad sampled & $+$.10 & $-$.21\textsuperscript{*} & $-$.02 & \textbf{$+$.86} & 1/4 \\
+Ministral 14B & $+$.16 & \textbf{$+$.37} & $-$.04 & \textbf{$+$1.04} & 3/4 \\
+\quad sampled & $+$.13 & $+$.07 & $+$.06 & \textbf{$+$1.07} & 2/4 \\
+Ministral 3B & $-$.24\textsuperscript{\dag} & $+$.08 & $+$.01 & \textbf{$+$.89} & 0/4 \\
+\multicolumn{6}{@{}l}{\emph{No report (B)}} \\
+Claude Opus & $+$.06 & $+$.01 & $-$.02 & \textbf{$+$1.01} & 2/4 \\
+GPT-6 Astra & $+$.00 & $+$.05 & $+$.01 & $+$.40\textsuperscript{*} & 2/4 \\
+Qwen 14B & $+$.10 & $-$.11 & $-$.07 & $+$.32\textsuperscript{*} & 1/4 \\
+Ministral 14B & $-$.01 & $-$.19\textsuperscript{\dag} & $-$.01 & $+$.32\textsuperscript{*} & 1/4 \\
+ATT\&CK prior & $-$.61\textsuperscript{\dag*} & $-$.05 & $-$.30\textsuperscript{\dag} & $-$.92\textsuperscript{*} & 1/4 \\
+\bottomrule
+\end{tabular}
+\caption{Predictive fit: information gain over the uniform chain on each actor's own plan, in bits per transition. Bold: 95\% interval above zero; \dag: below zero (i.i.d.\ bootstrap over plan transitions, 10{,}000 resamples). *: the interval's status (above, spanning, or below zero) changes under a moving-block bootstrap with blocks of 2, 3, or 5 consecutive transitions that stay within one plan scenario and never wrap around (10{,}000 resamples each). Attr.: plans attributed to the right actor.}
+\label{tab:ig}
+\end{table}
