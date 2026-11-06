@@ -102,7 +102,7 @@ def main_tables(sc: dict) -> None:
     for a in A:
         L.append(f"{a} ({t2['R-F'][a]['truth_edges']}) & " + " & ".join(cell2(f, a) for f in ("R-F", "R-G", "R-Q", "R-M", "R-M3")) + r" \\")
     L += [r"\midrule", r" & \multicolumn{4}{c}{No report (B)} & \\", r"\cmidrule(lr){2-5}",
-          r" & Claude Opus & GPT-6 Astra & Qwen 14B & Ministral 14B & ATT\&CK prior \\", r"\midrule"]
+          r" & Claude Opus & GPT-6 Astra & Qwen 14B & Ministral 14B & ATT\&CK kernel \\", r"\midrule"]
     for a in A:
         L.append(f"{a} ({t2['R-F'][a]['truth_edges']}) & " + " & ".join(cell2(f, a) for f in ("B-F", "B-G", "B-Q", "B-M", "ATTK")) + r" \\")
     L += [r"\bottomrule", r"\end{tabular}",
@@ -116,10 +116,10 @@ def main_tables(sc: dict) -> None:
     rows = [("Report-conditioned (R)", None), ("Claude Opus", "R-F"), ("GPT-6 Astra", "R-G"), ("Qwen 14B", "R-Q"),
             (r"\quad sampled", "R-Q5"), ("Ministral 14B", "R-M"), (r"\quad sampled", "R-M5"), ("Ministral 3B", "R-M3"),
             ("No report (B)", None), ("Claude Opus", "B-F"), ("GPT-6 Astra", "B-G"), ("Qwen 14B", "B-Q"),
-            ("Ministral 14B", "B-M"), ("ATT\\&CK prior", "ATTK")]
+            ("Ministral 14B", "B-M"), ("ATT\\&CK kernel", "ATTK")]
     L = [r"% Table 3 (drop-in): 10,000 resamples; bold/dagger i.i.d.; * block bootstrap within segments",
          r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{4pt}", r"\begin{tabular}{@{}lccccc@{}}",
-         r"\toprule", r"Prior & APT29 & OilRig & Sandworm & menuPass & Attr. \\", r"\midrule"]
+         r"\toprule", r"Kernel & APT29 & OilRig & Sandworm & menuPass & Attr. \\", r"\midrule"]
     for lab, fam in rows:
         if fam is None:
             L.append(r"\multicolumn{6}{@{}l}{\emph{" + lab + r"}} \\")
@@ -164,7 +164,7 @@ def main_tables(sc: dict) -> None:
             [ivcell(rb[lab][a]["edge_f1"]["R_minus_B"]["ci95"], 3) + " & " + ivcell(rb[lab][a]["f1_over_chance"]["R_minus_B"]["ci95"], 2)
              + " & " + ivcell(rb[lab][a]["ig_bits"]["R_minus_B"]["ci95"], 2) for lab in ("F", "G")]) + r" \\")
     L += [r"\bottomrule", r"\end{tabular}",
-          r"\caption{Reading minus remembering (R $-$ B) for the two frontier models: raw edge-F1 ($\Delta$F1), "
+          r"\caption{Report-conditioned minus no-report kernels (R $-$ B) for the two frontier models: raw edge-F1 ($\Delta$F1), "
           r"F1 $\div$ exact chance ($\Delta$enrichment), and information gain in bits per transition ($\Delta$IG). "
           r"95\% intervals from resampling reports, and the model's runs where there are several, with the plan held fixed "
           r"(10{,}000 resamples); bold: clear, i.e.\ that interval and a leave-one-report-out jackknife both exclude zero. "
