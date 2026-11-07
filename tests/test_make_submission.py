@@ -23,3 +23,6 @@ def test_submission_uses_kit_preamble_and_drops_forbidden(tmp_path):
         assert bad not in out
     assert "\\bibliography{references}" in body and body.rstrip().endswith("\\end{document}")
     assert out.count("\\documentclass") == 1 and out.count("\\begin{document}") == 1
+    assert "\\input{" not in out                                  # single source file: tables inlined
+    for t in ("table2", "table3", "table5"):
+        assert (MS.TABLES / f"{t}.tex").read_text().rstrip("\n") in out

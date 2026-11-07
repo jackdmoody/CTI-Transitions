@@ -118,7 +118,7 @@ def main_tables(sc: dict) -> None:
             ("No report (B)", None), ("Claude Opus", "B-F"), ("GPT-6 Astra", "B-G"), ("Qwen 14B", "B-Q"),
             ("Ministral 14B", "B-M"), ("ATT\\&CK kernel", "ATTK")]
     L = [r"% Table 3 (drop-in): 10,000 resamples; bold/dagger i.i.d.; * block bootstrap within segments",
-         r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{4pt}", r"\begin{tabular}{@{}lccccc@{}}",
+         r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{3.5pt}", r"\begin{tabular}{@{}lccccc@{}}",
          r"\toprule", r"Kernel & APT29 & OilRig & Sandworm & menuPass & Attr. \\", r"\midrule"]
     for lab, fam in rows:
         if fam is None:
