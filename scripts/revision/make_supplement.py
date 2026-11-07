@@ -79,7 +79,8 @@ SECTIONS = [
        "(F1 $\\div$ chance) and $\\Delta$IG: the report-bootstrap and leave-one-report-out jackknife 95\\% intervals and "
        "whether the gap is clear (both exclude zero on the same side). For $\\Delta$IG, the paired interval from "
        "resampling plan transitions (i.i.d.\\ and blocks of 2/3/5 within scenarios) is also shown. B samples: number "
-       "of no-report generations averaged."),
+       "of no-report generations averaged. Ministral 3B is shown for completeness but not interpreted: without a report "
+       "it returned an empty list in 19 of 24 calls, so its gaps are measured against a nearly empty kernel."),
       ("s_table3_intervals_and_old_marks", "tab:s-t3-marks",
        "Information gain over uniform (main Table~3) with i.i.d.\\ 95\\% intervals (10,000 resamples), status under "
        "segment-respecting blocks of 2, 3 and 5, and the draft's earlier block marks (circular, crossing scenario "
