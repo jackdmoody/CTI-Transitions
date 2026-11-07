@@ -396,7 +396,7 @@ ok(S, "leaves the frontier kernels essentially unchanged", "no status change for
 ok(S, "the 14B models' structure result intact (same three actors", "same 3",
    {a for a in A if CF["H3 Q"][0][a] >= 80} == {a for a in A if q3[0][a] >= 80} and {a for a in A if CF["H3 M"][0][a] >= 80} == {a for a in A if m3[0][a] >= 80},
    (CF["H3 Q"], CF["H3 M"]), "claims.json ev_fragments")
-ok(S, "but Qwen 14B's Sandworm gap and Ministral 14B's OilRig likelihood advantage no longer exclude zero", "both not clear",
+ok(S, "but Qwen 14B's Sandworm gap and Ministral 14B's OilRig likelihood advantage are no longer clear", "both not clear",
    T5F("Q", "f1_over_chance")["Sandworm"][3] == "not clear" and T5F("M", "ig_bits")["OilRig"][3] == "not clear",
    (T5F("Q", "f1_over_chance")["Sandworm"], T5F("M", "ig_bits")["OilRig"]), "claims.json ev_fragments",
    "the bootstrap interval still excludes zero for Qwen Sandworm; the jackknife does not")
@@ -442,12 +442,14 @@ at = ce["ATTK"]["APT29"]
 ok(S, "($+0.76$ bits per transition, 95\\% interval $[0.50, 0.98]$)", "+0.76 [0.50, 0.98]", same("0.76", at["point"]) and same("0.50", at["iid"]["ci95"][0])
    and same("0.98", at["iid"]["ci95"][1]), (at["point"], at["iid"]["ci95"]), "final/case_a")
 aboveA = [k for k in ce if ce[k]["APT29"]["iid"]["status"] == "above"]
-ok(S, "the ATT\\&CK kernel is the only one clearly above uniform", "ATTK only (APT29 kernels)", aboveA == ["ATTK"], aboveA, "final/case_a",
-   "among APT29 kernels; the ATTK OilRig and menuPass kernels are also clearly above: "
-   + ", ".join(f"{k}/{a}" for k in ce for a in A[1:] if ce[k][a]["iid"]["status"] == "above"))
-ok(S, "while the extracted chains sit at or below zero", "APT29 R/B points <= ~0", all(ce[k]["APT29"]["point"] < 0.02 for k in ce if k != "ATTK"),
-   {k: round(ce[k]["APT29"]["point"], 3) for k in ce if k != "ATTK"}, "final/case_a",
-   "max over other actors' extracted kernels: " + f"{max(ce[k][a]['point'] for k in ce if k != 'ATTK' for a in A):+.2f}")
+ok(S, "among the APT29 kernels, only the ATT\\&CK kernel is clearly above uniform", "ATTK only (APT29 kernels)", aboveA == ["ATTK"], aboveA, "final/case_a")
+aboveO = [f"{k}/{a}" for k in ce for a in A[1:] if ce[k][a]["iid"]["status"] == "above"]
+ok(S, "the OilRig and menuPass ATT\\&CK kernels are too, so the gain is not actor-specific", "ATTK/OilRig, ATTK/menuPass above",
+   {"ATTK/OilRig", "ATTK/menuPass"} <= set(aboveO), aboveO, "final/case_a")
+ok(S, "only the ATT\\&CK frequency kernels beat uniform", "no non-ATTK kernel above, any actor",
+   all(x.startswith("ATTK/") for x in aboveO) and aboveA == ["ATTK"], ["ATTK/APT29"] + aboveO, "final/case_a")
+ok(S, "the extracted APT29 chains sit at or below zero", "APT29 R/B points <= ~0", all(ce[k]["APT29"]["point"] < 0.02 for k in ce if k != "ATTK"),
+   {k: round(ce[k]["APT29"]["point"], 3) for k in ce if k != "ATTK"}, "final/case_a")
 for lab, an, p, l_, h_ in (("R-F", "Claude Opus $-0.12$ $[-0.34, 0.10]$", "-0.12", "-0.34", "0.10"),
                            ("R-G", "GPT-6 Astra $-0.04$ $[-0.28, 0.19]$", "-0.04", "-0.28", "0.19")):
     x = ce[lab]["APT29"]
