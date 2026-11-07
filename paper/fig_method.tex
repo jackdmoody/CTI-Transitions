@@ -96,7 +96,7 @@
 
 % ---------------- scoring (column 5) ----------------
 \node[box, fill=black!10, minimum width=4.7cm, minimum height=3.35cm] (score) at (15.2,1.95) {};
-\node[det, anchor=north] at ($(score.north)+(0,-0.05)$) {\footnotesize\hd{Score each prior against $g$}};
+\node[det, anchor=north] at ($(score.north)+(0,-0.05)$) {\footnotesize\hd{Score each kernel against $g$}};
 \node[anchor=north west, font=\scriptsize, align=left, inner sep=0pt] at ($(score.north west)+(0.14,-0.48)$) {%
   \textbf{Support:} edge-F1 $\div$ size-matched chance\\[2pt]
   \textbf{Fit:} $\mathrm{IG}=\frac{1}{L}\sum_t \log_2 13\,\hat P_a(g_{t-1},g_t)$\\[-1pt]
@@ -105,7 +105,7 @@
   \textcolor{cR}{\textbf{R}} vs \textcolor{cB}{\textbf{B}}: with vs without reports (H2)\\[-0.5pt]
   F vs G: a second vendor\\[-0.5pt]
   F vs Q, M, M3: model size (H3)\\[-0.5pt]
-  each prior vs every plan: specificity (H4)};
+  each kernel vs every plan: specificity (H4)};
 
 \node[box, dashed, fill=white, text width=3.5cm, minimum height=0.8cm, font=\scriptsize] (detn) at (15.7,-1.0)
   {IG: average log-score change over uniform per transition (Eq.~3); case studies on OTRF and OpTC};

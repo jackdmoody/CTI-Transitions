@@ -118,7 +118,7 @@ slide.addText('leakage wall: the 204 links the plans cite are excluded from the 
 
 // ---------------- scoring ----------------
 rbox('score', box(15.2, 1.95, 4.7, 3.35), [R('')], gray(10));
-slide.addText([R('Score each prior against ', { bold: true }), R('g', { bold: true, italic: true })],
+slide.addText([R('Score each kernel against ', { bold: true }), R('g', { bold: true, italic: true })],
   Object.assign({}, base, { objectName: 'score-title', x: X(12.85), y: Y(3.6), w: 4.7*S, h: 0.42*S, fontSize: F_HEAD, align: 'center', valign: 'middle', margin: 0 }));
 slide.addText([
   R('Support: ', { bold: true }), R('edge-F1 ÷ size-matched chance', { breakLine: true }),
@@ -131,7 +131,7 @@ slide.addText([
   R('R', { bold: true, color: cR }), R(' vs '), R('B', { bold: true, color: cB }), R(': with vs without reports (H2)', { breakLine: true }),
   R('F vs G: a second vendor', { breakLine: true }),
   R('F vs Q, M, M3: model size (H3)', { breakLine: true }),
-  R('each prior vs every plan: specificity (H4)'),
+  R('each kernel vs every plan: specificity (H4)'),
 ], Object.assign({}, base, { objectName: 'score-body', x: X(12.99), y: Y(3.17), w: 4.5*S, h: 2.75*S, fontSize: F_BODY, align: 'left', valign: 'top', margin: 0, lineSpacingMultiple: 1.0 }));
 
 rbox('detector-link', box(15.7, -1.0, 3.75, 1.0), [R("IG: average log-score change over uniform per transition (Eq. 3); case studies on OTRF and OpTC")], 'FFFFFF', { dash: 'dash' });
