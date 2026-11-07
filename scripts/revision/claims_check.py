@@ -140,6 +140,15 @@ for t in ("table2", "table3", "table5"):
     d = REPO / "docs" / "revision" / "tables" / f"{t}.tex"
     ok("Tables", f"[table] paper/tables/{t}.tex", "file", p.read_bytes() == s.read_bytes() == d.read_bytes(),
        "identical to final/main and docs/revision/tables", str(s.relative_to(REPO)))
+# Table 5 caption: the report-bootstrap intervals sit below the point for dIG (all frontier cells), not for enrichment
+_cap = "For $\\Delta$IG, these intervals tended to sit below the point estimate"
+_below = lambda d: {a: d[a][0] - d[a][1][0] > d[a][1][1] - d[a][0] for a in A}
+_ig = {l: _below(T5(l, "ig_bits")) for l in ("F", "G")}
+_en = {l: _below(T5(l, "f1_over_chance")) for l in ("F", "G")}
+ok("Tables", "[table5 caption] " + _cap, "dIG: all below; enrichment: mixed",
+   _cap in (REPO / "paper" / "tables" / "table5.tex").read_text() and all(all(v.values()) for v in _ig.values())
+   and len({x for v in _en.values() for x in v.values()}) == 2, {"ig": _ig, "enrichment": _en}, CJ,
+   "below = point closer to the upper bound than to the lower")
 import scripts.revision.make_supplement as MS  # noqa: E402
 
 _tmp = REPO / "results" / "revision" / "final" / "_supplement_rebuild.tex"
@@ -329,12 +338,17 @@ ef = {lab: T5(lab, "edge_f1") for lab in ("F", "G", "Q", "M")}
 ok(S, "On raw edge-F1, the report-conditioned kernel scores higher for every actor except menuPass under Claude Opus and GPT-6 Astra, and for every actor under both 14B models",
    "F,G: + + + -; Q,M: all +", all(ef[l][a][0] > 0 for l in ("F", "G") for a in A[:3]) and all(ef[l]["menuPass"][0] < 0 for l in ("F", "G"))
    and all(ef[l][a][0] > 0 for l in ("Q", "M") for a in A), {l: [ef[l][a][0] for a in A] for l in ef}, CJ)
+efc = {l: clear_above(T5(l, "edge_f1")) for l in ("F", "G")}
+ok(S, "(clearly for OilRig under both frontier models and for APT29 under GPT-6 Astra)", "F: OilRig; G: APT29, OilRig",
+   efc == {"F": ["OilRig"], "G": ["APT29", "OilRig"]}, efc, CJ,
+   "positive clear dF1 (Table 5 bold); local models with a clear positive dF1 in S18, not stated: "
+   + ", ".join(f"{l}/{a}" for l in ("Q", "Q5", "M", "M5", "M3") for a in clear_above(T5(l, "edge_f1"))))
 rng(S, "(1.2--3.3 times as many;", "1.2--3.3", *C["R/B edges (F,Q,M)"], CJ)
 rng(S, "3.6--5.4 times for GPT-6 Astra)", "3.6--5.4", *C["R/B edges (G)"], CJ)
 ok(S, "the reports clearly help only for OilRig under Claude Opus, for no actor under GPT-6 Astra, and for Sandworm under Qwen 14B and OilRig under Ministral 14B",
    "F OilRig; G none; Q Sandworm; M OilRig", enr == {"F": ["OilRig"], "G": [], "Q": ["Sandworm"], "M": ["OilRig"]}, enr, CJ)
 apt = {l: T5(l, "f1_over_chance")["APT29"][1] for l in ("F", "G", "Q", "Q5", "M", "M5")}
-ok(S, "every APT29 interval spans zero", "all span", all(spans0(v) for v in apt.values()), apt, CJ, "report-bootstrap intervals; M3 undefined (B empty)")
+ok(S, "every APT29 enrichment interval spans zero", "all span", all(spans0(v) for v in apt.values()), apt, CJ, "report-bootstrap intervals; M3 undefined (B empty)")
 mp = {l: T5(l, "f1_over_chance")["menuPass"] for l in ("F", "G")}
 ok(S, "On menuPass, the comparison reverses for both frontier models", "F, G < 0", mp["F"][0] < 0 and mp["G"][0] < 0, {l: v[0] for l, v in mp.items()}, CJ)
 ok(S, "GPT-6 Astra's gap is clear (jackknife", "clear", mp["G"][3] == "below", mp["G"][3], CJ)
