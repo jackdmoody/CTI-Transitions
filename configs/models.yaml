@@ -68,6 +68,9 @@ open_weight:
     options: {temperature: 0, num_ctx: 16384}
     sampled: {options: {temperature: 0.15, num_ctx: 16384}, seeds: [0, 1, 2, 3, 4]}
   S_qwen3_14b:  # S-Q, the pre-registered S (was slot S); runs a53c21c (pre-fix) and a686409 (post-fix)
+    # The paper's Qwen3 14B kernels (Q, Q5) are run 20261027T223928Z-extraction-a686409, made with
+    # configs/extraction_S.yaml while this pin was slot S (slot S is now Ministral 3 14B). This pin is unchanged
+    # from that run; `think` is sent as a top-level request field, so calls.jsonl logs it outside `options`.
     tag: qwen3:14b
     ollama_id: bdbd181c33f2
     weights_sha256: a8cc1361f3145dc01f6d77c6c82c9116b9ffe3c97b34716fe20418455876c40e

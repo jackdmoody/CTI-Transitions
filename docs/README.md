@@ -3,6 +3,8 @@
 What each file is. Older files say *prior* for a kernel and *memory* for the no-report condition B; the paper's
 terms are in the top-level [README](../README.md).
 
+`CLAUDE.md`, which older docs mention, was the coding agent's instruction file; it is not published.
+
 ## Records of the study
 
 | File | What |

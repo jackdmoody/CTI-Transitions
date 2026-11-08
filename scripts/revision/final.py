@@ -13,8 +13,10 @@ Writes results/revision/final/:
   supplement/*.{csv,tex}                                                 local-model Table 5, old circular marks,
                                                                          3a-3g, sensitivity tables, evidence shares,
                                                                          H3 under filtering, Sigma crosswalk
-The draft-settings record (Monte Carlo chance, 1,000 / 2,000 resamples, circular block marks) stays in
-results/revision/{sensitivity,phase3,tables}/ as written at c701c77; it supplies the 'old' values.
+The draft-settings record (Monte Carlo chance, 1,000 / 2,000 resamples) stays in
+results/revision/{sensitivity,phase3,tables}/ as written at c701c77; it is a record only and is not read here.
+The supplement's 'old' circular block marks come from OLD_BLOCK_RUN (configs/ig_dependence.yaml); the case-B
+'draft' intervals come from scripts/revision/case_b_final.py.
 """
 from __future__ import annotations
 
@@ -165,7 +167,7 @@ def main_tables(sc: dict) -> None:
 
 # ----------------------------------------------------------------------------- supplement
 
-def supplement(scs: dict, draft: dict, cfg: dict) -> dict:
+def supplement(scs: dict, cfg: dict) -> dict:
     sc = scs["adopted"]
     refs = {a: R.reference(a) for a in A}
     out = {}
@@ -366,16 +368,15 @@ def main() -> int:
         scs[key] = R.scorecard(cfg, variant, filt)
         f.write_text(json.dumps(scs[key], indent=1, default=float))
         print("scored", key, flush=True)
-    draft = json.loads((REPO / "results" / "revision" / "sensitivity" / "base.json").read_text())
     main_tables(scs["adopted"])
-    extra = supplement(scs, draft, cfg)
+    extra = supplement(scs, cfg)
     cl = {k: claims(v) for k, v in scs.items()}
     (OUT / "claims.json").write_text(json.dumps(cl, indent=1, default=str))
     (OUT / "phase3.json").write_text(json.dumps(extra, indent=1, default=float))
     (OUT / ("config_tables.yaml" if tables_only else "config.yaml")).write_text(yaml.safe_dump({
         "script": "scripts/revision/final.py", **provenance(), "tables_only": tables_only, "settings": R.SETTINGS, "priors": cfg["priors"],
         "scenarios": {k: {"variant": v, "filter": f} for k, (v, f) in SCENARIOS.items()},
-        "seeds": [R.SEED], "draft_record": "results/revision/sensitivity/base.json (c701c77)",
+        "seeds": [R.SEED],
         "old_block_run": str(OLD_BLOCK_RUN.relative_to(REPO))}, sort_keys=False))
     print("case B:", extra["case_b"])
     return 0

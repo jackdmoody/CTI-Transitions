@@ -103,6 +103,14 @@ DRIFT's `setup_env.py` in this environment.
 Open-weight models run in Ollama 0.40.10 with the digests and Modelfiles pinned in
 `configs/models.yaml` and `configs/modelfiles/`.
 
+Qwen3 14B, as used in the paper: run `20261027T223928Z-extraction-a686409`, made with `configs/extraction_S.yaml`
+at commit `a686409`, when slot `S` was Qwen (slot `S` is now Ministral 3 14B; the same pin is kept as slot
+`S_qwen3_14b`). Ollama tag `qwen3:14b`, `ollama_id` `bdbd181c33f2`, weights sha256
+`a8cc1361f3145dc01f6d77c6c82c9116b9ffe3c97b34716fe20418455876c40e` (14.8B, Q4_K_M), `think: false`, `num_ctx`
+16384. Q (temperature 0): options `{temperature: 0, num_ctx: 16384}`. Q5 (five samples): options `{num_ctx: 16384}`
+with seeds 0–4 and the digest's default sampling (temperature 0.6, top_k 20, top_p 0.95, repeat_penalty 1). To
+rerun it, check out `a686409` (or point slot `S` at the `S_qwen3_14b` values) and run `configs/extraction_S.yaml`.
+
 ## Reproducing the results
 
 Every `ctit.run` command writes `results/<UTC timestamp>-<experiment>-<git sha>/{config.yaml, metrics.json, calls.jsonl}`
@@ -158,9 +166,9 @@ python scripts/revision/make_supplement.py # paper/w2_aics_supplement.tex
 python scripts/revision/claims_check.py    # every number in the paper against its source
 ```
 
-`final.py` also reads `results/revision/sensitivity/base.json`, the pre-revision record that fills the
-supplement's "draft"/"old" columns; it was written at commit `c701c77` by scripts since removed (check out that
-commit to regenerate it).
+`final.py` does not need the pre-revision record `results/revision/sensitivity/base.json` (written at `c701c77` by
+scripts since removed). The supplement's "old" circular block marks come from the `configs/ig_dependence.yaml`
+run, and the case-B "draft" intervals from `case_b_final.py`.
 
 Run-specific inputs (the extraction run IDs each analysis reads) are set in the configs; after a
 fresh extraction, point them at the new run IDs.

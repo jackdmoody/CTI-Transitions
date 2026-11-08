@@ -28,6 +28,7 @@ import pandas as pd
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+UNIFIED_MEMORY_GB = 24  # extraction machine: Apple M5 Pro, 24 GB unified memory (Ollama, Metal backend)
 TEX = ROOT / "paper" / "w2_aics_draft.tex"
 OUT = ROOT / "paper" / "number_audit.csv"
 PT = "results/paper_tables"
@@ -289,8 +290,8 @@ num(S, "we use the pre-registered $\\alpha=0.5$", "0.5", al, "configs/extraction
 cnt(S, "so each extraction runs five times", 5, MOD["frontier"]["F"]["samples"], "configs/models.yaml", "frontier.F.samples")
 add(S, "Effort is pinned at \\emph{high}", "high", MOD["frontier"]["F"]["options"]["effort"], "configs/models.yaml",
     "frontier.F.options.effort", "yes" if MOD["frontier"]["F"]["options"]["effort"] == "high" else "no")
-gb, gbf = dline("CLAUDE.md", r"(\d+)\s*GB")
-num(S, "24\\,GB of unified memory", "24", int(gb.group(1)) if gb else None, "CLAUDE.md", gbf, note="hardware; from project doc")
+num(S, "24\\,GB of unified memory", "24", UNIFIED_MEMORY_GB, "scripts/number_audit.py", "UNIFIED_MEMORY_GB",
+    note="hardware (Apple M5 Pro); was read from CLAUDE.md, which is not published")
 nc = MOD["open_weight"]["S"]["options"]["num_ctx"]
 add(S, "with 16k context", "16k", str(nc), "configs/models.yaml", "open_weight.{S,S_3B,S_qwen3_14b}.options.num_ctx",
     "yes" if all(MOD["open_weight"][k]["options"]["num_ctx"] == 16384 for k in ("S", "S_3B", "S_qwen3_14b")) else "no",
