@@ -136,6 +136,9 @@ def body(name: str) -> str:
     lines = (SUPP / f"{name}.tex").read_text().splitlines()
     lines = [l for l in lines if not l.lstrip().startswith("%")]
     s = "\n".join(lines).replace("—", "--")
+    # the paper calls these "kernels", not "priors": relabel the generated header cells (results files unchanged)
+    s = re.sub(r"^Prior & Prior actor & ", "Kernel & Kernel actor & ", s, flags=re.M)
+    s = re.sub(r"^Prior & ", "Kernel & ", s, flags=re.M)
     if re.search(r"[^\x00-\x7F]", s):
         raise ValueError(f"non-ASCII left in {name}")
     return s

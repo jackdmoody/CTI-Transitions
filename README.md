@@ -1,15 +1,35 @@
 # CTI-Transitions (W2)
 
-Code for *Reading or Remembering? LLM-Compiled Threat Intelligence as Adversary Behavior Models*
+Code for *Beyond CTI Reporting: Evaluating LLM-Compiled Threat Intelligence as Adversary Behavior Models*
 (AICS @ AAAI-27). A language model compiles threat-intelligence reports into ATT&CK tactic-transition
 priors (Markov chains, Eq. 1 of the paper), which are scored against MITRE emulation-plan ground truth
 and in two case studies on public telemetry. The authoritative plan is `docs/W2_EXPERIMENT_SPEC.md`;
 every deviation and post hoc analysis is logged in `docs/SPEC_ISSUES.md`.
 
-Repository: <!-- URL left blank until release -->
+Repository: https://github.com/jackdmoody/CTI-Transitions
 
 Only public data is used. Nothing under `data/`, `results/` or `audit/` is in git: telemetry, report
 text and model outputs are regenerated locally from the pinned sources below.
+
+## Paper materials
+
+- Supplement (all supplementary tables): [`paper/w2_aics_supplement.pdf`](paper/w2_aics_supplement.pdf),
+  source [`paper/w2_aics_supplement.tex`](paper/w2_aics_supplement.tex).
+- Prompts, frozen before the first full extraction run: [`prompts/extract_v1.txt`](prompts/extract_v1.txt)
+  (report-conditioned extraction, R) and [`prompts/memory_v1.txt`](prompts/memory_v1.txt) (no-report baseline, B).
+- Figure 1 source: [`paper/fig_method.tex`](paper/fig_method.tex) (standalone TikZ; `pdflatex` builds
+  `paper/fig_method.pdf`) and the editable [`paper/fig_method.pptx`](paper/fig_method.pptx).
+- Paper source: [`paper/w2_aics_submission.tex`](paper/w2_aics_submission.tex), with Tables 2, 3 and 5 inlined
+  from [`paper/tables/`](paper/tables/). It compiles with the AAAI-27 author kit's `aaai2027.sty`/`aaai2027.bst`
+  (not redistributed here).
+- Scripts that rebuild the tables (no model calls; they read the cached extractions under `results/`):
+  - [`scripts/revision/final.py`](scripts/revision/final.py): Tables 2, 3 and 5 and every supplementary
+    table, under the adopted settings (exact chance, 10,000 resamples, seed 20261105);
+  - [`scripts/revision/case_a_final.py`](scripts/revision/case_a_final.py) and
+    [`scripts/revision/case_b_final.py`](scripts/revision/case_b_final.py): the two case studies;
+  - [`scripts/revision/make_supplement.py`](scripts/revision/make_supplement.py): assembles the supplement;
+  - [`scripts/revision/claims_check.py`](scripts/revision/claims_check.py): checks every number in the paper
+    against its source.
 
 ## Setup from a clean checkout
 

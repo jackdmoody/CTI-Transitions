@@ -106,9 +106,7 @@ def main_tables(sc: dict) -> None:
     for a in A:
         L.append(f"{a} ({t2['R-F'][a]['truth_edges']}) & " + " & ".join(cell2(f, a) for f in ("B-F", "B-G", "B-Q", "B-M", "ATTK")) + r" \\")
     L += [r"\bottomrule", r"\end{tabular}",
-          r"\caption{Support recovery: edge-F1 against each plan, with F1 $\div$ chance in parentheses. Chance is the "
-          r"exact expected edge-F1 of a random edge set of the same size (hypergeometric over the 182 edges), so "
-          r"F1 $\div$ chance $=$ TP$/$E[TP]. API models are means of five runs. Compare ratios within a row, not across rows.}",
+          r"\caption{Support recovery. Edge-F1 against each plan, with F1 $\div$ exact chance in parentheses. API models are means of five runs. Compare ratios within a row.}",
           r"\label{tab:recovery}", r"\end{table*}"]
     (MAIN / "table2.tex").write_text("\n".join(L) + "\n")
 
@@ -128,11 +126,7 @@ def main_tables(sc: dict) -> None:
         if fam == "ATTK":
             pass
     L += [r"\bottomrule", r"\end{tabular}",
-          r"\caption{Predictive fit: information gain over the uniform chain on each actor's own plan, in bits per "
-          r"transition. Bold: 95\% interval above zero; \dag: below zero (i.i.d.\ bootstrap over plan transitions, "
-          r"10{,}000 resamples). *: the interval's status (above, spanning, or below zero) changes under a moving-block "
-          r"bootstrap with blocks of 2, 3, or 5 consecutive transitions that stay within one plan scenario and never "
-          r"wrap around (10{,}000 resamples each). Attr.: plans attributed to the right actor.}",
+          r"\caption{Predictive fit. Information gain over the uniform chain on each actor's own plan, in bits per transition. Bold and \dag{} mark 95\% intervals above and below zero, and * a status change under block resampling (see Metrics). Attr.\ counts correct attributions.}",
           r"\label{tab:ig}", r"\end{table}"]
     (MAIN / "table3.tex").write_text("\n".join(L) + "\n")
 
@@ -164,13 +158,7 @@ def main_tables(sc: dict) -> None:
             [ivcell(rb[lab][a]["edge_f1"]["R_minus_B"]["ci95"], 3) + " & " + ivcell(rb[lab][a]["f1_over_chance"]["R_minus_B"]["ci95"], 2)
              + " & " + ivcell(rb[lab][a]["ig_bits"]["R_minus_B"]["ci95"], 2) for lab in ("F", "G")]) + r" \\")
     L += [r"\bottomrule", r"\end{tabular}",
-          r"\caption{Report-conditioned minus no-report kernels (R $-$ B) for the two frontier models: raw edge-F1 ($\Delta$F1), "
-          r"F1 $\div$ exact chance ($\Delta$enrichment), and information gain in bits per transition ($\Delta$IG). "
-          r"95\% intervals from resampling reports, and the model's runs where there are several, with the plan held fixed "
-          r"(10{,}000 resamples); bold: clear, i.e.\ that interval and a leave-one-report-out jackknife both exclude zero. "
-          r"For $\Delta$IG, these intervals tended to sit below the point estimate, because a resample repeats some reports "
-          r"and omits others; the jackknife guards against that. Refs.: ATT\&CK group-page references, the coverage proxy. Local models, and "
-          r"$\Delta$IG intervals from resampling plan transitions, are in the supplement.}",
+          r"\caption{R $-$ B for the frontier models in raw edge-F1, F1 $\div$ exact chance, and IG (bits per transition), with 95\% intervals from 10{,}000 resamples of reports. Bold marks a clear gap, whose jackknife interval also excludes zero. Refs.\ counts ATT\&CK group-page references.}",
           r"\label{tab:h2}", r"\end{table*}"]
     (MAIN / "table5.tex").write_text("\n".join(L) + "\n")
 

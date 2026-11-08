@@ -74,7 +74,7 @@ Ministral 3B sampled & menuPass & 5 & 151 & 45.7\% & 54.3\% & 204 & 54.4\% & 64.
 \supptable{tab:s-evf-t2}{Fragment-aware evidence filter: support recovery (cf.\ main Table~2). Edge-F1, F1 $\div$ chance (exact), and percentile against chance, adopted vs.\ filtered.}{%
 \begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-Prior & Actor & GT edges & F1 adopted & F1 & F1/chance adopted & F1/chance & pct adopted & pct \\
+Kernel & Actor & GT edges & F1 adopted & F1 & F1/chance adopted & F1/chance & pct adopted & pct \\
 \midrule
 R-F & APT29 & 28 & 0.371 & 0.371 & +1.99 & +1.99 & 99.8 & 99.8 \\
 R-F & OilRig & 15 & 0.396 & 0.396 & +3.23 & +3.23 & 100.0 & 100.0 \\
@@ -109,7 +109,7 @@ R-M3 & menuPass & 6 & 0.229 & 0.300 & +4.18 & +6.50 & 99.7 & 99.7 \\
 \supptable{tab:s-evf-t3}{Fragment-aware evidence filter: information gain over uniform (cf.\ main Table~3), with i.i.d.\ 95\% intervals (10,000 resamples of plan transitions), status, and segment-block marks (*), adopted vs.\ filtered.}{%
 \begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-Prior & Plan & IG adopted & IG & i.i.d. 95\% & status adopted & status & * adopted & * \\
+Kernel & Plan & IG adopted & IG & i.i.d. 95\% & status adopted & status & * adopted & * \\
 \midrule
 R-F & APT29 & +.11 & +.11 & [-0.13, +0.37] & spans & spans &  &  \\
 R-F & OilRig & +.62 & +.62 & [+0.17, +1.04] & above & above &  &  \\
@@ -188,7 +188,7 @@ Ministral 3B & menuPass & +0.229 & +0.300 & [+0.000, +0.429] & [-0.212, +0.812] 
 \supptable{tab:s-evs-t2}{Strict whole-span evidence filter: support recovery (cf.\ main Table~2).}{%
 \begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-Prior & Actor & GT edges & F1 adopted & F1 & F1/chance adopted & F1/chance & pct adopted & pct \\
+Kernel & Actor & GT edges & F1 adopted & F1 & F1/chance adopted & F1/chance & pct adopted & pct \\
 \midrule
 R-F & APT29 & 28 & 0.371 & 0.360 & +1.99 & +1.95 & 99.8 & 99.6 \\
 R-F & OilRig & 15 & 0.396 & 0.391 & +3.23 & +3.19 & 100.0 & 100.0 \\
@@ -223,7 +223,7 @@ R-M3 & menuPass & 6 & 0.229 & 0.222 & +4.18 & +5.06 & 99.7 & 97.2 \\
 \supptable{tab:s-evs-t3}{Strict whole-span evidence filter: information gain (cf.\ main Table~3).}{%
 \begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-Prior & Plan & IG adopted & IG & i.i.d. 95\% & status adopted & status & * adopted & * \\
+Kernel & Plan & IG adopted & IG & i.i.d. 95\% & status adopted & status & * adopted & * \\
 \midrule
 R-F & APT29 & +.11 & +.08 & [-0.16, +0.34] & spans & spans &  &  \\
 R-F & OilRig & +.62 & +.62 & [+0.16, +1.06] & above & above &  &  \\
@@ -343,7 +343,7 @@ Two alternative readings of the plans, each scored with the same kernels. Varian
 \supptable{tab:s-varB-t2}{Variant B (menuPass optional steps as separate segments; four edges): support recovery, adopted vs.\ variant.}{%
 \begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-Prior & Actor & GT edges & F1 adopted & F1 & F1/chance adopted & F1/chance & pct adopted & pct \\
+Kernel & Actor & GT edges & F1 adopted & F1 & F1/chance adopted & F1/chance & pct adopted & pct \\
 \midrule
 R-F & APT29 & 28 & 0.371 & 0.371 & +1.99 & +1.99 & 99.8 & 99.8 \\
 R-F & OilRig & 15 & 0.396 & 0.396 & +3.23 & +3.23 & 100.0 & 100.0 \\
@@ -398,7 +398,7 @@ ATTK & menuPass & 4 & 0.069 & 0.053 & +1.10 & +1.24 & 60.5 & 69.4 \\
 \supptable{tab:s-varB-t3}{Variant B: information gain over uniform, adopted vs.\ variant.}{%
 \begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-Prior & Plan & IG adopted & IG & i.i.d. 95\% & status adopted & status & * adopted & * \\
+Kernel & Plan & IG adopted & IG & i.i.d. 95\% & status adopted & status & * adopted & * \\
 \midrule
 R-F & APT29 & +.11 & +.11 & [-0.13, +0.37] & spans & spans &  &  \\
 R-F & OilRig & +.62 & +.62 & [+0.17, +1.04] & above & above &  &  \\
@@ -502,7 +502,7 @@ Ministral 3B & menuPass & +0.229 & +0.182 & [+0.000, +0.300] & [-0.113, +0.477] 
 \supptable{tab:s-varA-t2}{Variant A (split at every Linux/Windows handoff): support recovery, adopted vs.\ variant.}{%
 \begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-Prior & Actor & GT edges & F1 adopted & F1 & F1/chance adopted & F1/chance & pct adopted & pct \\
+Kernel & Actor & GT edges & F1 adopted & F1 & F1/chance adopted & F1/chance & pct adopted & pct \\
 \midrule
 R-F & APT29 & 28 & 0.371 & 0.371 & +1.99 & +1.99 & 99.8 & 99.8 \\
 R-F & OilRig & 12 & 0.396 & 0.310 & +3.23 & +3.00 & 100.0 & 99.9 \\
@@ -557,7 +557,7 @@ ATTK & menuPass & 6 & 0.069 & 0.069 & +1.10 & +1.10 & 60.5 & 60.5 \\
 \supptable{tab:s-varA-t3}{Variant A: information gain over uniform, adopted vs.\ variant.}{%
 \begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-Prior & Plan & IG adopted & IG & i.i.d. 95\% & status adopted & status & * adopted & * \\
+Kernel & Plan & IG adopted & IG & i.i.d. 95\% & status adopted & status & * adopted & * \\
 \midrule
 R-F & APT29 & +.11 & +.11 & [-0.13, +0.37] & spans & spans &  &  \\
 R-F & OilRig & +.62 & +.61 & [+0.07, +1.12] & above & above &  & * \\
@@ -699,7 +699,7 @@ Sigma tag & Frozen tactic & Release & Mapper & Frozen v3 & Decides (v3) \\
 \supptable{tab:s-enrich}{F1 $\div$ chance computed exactly (hypergeometric over the 182 edges) and checked against the identity F1 $\div$ chance $=$ precision $\div$ ($|E_g|/182$) for every kernel.}{%
 \begin{tabular}{@{}llrrrrr@{}}
 \toprule
-Prior & Plan & edge-F1 & exact chance F1 & TP/E[TP] & precision/(|Eg|/182) & exact percentile \\
+Kernel & Plan & edge-F1 & exact chance F1 & TP/E[TP] & precision/(|Eg|/182) & exact percentile \\
 \midrule
 R-F & APT29 & 0.371 & 0.1867 & 1.989 & 1.989 & 99.8 \\
 R-F & OilRig & 0.396 & 0.1226 & 3.232 & 3.232 & 100.0 \\
@@ -847,7 +847,7 @@ Ministral 3B & menuPass & 1 & +0.229 & [+0.083, +0.308] & [-0.038, +0.495] & not
 \supptable{tab:s-t3-marks}{Information gain over uniform (main Table~3) with i.i.d.\ 95\% intervals (10,000 resamples), status under segment-respecting blocks of 2, 3 and 5, and the draft's earlier block marks (circular, crossing scenario boundaries), kept for comparison.}{%
 \begin{tabular}{@{}llrrrrrrrrr@{}}
 \toprule
-Prior & Plan & IG & i.i.d. 95\% & block b=2 & block b=3 & block b=5 & status i.i.d. $\to$ b=2/3/5 & * (adopted) & old circular b=2/3/5 (draft, 2,000) & old * (draft) \\
+Kernel & Plan & IG & i.i.d. 95\% & block b=2 & block b=3 & block b=5 & status i.i.d. $\to$ b=2/3/5 & * (adopted) & old circular b=2/3/5 (draft, 2,000) & old * (draft) \\
 \midrule
 R-F & APT29 & +.11 & [-0.13, +0.37] & [-0.13, +0.40] & [-0.14, +0.40] & [-0.13, +0.40] & spans $\to$ spans/spans/spans &  & spans/spans/spans &  \\
 R-F & OilRig & +.62 & [+0.17, +1.04] & [+0.17, +0.96] & [+0.22, +0.91] & [+0.30, +0.93] & above $\to$ above/above/above &  & above/above/above &  \\
@@ -907,7 +907,7 @@ ATTK & menuPass & -.92 & [-2.99, +0.38] & [-2.78, +0.15] & [-2.07, +0.23] & [-1.
 \supptable{tab:s-case-a}{Case study A (OTRF recording of the APT29 emulation; 37 transitions, 22 edges): information gain over uniform with i.i.d.\ 95\% intervals (10,000 resamples) and block status, and support recovery against the executed sequence (exact chance). The executed sequence matches the plan at 2.07$\times$ chance.}{%
 \begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-Prior & Prior actor & IG & i.i.d. 95\% & status & block b=2/3/5 & edge-F1 & F1/chance (exact) & pct (exact) \\
+Kernel & Kernel actor & IG & i.i.d. 95\% & status & block b=2/3/5 & edge-F1 & F1/chance (exact) & pct (exact) \\
 \midrule
 R-F & APT29 & -.12 & [-0.34, +0.10] & spans & spans/spans/spans & 0.233 & 1.45 & 85.7 \\
 R-F & OilRig & -.10 & [-0.38, +0.19] & spans & spans/spans/spans & 0.232 & 1.44 & 87.6 \\

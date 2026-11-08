@@ -3,7 +3,8 @@
     python scripts/revision/claims_check.py
 
 Checks, in order:
-  1. Tables 2, 3, 5 (paper/tables/) are byte-identical to results/revision/final/main/, and the supplement
+  1. Tables 2, 3, 5 (paper/tables/) are byte-identical to docs/revision/tables/, appear verbatim in the paper, and match
+     results/revision/final/main/ in every line but the caption (the final captions were shortened in Overleaf), and the supplement
      (paper/w2_aics_supplement.tex) is byte-identical to a fresh build from results/revision/final/supplement/.
   2. The two inline tables (Table 1 actors, Table 4 specificity matrix).
   3. Every claim in the prose (anchor = exact substring of the .tex): numbers rounded half-up to the printed
@@ -32,14 +33,14 @@ import pandas as pd
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
-TEX = REPO / "paper" / "w2_aics_draft_REVISED_v2.tex"
+TEX = REPO / "paper" / "w2_aics_submission.tex"  # the final Overleaf source (tables inlined)
 SUPTEX = REPO / "paper" / "w2_aics_supplement.tex"
 FIN = REPO / "results" / "revision" / "final"
 OUT = FIN / "claims_check.csv"
 A = ["APT29", "OilRig", "Sandworm", "menuPass"]
 
 SRC = TEX.read_text()
-BODY = SRC[SRC.index("\\begin{abstract}"):SRC.index("\\bibliographystyle")]
+BODY = SRC[SRC.index("\\begin{abstract}"):SRC.index("\\bibliography{")]
 
 
 def J(p):
@@ -135,20 +136,14 @@ CJ = "results/revision/final/claims.json"
 SJ = "results/revision/final/scenarios/adopted.json"
 
 # =============================================================================== 1. generated tables
+_nocap = lambda b: re.sub(r"^\\caption\{.*$\n?", "", b.decode(), flags=re.M)
 for t in ("table2", "table3", "table5"):
     p, s = REPO / "paper" / "tables" / f"{t}.tex", FIN / "main" / f"{t}.tex"
     d = REPO / "docs" / "revision" / "tables" / f"{t}.tex"
-    ok("Tables", f"[table] paper/tables/{t}.tex", "file", p.read_bytes() == s.read_bytes() == d.read_bytes(),
-       "identical to final/main and docs/revision/tables", str(s.relative_to(REPO)))
-# Table 5 caption: the report-bootstrap intervals sit below the point for dIG (all frontier cells), not for enrichment
-_cap = "For $\\Delta$IG, these intervals tended to sit below the point estimate"
-_below = lambda d: {a: d[a][0] - d[a][1][0] > d[a][1][1] - d[a][0] for a in A}
-_ig = {l: _below(T5(l, "ig_bits")) for l in ("F", "G")}
-_en = {l: _below(T5(l, "f1_over_chance")) for l in ("F", "G")}
-ok("Tables", "[table5 caption] " + _cap, "dIG: all below; enrichment: mixed",
-   _cap in (REPO / "paper" / "tables" / "table5.tex").read_text() and all(all(v.values()) for v in _ig.values())
-   and len({x for v in _en.values() for x in v.values()}) == 2, {"ig": _ig, "enrichment": _en}, CJ,
-   "below = point closer to the upper bound than to the lower")
+    _body = "\n".join(l for l in p.read_text().splitlines() if not l.startswith("%"))
+    ok("Tables", f"[table] paper/tables/{t}.tex", "file",
+       p.read_bytes() == d.read_bytes() and _nocap(p.read_bytes()) == _nocap(s.read_bytes()) and _body in SRC,
+       "identical to docs/revision/tables; final/main except the caption; inlined verbatim in the paper", str(s.relative_to(REPO)))
 import scripts.revision.make_supplement as MS  # noqa: E402
 
 _tmp = REPO / "results" / "revision" / "final" / "_supplement_rebuild.tex"
@@ -200,7 +195,7 @@ ok(S, "although several uncertainty intervals include zero", "several",
    f"spanning: F {[a for a in A if C['T3 R-F'][a][1] == 'spans']}, G {[a for a in A if C['T3 R-G'][a][1] == 'spans']}", CJ)
 for lab in ("F", "G"):
     r, b = C[f"T2 R-{lab}"]["menuPass"], C[f"T2 B-{lab}"]["menuPass"]
-    ok(S, "for menuPass, no-report outputs have higher edge-F1 and precision enrichment without an established likelihood advantage",
+    ok(S, "For menuPass, no-report outputs have higher edge-F1 and precision enrichment without an established likelihood advantage",
        f"{lab}: B>R on F1 and enrichment; IG not clear", b[0] > r[0] and b[1] > r[1] and T5(lab, "ig_bits")["menuPass"][3] == "not clear",
        f"R {r[:2]} B {b[:2]}; dIG {T5(lab, 'ig_bits')['menuPass']}", CJ)
 q3, m3 = C["H3 Q"], C["H3 M"]
@@ -250,7 +245,7 @@ S = "Method"
 num(S, "$(1+\\alpha)/(1+(K-1)\\alpha)=0.20$", "0.20", cap(1), "(formula)")
 num(S, "(1.38 bits above uniform)", "1.38", math.log2(13 * cap(1)), "(formula)")
 npa = nrep.groupby("actor").size().to_dict()
-rng(S, "against 0.48--0.56 for report kernels built from five to seven reports", "0.48--0.56", cap(min(npa.values())), cap(max(npa.values())),
+rng(S, "Report kernels built from five to seven reports reach 0.48--0.56", "0.48--0.56", cap(min(npa.values())), cap(max(npa.values())),
     f"(formula; reports per actor {npa})")
 ok(S, "built from five to seven reports", "5-7", (min(npa.values()), max(npa.values())) == (5, 7), npa, "data/cti/manifest.csv")
 rng(S, "(2.64--2.85 bits)", "2.64--2.85", math.log2(13 * cap(5)), math.log2(13 * cap(7)), "(formula)")
@@ -269,8 +264,8 @@ _runs = {k: yaml.safe_load((REPO / "results" / r / "config.yaml").read_text())["
 from ctit.cti import extract as _ex, manifest as _mf
 _nch = sum(len(_ex.chunk((_mf.TEXT_DIR / f"{r['doc_id']}.txt").read_text())) for r in _mf.load()[1] if r["used_for"] == "prior")
 _tot = {k: 6 * (_nch * ("R" in c) + 4 * ("B" in c) + ("oracle" in c)) for k, c in _runs.items()}
-ok(S, "(each local total is six runs of 32 report chunks and four no-report calls, plus the OpTC red-team document for the 14B models)",
-   "Q 222, M 222, M3 216", _nch == 32 and _tot == {"Q": 222, "M": 222, "M3": 216}, {"report chunks": _nch, **_tot},
+ok(S, "40 of 222 calls still failed for Ministral 14B, 8 of 222 for Qwen 14B, 13 of 216 for Ministral 3B",
+   "totals: Q 222, M 222, M3 216 (six runs of 32 report chunks + 4 no-report calls, + red-team doc for 14B)", _nch == 32 and _tot == {"Q": 222, "M": 222, "M3": 216}, {"report chunks": _nch, **_tot},
    "results/<run>/config.yaml conditions; extract.chunk over the manifest", "M3 run has conditions R, B (no oracle)")
 
 ok(S, "Each report is split into chunks of about 6,000 tokens with 300 tokens of overlap", "6000 / 300",
@@ -280,7 +275,7 @@ r225 = [r for r in csv.DictReader(OLD_AUDIT.open()) if r["claim_text"] == "(coun
 ok(S, "under tactic $i$ (up to 225)", "225", bool(r225) and r225[0]["match"] == "yes", r225[0]["value_in_source"] if r225 else None,
    "paper/number_audit.csv @ a0bb280 (ctit/cti/prior.py attk_counts)", "not recomputed by the revision")
 anchor("We expected a 14B open model to reach at least 80\\% of Claude Opus's edge-F1")
-anchor("two 14B open-weight models each reach at least 80\\% of Claude Opus's edge-F1")
+anchor("Two 14B open-weight models each reach at least 80\\% of Claude Opus's edge-F1")
 row(S, "[definition] 80% criterion (H3 threshold)", "80", "spec H3", "docs/W2_EXPERIMENT_SPEC.md", "yes", "threshold, not a result")
 
 S = "Experimental design"
@@ -301,7 +296,7 @@ ok(S, "All but one report (a 2019 APT29 report) postdate the plan", "1 (2019, AP
 ok(S, "each extraction runs five times", "5", all(SC["t2"][f"R-{k}"][a]["samples"] == 5 for k in ("F", "G") for a in A), "t2 R-F/R-G samples", SJ)
 ok(S, "(APT29 45, OilRig 17, Sandworm 25, menuPass 6)", "45/17/25/6", C["L"] == {"APT29": 45, "OilRig": 17, "Sandworm": 25, "menuPass": 6}, C["L"], CJ)
 ok(S, "with 95\\% intervals from 10{,}000 resamples of transitions", "10,000", SC["settings"]["n_boot"] == 10000, SC["settings"]["n_boot"], SJ)
-ok(S, "a block bootstrap that keeps blocks of 2, 3, or 5 transitions", "2, 3, 5", SC["settings"]["block_lengths"] == [2, 3, 5], SC["settings"]["block_lengths"], SJ)
+ok(S, "a block bootstrap (blocks of 2, 3, or 5 transitions kept within a scenario)", "2, 3, 5", SC["settings"]["block_lengths"] == [2, 3, 5], SC["settings"]["block_lengths"], SJ)
 ok(S, "Gap intervals come from 10{,}000 resamples of reports", "10,000", SC["settings"]["n_boot"] == 10000, SC["settings"]["n_boot"], SJ)
 num(S, "distinct reports (3.4 of 5)", "3.4", 5 * (1 - (1 - 1 / 5) ** 5), "(formula)")
 ok(S, "Claude Opus's OilRig IG was 0.30, 0.42, 0.53, and 0.62 bits with two to five distinct reports", "0.30/0.42/0.53/0.62",
@@ -344,23 +339,23 @@ ok(S, "Edge overlap with each plan held fixed agrees (Claude Opus 3 of 4, GPT-6 
 
 S = "Results: with vs without"
 ef = {lab: T5(lab, "edge_f1") for lab in ("F", "G", "Q", "M")}
-ok(S, "On raw edge-F1, the report-conditioned kernel scores higher for every actor except menuPass under Claude Opus and GPT-6 Astra, and for every actor under both 14B models",
+ok(S, "on raw edge-F1 the reports usually help, with the report-conditioned kernel scoring higher for every actor except menuPass under Claude Opus and GPT-6 Astra, and for every actor under both 14B models",
    "F,G: + + + -; Q,M: all +", all(ef[l][a][0] > 0 for l in ("F", "G") for a in A[:3]) and all(ef[l]["menuPass"][0] < 0 for l in ("F", "G"))
    and all(ef[l][a][0] > 0 for l in ("Q", "M") for a in A), {l: [ef[l][a][0] for a in A] for l in ef}, CJ)
 efc = {l: clear_above(T5(l, "edge_f1")) for l in ("F", "G", "Q", "M")}
-ok(S, "the gain is clear for OilRig under Claude Opus, GPT-6 Astra, and Ministral 14B, and for APT29 under GPT-6 Astra",
+ok(S, "The gain is clear for OilRig under Claude Opus, GPT-6 Astra, and Ministral 14B, and for APT29 under GPT-6 Astra",
    "F: OilRig; G: APT29, OilRig; Q: none; M: OilRig", efc == {"F": ["OilRig"], "G": ["APT29", "OilRig"], "Q": [], "M": ["OilRig"]}, efc, CJ,
    "positive clear dF1 (Table 5 bold, S18), temperature-0 local runs; also clear but not stated: "
    + ", ".join(f"{l}/{a}" for l in ("Q5", "M5", "M3") for a in clear_above(T5(l, "edge_f1"))))
-ok(S, "and for APT29 under GPT-6 Astra (Table~\\ref{tab:h2}; Supplement Table~S18). Report kernels also list more edges", "sentence split", True, "", "draft")
+# dropped: "...(Table~\\ref{tab:h2}; Supplement Table~S18). Report kernels also list more edges" (sentence-split check; the final paper has no such reference)
 rng(S, "(1.2--3.3 times as many;", "1.2--3.3", *C["R/B edges (F,Q,M)"], CJ)
 rng(S, "3.6--5.4 times for GPT-6 Astra)", "3.6--5.4", *C["R/B edges (G)"], CJ)
-ok(S, "the reports clearly help only for OilRig under Claude Opus, for no actor under GPT-6 Astra, and for Sandworm under Qwen 14B and OilRig under Ministral 14B",
+ok(S, "the reports clearly help only for OilRig under Claude Opus, Sandworm under Qwen 14B, and OilRig under Ministral 14B, and for no actor under GPT-6 Astra",
    "F OilRig; G none; Q Sandworm; M OilRig", enr == {"F": ["OilRig"], "G": [], "Q": ["Sandworm"], "M": ["OilRig"]}, enr, CJ)
 apt = {l: T5(l, "f1_over_chance")["APT29"][1] for l in ("F", "G", "Q", "Q5", "M", "M5")}
-ok(S, "every APT29 enrichment interval spans zero", "all span", all(spans0(v) for v in apt.values()), apt, CJ, "report-bootstrap intervals; M3 undefined (B empty)")
+ok(S, "Every APT29 enrichment interval spans zero", "all span", all(spans0(v) for v in apt.values()), apt, CJ, "report-bootstrap intervals; M3 undefined (B empty)")
 mp = {l: T5(l, "f1_over_chance")["menuPass"] for l in ("F", "G")}
-ok(S, "On menuPass, the comparison reverses for both frontier models", "F, G < 0", mp["F"][0] < 0 and mp["G"][0] < 0, {l: v[0] for l, v in mp.items()}, CJ)
+ok(S, "menuPass reverses for both frontier models", "F, G < 0", mp["F"][0] < 0 and mp["G"][0] < 0, {l: v[0] for l, v in mp.items()}, CJ)
 ok(S, "GPT-6 Astra's gap is clear (jackknife", "clear", mp["G"][3] == "below", mp["G"][3], CJ)
 ivl(S, "(jackknife $[-6.87, -4.26]$)", "-6.87", "-4.26", *mp["G"][2], CJ)
 lo, hi = C["T5 F menuPass LOO range"]
@@ -385,7 +380,7 @@ ok(S, "does not exclude zero when the plan's transitions are resampled instead (
    same("-0.02", pg[1][0]) and same("1.00", pg[1][1]) and pg[3] == "spans", pg[:2] + [pg[3]], CJ)
 ok(S, "and Ministral 14B's does not survive removing edges whose quotes fail", "not clear", T5F("M", "ig_bits")["OilRig"][3] == "not clear",
    T5F("M", "ig_bits")["OilRig"], "claims.json ev_fragments")
-ok(S, "Only Claude Opus's survives both.", "F", pair["F"] == "above" and filt["F"] == "above", (pair, filt), CJ)
+ok(S, "Only Claude Opus's holds up under two further checks.", "F", pair["F"] == "above" and filt["F"] == "above", (pair, filt), CJ)
 mi = {l: T5(l, "ig_bits")["menuPass"] for l in ("F", "G")}
 ok(S, "neither frontier model's likelihood difference excludes zero ($-0.09$ and $-0.01$)", "-0.09, -0.01, not clear",
    same("-0.09", mi["F"][0]) and same("-0.01", mi["G"][0]) and all(v[3] == "not clear" for v in mi.values()), mi, CJ)
@@ -398,8 +393,7 @@ ok(S, "[S18 caption] " + _s18, "19 of 24; nearly empty", bool(r19) and _s18 in "
    "19 of 24 (22 of 24 B priors have 0 valid transitions)", "paper/number_audit.csv; paper/w2_aics_supplement.tex",
    "caption generated by make_supplement.py")
 _ord = [lab for _, _, tabs in __import__("scripts.revision.make_supplement", fromlist=["SECTIONS"]).SECTIONS for _, lab, _ in tabs]
-ok(S, "Ministral 3B is not interpreted (Supplement Table~S18)", "S18 = R-B gaps, all models", _ord.index("tab:s-t5-all") == 17,
-   f"S{_ord.index('tab:s-t5-all') + 1}", "scripts/revision/make_supplement.py", "S18 lists the Ministral 3B rows")
+# dropped: "Ministral 3B is not interpreted (Supplement Table~S18)" (the final paper says "not interpretable" and cites no S18 there)
 
 S = "Results: small models"
 for lab, an, vals in (("Q", "Qwen 14B reaches 96\\%, 52\\%, 91\\%, and 90\\% of it", ("96", "52", "91", "90")),
@@ -474,9 +468,9 @@ at = ce["ATTK"]["APT29"]
 ok(S, "($+0.76$ bits per transition, 95\\% interval $[0.50, 0.98]$)", "+0.76 [0.50, 0.98]", same("0.76", at["point"]) and same("0.50", at["iid"]["ci95"][0])
    and same("0.98", at["iid"]["ci95"][1]), (at["point"], at["iid"]["ci95"]), "final/case_a")
 aboveA = [k for k in ce if ce[k]["APT29"]["iid"]["status"] == "above"]
-ok(S, "among the APT29 kernels, only the ATT\\&CK kernel is clearly above uniform", "ATTK only (APT29 kernels)", aboveA == ["ATTK"], aboveA, "final/case_a")
+ok(S, "Among the APT29 kernels, only the ATT\\&CK kernel is clearly above uniform", "ATTK only (APT29 kernels)", aboveA == ["ATTK"], aboveA, "final/case_a")
 aboveO = [f"{k}/{a}" for k in ce for a in A[1:] if ce[k][a]["iid"]["status"] == "above"]
-ok(S, "the OilRig and menuPass ATT\\&CK kernels are too, so the gain is not actor-specific", "ATTK/OilRig, ATTK/menuPass above",
+ok(S, "The OilRig and menuPass ATT\\&CK kernels are also clearly above uniform, so the gain is not actor-specific", "ATTK/OilRig, ATTK/menuPass above",
    {"ATTK/OilRig", "ATTK/menuPass"} <= set(aboveO), aboveO, "final/case_a")
 ok(S, "only the ATT\\&CK frequency kernels beat uniform", "no non-ATTK kernel above, any actor",
    all(x.startswith("ATTK/") for x in aboveO) and aboveA == ["ATTK"], ["ATTK/APT29"] + aboveO, "final/case_a")
@@ -520,14 +514,14 @@ num(S, ".15--.19 against .15; 45", ".15", au2(i2, "Uni"), "final/case_b/scripted
 ok(S, "45 remain", "45", i2["positive"] == 45, i2["positive"], "final/case_b/scripted")
 s3g = pd.read_csv(FIN / "supplement" / "s3g_case_b_changes.csv")
 pos = s3g[s3g.Windows == "positive"].set_index("Tactic changes")["count"]
-ok(S, "11 of the 46 positive windows contain no tactic change", "11 of 46", int(pos[0]) == 11 and CB_COL["positive"] == 46, (int(pos[0]), CB_COL["positive"]), "supplement/s3g_case_b_changes")
+ok(S, "Of the 46 positive windows, 11 contain no tactic change", "11 of 46", int(pos[0]) == 11 and CB_COL["positive"] == 46, (int(pos[0]), CB_COL["positive"]), "supplement/s3g_case_b_changes")
 ok(S, "and 7 contain one", "7", int(pos[1]) == 7, int(pos[1]), "supplement/s3g_case_b_changes")
 
 S = "Discussion"
 ok(S, "and this holds when the plan's two optional steps are removed", "var B: B > R on F1 and enrichment (F, G); IG not clear",
    all(CBv[f"T2 B-{l}"]["menuPass"][0] > CBv[f"T2 R-{l}"]["menuPass"][0] and CBv[f"T2 B-{l}"]["menuPass"][1] > CBv[f"T2 R-{l}"]["menuPass"][1]
        and CBv[f"T5 {l} ig_bits"]["menuPass"][3] == "not clear" for l in ("F", "G")), "", "claims.json var_B")
-ok(S, "That neither 14B model shows the reversal", "no clear reversal", all(v[3] != "below" for v in q14.values()), "", CJ)
+ok(S, "Neither 14B model shows the reversal", "no clear reversal", all(v[3] != "below" for v in q14.values()), "", CJ)
 rng(S, "report the failure rate per model (7--30\\% for the 14B models)", "7--30", min(fq.min(), fm.min()), max(fq.max(), fm.max()), f"{PT2}/t_fabricated_evidence.csv", scale=100)
 num(S, "one scripted job supplied 91\\% of the negative windows", "91", share, CB_DIAG, scale=100)
 ok(S, "a quarter of OpTC's attack windows contain no tactic change at all", "1/4", abs(11 / 46 - 0.25) < 0.02, f"{11 / 46:.3f}", "supplement/s3g_case_b_changes")
@@ -538,7 +532,7 @@ ok(S, "changes the status of nine cells", "9", len(C["T3 marks"]) == 9, len(C["T
 ok(S, "which leaves its plan four edges and lowers both 14B models to two of four actors on the 80\\% criterion while leaving the menuPass reversal intact",
    "4; Q 2, M 2; reversal", SCB["reference"]["menuPass"]["edges"] == 4 and CBv["H3 Q"][1] == 2 and CBv["H3 M"][1] == 2
    and all(CBv[f"T5 {l} f1_over_chance"]["menuPass"][0] < 0 for l in ("F", "G")), (CBv["H3 Q"][1], CBv["H3 M"][1]), "claims.json var_B")
-ok(S, "cutting cross-platform handoffs (mainly OilRig)", "OilRig", CA_["GT edges"]["OilRig"] < C["GT edges"]["OilRig"], CA_["GT edges"], "claims.json var_A",
+ok(S, "cut cross-platform handoffs (mainly OilRig)", "OilRig", CA_["GT edges"]["OilRig"] < C["GT edges"]["OilRig"], CA_["GT edges"], "claims.json var_A",
    "also Sandworm 21->19; the status changes are mainly OilRig")
 
 # =============================================================================== 4. coverage
@@ -549,6 +543,11 @@ for pat in (r"%[^\n]*", r"\\(?:cite[pt]?|label|ref|eqref|input|includegraphics|c
             r"\\begin\{tabular\}\{@\{\}lllrr@\{\}\}.*?\\end\{tabular\}", r"\\begin\{tabular\}\{@\{\}lcccc@\{\}\}.*?\\end\{tabular\}",
             r"\$[^$]*\\(?:frac|log_2|sum|bigl|mathcal|hat)[^$]*\$", r"\\begin\{equation\}.*?\\end\{equation\}"):
     MASK = re.sub(pat, lambda m: " " * len(m.group(0)), MASK, flags=re.S)
+for _t in ("table2", "table3", "table5"):  # inlined generated tables, checked as files in section 1
+    _b = "\n".join(l for l in (REPO / "paper" / "tables" / f"{_t}.tex").read_text().splitlines() if not l.startswith("%"))
+    _i = BODY.find(_b)  # positions in BODY equal positions in MASK (masking keeps lengths)
+    if _i >= 0:
+        MASK = MASK[:_i] + " " * len(_b) + MASK[_i + len(_b):]
 unc = []
 for m in NUMRE.finditer(MASK):
     if any(a <= m.start() < b for a, b in COVERED):

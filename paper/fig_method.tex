@@ -1,127 +1,159 @@
-% Method figure for W2 (AICS @ AAAI-27), v2. Standalone; compiles to fig_method.pdf,
-% which the paper includes with \includegraphics (no TikZ needed in the paper).
-\documentclass[tikz,border=2pt]{standalone}
+% Figure 1 (study design) for "Beyond CTI Reporting" (AICS @ AAAI-27).
+% Standalone TikZ; compile with pdflatex to produce fig_method.pdf.
+% Canvas is 505 x 164 bp, the same size as the previous fig_method.pdf,
+% so \includegraphics[width=\textwidth]{fig_method} needs no change.
+\documentclass[border=0pt]{standalone}
 \usepackage{times}
-\usepackage{amssymb}
-\usetikzlibrary{positioning,arrows.meta,fit,backgrounds,calc}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
 
-\definecolor{cR}{HTML}{2A78D6}   % report-conditioned
-\definecolor{cB}{HTML}{EB6834}   % no report (memory)
-\definecolor{cG}{HTML}{1BAF7A}   % ground truth
-\definecolor{ink}{HTML}{333333}
+\definecolor{Rblue}{RGB}{38,104,206}
+\definecolor{Borange}{RGB}{226,104,52}
+\definecolor{edge}{RGB}{110,110,110}
+\definecolor{ink}{RGB}{70,70,70}
+\definecolor{fillR}{RGB}{233,241,252}
+\definecolor{fillB}{RGB}{252,236,228}
+\definecolor{fillA}{RGB}{241,241,241}
+\definecolor{fillP}{RGB}{229,244,237}
+\definecolor{fillS}{RGB}{226,226,226}
+\definecolor{note}{RGB}{110,110,110}
 
-% schematic transition-matrix glyph: #1 = name, #2 = centre, #3 = colour, #4 = 6x6 weights (0-3, row-major, diagonal ignored)
-\newcommand{\glyph}[4]{%
-  \begin{scope}[shift={($(#2)+(-0.45,-0.45)$)}]
-    \foreach \w [count=\k from 0] in {#4} {
-      \pgfmathtruncatemacro{\r}{\k/6}\pgfmathtruncatemacro{\c}{mod(\k,6)}
-      \pgfmathsetmacro{\y}{0.75-0.15*\r}\pgfmathsetmacro{\x}{0.15*\c}
-      \ifnum\r=\c
-        \fill[white] (\x,\y) rectangle ++(0.15,0.15);
-        \draw[black!25, line width=0.2pt] (\x,\y) -- ++(0.15,0.15);
-      \else
-        \pgfmathsetmacro{\op}{0.10+0.30*\w}
-        \fill[#3, fill opacity=\op] (\x,\y) rectangle ++(0.15,0.15);
-      \fi
-    }
-    \draw[black!45, line width=0.3pt] (0,0) rectangle (0.9,0.9);
-  \end{scope}
-  \coordinate (#1) at (#2);
-}
+\newcommand{\ttl}{\fontsize{8}{9.4}\selectfont\bfseries}
+\newcommand{\bdy}{\fontsize{7}{7.8}\selectfont}
+\newcommand{\sub}{\fontsize{7}{7.8}\selectfont\bfseries}
 
 \begin{document}
-\begin{tikzpicture}[
-  font=\footnotesize, >={Stealth[length=1.9mm]}, color=ink,
-  box/.style={draw=black!55, rounded corners=2pt, line width=0.45pt, align=center, inner sep=2.5pt},
-  arr/.style={->, line width=0.55pt, black!70},
-  chip/.style={draw=black!45, fill=white, rounded corners=1.5pt, inner xsep=2pt, inner ysep=1pt,
-               font=\scriptsize, line width=0.35pt},
-  det/.style={font=\scriptsize, align=center},
+\begin{tikzpicture}[x=1bp,y=-1bp,
+  box/.style={draw=edge, line width=0.6pt, rounded corners=3pt},
+  arr/.style={-{Stealth[length=4.2pt,width=3.6pt]}, draw=ink, line width=0.7pt},
+  chip/.style={draw=edge, line width=0.5pt, rounded corners=2.2pt, fill=white,
+               inner xsep=2.2pt, inner ysep=1.1pt, font=\bdy},
+  chipar/.style={-{Stealth[length=3pt,width=2.6pt]}, draw=ink, line width=0.5pt},
+  txt/.style={inner sep=0pt, align=center},
 ]
-\newcommand{\hd}[1]{\textbf{#1}}
+\useasboundingbox (0,0) rectangle (505.08,163.65);
 
-% ---------------- inputs (column 1) ----------------
-\node[box, fill=cR!10, minimum width=3.1cm, minimum height=0.95cm] (inR) at (1.55,3.15)
-  {\hd{CTI reports} \textcolor{cR}{\textbf{(R)}}\\[-1pt]\scriptsize 23 reports, 2018--2025};
-\node[box, fill=cB!10, minimum width=3.1cm, minimum height=0.95cm] (inB) at (1.55,1.85)
-  {\hd{Actor name + aliases} \textcolor{cB}{\textbf{(B)}}\\[-1pt]\scriptsize no report: actor name\\[-1pt]\scriptsize and aliases only};
-\node[box, fill=black!6, minimum width=3.1cm, minimum height=0.8cm] (inA) at (1.55,0.7)
-  {\hd{ATT\&CK groups} \textbf{(ATTK)}\\[-1pt]\scriptsize actor's techniques per tactic, $n_i$};
+% ---------------- column 1: inputs ----------------
+\draw[box, fill=fillR] (1,15) rectangle (96,39);
+\node[txt, font={\ttl}] at (48.5,22.5) {CTI reports \textcolor{Rblue}{(R)}};
+\node[txt, font={\bdy}] at (48.5,32.5) {23 reports, 2018--2025};
 
-% ---------------- LLM extraction (column 2, spans R and B) ----------------
-\node[box, fill=black!4, minimum width=3.0cm, minimum height=2.45cm] (llm) at (5.1,2.5) {};
-\node[det, anchor=north] at ($(llm.north)+(0,-0.05)$) {\footnotesize\hd{LLM extraction}\\[-1pt] frozen prompt, same chunks\\[2pt]
-  F: Opus 5.5 (API, $\times$5)\\[-1pt] G: GPT-6 Astra (API, $\times$5)\\[-1pt] Q: Qwen3-14B\\[-1pt] M, M3: Ministral 3 14B, 3B\\[-1pt]{\color{black!60}Q, M, M3 run on a laptop}};
+\draw[box, fill=fillB] (1,49) rectangle (96,83);
+\node[txt, font={\ttl}] at (48.5,56.5) {Actor name + aliases \textcolor{Borange}{(B)}};
+\node[txt, font={\bdy}] at (48.5,70.5) {no report: actor name\\ and aliases only};
 
-% ---------------- validate + aggregate (column 3, spans R and B) ----------------
-\node[box, fill=black!4, minimum width=3.55cm, minimum height=2.45cm] (val) at (8.825,2.5) {};
-\node[det, anchor=north] at ($(val.north)+(0,-0.05)$) {\footnotesize\hd{Validate, then aggregate}};
-\node[chip] (c1) at ($(val.north)+(-0.68,-0.6)$) {Initial Access};
-\node[chip] (c2) at ($(val.north)+(0.86,-0.6)$) {Execution};
-\draw[->, line width=0.4pt, black!60] (c1) -- (c2);
-\node[det, anchor=north] at ($(val.north)+(0,-0.83)$) {schema: 14 tactics, $i\neq j$\\[-1pt]
-  quote match checked (R);\\[-1pt] reported, not filtered\\[-1pt]
-  one count per report, $\alpha=0.5$ (Eq.~1)};
+\draw[box, fill=fillA] (1,89) rectangle (96,115);
+\node[txt, font={\ttl}] at (48.5,96.5) {ATT\&CK groups (ATTK)};
+\node[txt, font={\bdy}] at (48.5,107.5) {actor's techniques per tactic, $n_i$};
 
-% ---------------- ATTK construction (columns 2-3) ----------------
-\node[box, fill=black!6, minimum width=7.0cm, minimum height=0.8cm] (attk) at (7.1,0.7)
-  {counts $C(i,j)=n_i n_j$, then Eq.~1\\[-1pt]\scriptsize rows nearly identical: tactic frequency, no order};
+% ---------------- column 2: LLM extraction ----------------
+\draw[box, fill=fillA] (104,12) rectangle (195,83);
+\node[txt, font={\ttl}] at (149.5,19.5) {LLM extraction};
+\node[txt, font={\bdy}] at (149.5,52) {frozen prompt, same chunks\\[2.4pt]
+  Claude Opus 5.5 (API, $\times$5)\\[0.6pt]
+  GPT-6 Astra (API, $\times$5)\\[0.6pt]
+  Qwen3 14B (local)\\[0.6pt]
+  Ministral 3 14B, 3B (local)};
 
-% ---------------- priors (column 4, glyphs) ----------------
-\glyph{gR}{11.4,3.15}{cR}{0,3,0,0,1,0, 0,0,0,2,0,1, 1,0,0,0,3,0, 0,0,0,0,0,3, 0,0,2,1,0,0, 3,0,0,0,1,0}
-\glyph{gB}{11.4,1.85}{cB}{0,0,3,0,0,1, 2,0,0,0,1,0, 0,0,0,3,0,0, 0,1,0,0,0,2, 0,0,0,0,0,3, 0,2,0,1,0,0}
-\glyph{gA}{11.4,0.7}{black!80}{0,1,3,0,2,1, 2,0,3,0,2,1, 2,1,0,0,2,1, 2,1,3,0,2,1, 2,1,3,0,0,1, 2,1,3,0,2,0}
+% ---------------- column 3: validate and aggregate ----------------
+\draw[box, fill=fillA] (205,12) rectangle (303,83);
+\node[txt, font={\ttl}] at (254,19.5) {Validate, then aggregate};
+\node[chip] (c1) at (231.5,31) {Initial Access};
+\node[chip] (c2) at (282,31) {Execution};
+\draw[chipar] (c1.east) -- (c2.west);
+\node[txt, font={\bdy}] at (254,59.5) {schema: 14 tactics, $i \neq j$\\
+  quote match checked (R);\\
+  reported, not filtered\\
+  one count per report,\\
+  $\alpha = 0.5$ (Eq.~1)};
 
+% ---------------- ATT&CK counts ----------------
+\draw[box, fill=fillA] (104,89) rectangle (303,115);
+\node[txt, font={\fontsize{8}{9}\selectfont}] at (203.5,96.8) {counts $C(i,j) = n_i n_j$, then Eq.~1};
+\node[txt, font={\bdy}] at (203.5,107.3) {rows nearly identical: tactic frequency, no order};
 
+% ---------------- arrows into columns 2 and 3 ----------------
+\draw[arr] (96,27) -- (104,27);
+\draw[arr] (96,66) -- (104,66);
+\draw[arr] (96,102) -- (104,102);
+\draw[arr] (195,27) -- (205,27);
+\draw[arr] (195,66) -- (205,66);
 
-\node[font=\scriptsize\itshape, color=black!60, anchor=south] at (11.4,3.62) {report-supported kernels $\hat P_a$};
+% ---------------- kernel glyphs (schematic 6x6 matrices) ----------------
+\node[txt, font={\fontsize{7.4}{8}\selectfont\itshape}] at (334,6.5) {\textcolor{note}{report-supported kernels $\hat P_a$}};
 
-% ---------------- ground truth (bottom row) ----------------
-\node[box, fill=cG!10, minimum width=3.1cm, minimum height=0.8cm] (plan) at (1.55,-1.0)
-  {\hd{MITRE emulation plan}\\[-1pt]\scriptsize 4 actors, 15--79 steps};
-\node[box, fill=cG!10, minimum width=7.0cm, minimum height=0.8cm] (seq) at (7.1,-1.0) {};
-\node[det, anchor=north west] at ($(seq.north west)+(0.08,-0.03)$) {\hd{\footnotesize ground truth $g$}};
-\node[det, color=black!60, anchor=north east] at ($(seq.north east)+(-0.08,-0.04)$) {repeats collapsed};
-\node[chip] (s1) at ($(seq.west)+(0.92,-0.17)$) {Initial Access};
-\node[chip, right=0.3cm of s1] (s2) {Execution};
-\node[chip, right=0.3cm of s2] (s3) {Persistence};
-\node[chip, right=0.3cm of s3] (s4) {Discovery};
-\node[font=\scriptsize, right=0.1cm of s4] (s5) {$\cdots$};
-\foreach \a/\b in {s1/s2,s2/s3,s3/s4} \draw[->, line width=0.4pt, black!60] (\a) -- (\b);
+% #1 = top-left x, #2 = top-left y, #3 = colour, #4 = list of 36 intensities (0-100; -1 = diagonal)
+\newcommand{\glyph}[4]{%
+  \foreach \v [count=\k from 0] in {#4} {%
+    \pgfmathtruncatemacro{\gr}{int(\k/6)}%
+    \pgfmathtruncatemacro{\gc}{mod(\k,6)}%
+    \ifnum\v<0
+      \fill[white] (#1+4*\gc,#2+4*\gr) rectangle ++(4,4);
+      \draw[edge!70, line width=0.3pt] (#1+4*\gc,#2+4*\gr+4) -- ++(4,-4);
+    \else
+      \fill[#3!\v!white] (#1+4*\gc,#2+4*\gr) rectangle ++(4,4);
+    \fi
+  }%
+  \draw[edge, line width=0.4pt] (#1,#2) rectangle ++(24,24);
+}
+\glyph{314}{15}{Rblue}{-1,12,85,10,30,8, 15,-1,10,70,12,40, 8,20,-1,12,90,15, 45,10,15,-1,25,60, 10,75,12,20,-1,15, 25,10,55,10,12,-1}
+\glyph{314}{54}{Borange}{-1,20,10,65,15,25, 10,-1,80,12,30,10, 35,12,-1,15,10,70, 10,60,25,-1,12,20, 85,10,15,30,-1,12, 15,30,10,55,20,-1}
+\glyph{314}{90}{black}{-1,85,20,55,70,35, 45,-1,20,55,70,35, 45,85,-1,55,70,35, 45,85,20,-1,70,35, 45,85,20,55,-1,35, 45,85,20,55,70,-1}
+
+% ---------------- arrows into the scoring box ----------------
+\draw[arr] (303,27) -- (314,27);
+\draw[arr] (303,66) -- (314,66);
+\draw[arr] (303,102) -- (314,102);
+\draw[arr] (338,27) -- (372,27);
+\draw[arr] (338,66) -- (372,66);
+\draw[arr] (338,102) -- (372,102);
+\node[txt, font={\fontsize{7}{8}\selectfont\bfseries}] at (355,21.5) {\textcolor{Rblue}{R}};
+\node[txt, font={\fontsize{7}{8}\selectfont\bfseries}] at (355,60.5) {\textcolor{Borange}{B}};
+\node[txt, font={\fontsize{7}{8}\selectfont\bfseries}] at (355,96.5) {ATTK};
+
+% ---------------- scoring box ----------------
+\draw[box, fill=fillS, line width=0.7pt] (372,12) rectangle (503,116);
+\node[txt, font={\ttl}] at (437.5,20.5) {Score each kernel against $g$};
+\node[txt, anchor=west, font={\bdy}] at (376,32) {{\sub Support:} edge-F1 $\div$ size-matched chance};
+\node[txt, anchor=west, font={\bdy}] at (376,43) {{\sub Fit:} $\mathrm{IG} = \tfrac{1}{L}\textstyle\sum_t \log_2 13\,\hat P_a(g_{t-1}, g_t)$};
+\node[txt, anchor=west, font={\bdy}] at (382,53) {bits per transition; 0 for the uniform chain};
+\node[txt, anchor=west, font={\sub}] at (376,65.5) {Comparisons};
+\node[txt, anchor=west, align=left, font={\bdy}] at (376,86) {{\bfseries\textcolor{Rblue}{R}} vs {\bfseries\textcolor{Borange}{B}}: with vs without reports\\[0.6pt]
+  Claude Opus vs GPT-6 Astra: two vendors\\[0.6pt]
+  frontier vs local: model size\\[0.6pt]
+  each kernel vs every plan: specificity};
 
 % ---------------- leakage wall ----------------
-\draw[dashed, line width=0.7pt, black!70] (0,-0.22) -- (12.55,-0.22);
-\node[fill=white, inner sep=1.5pt, font=\scriptsize\itshape] at (5.7,-0.22)
-  {leakage wall: the 204 links the plans cite are excluded from the report corpus};
+\draw[edge, line width=0.6pt, dash pattern=on 3.5pt off 2.5pt] (1,126) -- (362,126);
+\node[txt, fill=white, inner xsep=3pt, inner ysep=1pt, font={\bdy\itshape}] at (178,126) {leakage wall: the 204 links the plans cite are excluded from the report corpus};
 
-% ---------------- scoring (column 5) ----------------
-\node[box, fill=black!10, minimum width=4.7cm, minimum height=3.35cm] (score) at (15.2,1.95) {};
-\node[det, anchor=north] at ($(score.north)+(0,-0.05)$) {\footnotesize\hd{Score each kernel against $g$}};
-\node[anchor=north west, font=\scriptsize, align=left, inner sep=0pt] at ($(score.north west)+(0.14,-0.48)$) {%
-  \textbf{Support:} edge-F1 $\div$ size-matched chance\\[2pt]
-  \textbf{Fit:} $\mathrm{IG}=\frac{1}{L}\sum_t \log_2 13\,\hat P_a(g_{t-1},g_t)$\\[-1pt]
-  \quad bits per transition; 0 for the uniform chain\\[4pt]
-  \textbf{Comparisons}\\[1pt]
-  \textcolor{cR}{\textbf{R}} vs \textcolor{cB}{\textbf{B}}: with vs without reports (H2)\\[-0.5pt]
-  F vs G: a second vendor\\[-0.5pt]
-  F vs Q, M, M3: model size (H3)\\[-0.5pt]
-  each kernel vs every plan: specificity (H4)};
+% ---------------- ground truth ----------------
+\draw[box, fill=fillP] (1,136) rectangle (96,160);
+\node[txt, font={\ttl}] at (48.5,143.5) {MITRE emulation plan};
+\node[txt, font={\bdy}] at (48.5,153.5) {4 actors, 15--79 steps};
+\draw[arr] (96,148) -- (104,148);
 
-\node[box, dashed, fill=white, text width=3.5cm, minimum height=0.8cm, font=\scriptsize] (detn) at (15.7,-1.0)
-  {IG: average log-score change over uniform per transition (Eq.~3); case studies on OTRF and OpTC};
+\draw[box, fill=fillP] (104,134) rectangle (303,162);
+\node[txt, anchor=west, font={\ttl}] at (108,141.5) {ground truth $g$};
+\node[txt, anchor=east, font={\bdy}] at (299,141.5) {\textcolor{note}{repeats collapsed}};
+\node[chip] (g1) at (130,153.5) {Initial Access};
+\node[chip] (g2) at (178,153.5) {Execution};
+\node[chip] (g3) at (221.5,153.5) {Persistence};
+\node[chip] (g4) at (265,153.5) {Discovery};
+\node[txt, font={\bdy}] (g5) at (292,153.5) {$\cdots$};
+\draw[chipar] (g1.east) -- (g2.west);
+\draw[chipar] (g2.east) -- (g3.west);
+\draw[chipar] (g3.east) -- (g4.west);
 
-% ---------------- arrows ----------------
-\draw[arr] (inR.east) -- (inR.east -| llm.west);
-\draw[arr] (inB.east) -- (inB.east -| llm.west);
-\draw[arr] (llm.east |- inR.east) -- (val.west |- inR.east);
-\draw[arr] (llm.east |- inB.east) -- (val.west |- inB.east);
-\draw[arr] (val.east |- gR) -- ($(gR)+(-0.5,0)$);
-\draw[arr] (val.east |- gB) -- ($(gB)+(-0.5,0)$);
-\draw[arr] (inA.east) -- (attk.west);
-\draw[arr] (attk.east) -- ($(gA)+(-0.5,0)$);
-\foreach \g/\l/\c in {gR/R/cR,gB/B/cB,gA/ATTK/black} \draw[arr] ($(\g)+(0.5,0)$) -- node[above=-1pt, font=\scriptsize\bfseries, text=\c] {\l} (score.west |- \g);
-\draw[arr] (plan.east) -- (seq.west);
-\draw[arr] (seq.east) -- (13.2,-1.0) -- (13.2,0.275);
-\draw[arr] (15.7,0.275) -- (detn.north);
+\draw[arr] (303,148) -- (386,148) -- (386,116);
+
+% ---------------- IG note ----------------
+\draw[arr] (452,116) -- (452,133);
+\draw[edge, line width=0.6pt, rounded corners=3pt, dash pattern=on 3pt off 2pt, fill=white] (398,133) rectangle (503,162);
+\node[txt, font={\bdy}] at (450.5,147.5) {IG: average log-score change over\\
+  uniform per transition (Eq.~3);\\
+  case studies on OTRF and OpTC};
+
 \end{tikzpicture}
 \end{document}
