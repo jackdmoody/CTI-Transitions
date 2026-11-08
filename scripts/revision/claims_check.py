@@ -262,7 +262,16 @@ ok(S, "Validate, then aggregate.} Output must parse", "40/222 M, 8/222 Q, 13/216
     "| Ministral 3B t0 (M3) | 36 | 2 | 2 |", "| Ministral 3B sampled (M35, ×5) | 180 | 12 | 11 |", "| GPT-6 Astra (G, ×5) | 185 | 0 | 0 |",
     "| Claude Opus (F, ×5) | 185 | 1 | 0 |")), "facts.md §2: lost after retry Q 1+7=8/222, M 8+32=40/222, M3 2+11=13/216, F 0, G 0",
    "docs/revision/facts.md §2")
-anchor("After the retry, 40 of 222 chunks still failed for Ministral 14B, 8 of 222 for Qwen 14B, 13 of 216 for Ministral 3B")
+anchor("After the retry, 40 of 222 calls still failed for Ministral 14B, 8 of 222 for Qwen 14B, 13 of 216 for Ministral 3B")
+import yaml
+_runs = {k: yaml.safe_load((REPO / "results" / r / "config.yaml").read_text())["conditions"] for k, r in (
+    ("Q", "20261027T223928Z-extraction-a686409"), ("M", "20261028T005130Z-extraction-5528fd6"), ("M3", "20261028T040137Z-extraction-d032eae"))}
+from ctit.cti import extract as _ex, manifest as _mf
+_nch = sum(len(_ex.chunk((_mf.TEXT_DIR / f"{r['doc_id']}.txt").read_text())) for r in _mf.load()[1] if r["used_for"] == "prior")
+_tot = {k: 6 * (_nch * ("R" in c) + 4 * ("B" in c) + ("oracle" in c)) for k, c in _runs.items()}
+ok(S, "(each local total is six runs of 32 report chunks and four no-report calls, plus the OpTC red-team document for the 14B models)",
+   "Q 222, M 222, M3 216", _nch == 32 and _tot == {"Q": 222, "M": 222, "M3": 216}, {"report chunks": _nch, **_tot},
+   "results/<run>/config.yaml conditions; extract.chunk over the manifest", "M3 run has conditions R, B (no oracle)")
 
 ok(S, "Each report is split into chunks of about 6,000 tokens with 300 tokens of overlap", "6000 / 300",
    "chunk: {tokens: 6000, overlap: 300}" in (REPO / "configs/extraction_report.yaml").read_text(), "chunk: {tokens: 6000, overlap: 300}", "configs/extraction_report.yaml")
@@ -411,7 +420,7 @@ rng(S, "but .07--.29 by actor for Qwen 14B", ".07--.29", float(fq.min()), float(
 rng(S, ".20--.30 for Ministral 14B", ".20--.30", float(fm.min()), float(fm.max()), f"{PT2}/t_fabricated_evidence.csv")
 f3 = FAB[FAB.model == "M3"].fragment_aware
 rng(S, "and .50--.68 for Ministral 3B", ".50--.68", float(f3.min()), float(f3.max()), f"{PT2}/t_fabricated_evidence.csv")
-ok(S, "failed the output schema on 40 of 222 chunks, none of which the retry recovered", "40/222, 0 recovered",
+ok(S, "failed the output schema on 40 of 222 calls, none of which the retry recovered", "40/222, 0 recovered",
    "All 40 fail again on retry, so 40 chunks are lost" in FACTS, "facts.md §2", "docs/revision/facts.md §2")
 ok(S, "leaves the frontier kernels essentially unchanged", "no status change for F, G",
    all(T5F(l, m)[a][3] == T5(l, m)[a][3] for l in ("F", "G") for m in ("edge_f1", "f1_over_chance", "ig_bits") for a in A)
