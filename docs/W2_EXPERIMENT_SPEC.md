@@ -1,3 +1,9 @@
+> **Note (2026-11-08).** This is the pre-registered plan, written for the coding agents that built the code; it is kept
+> unchanged as a record. The paper's framing and hypotheses changed after the results came in: the paper evaluates
+> LLM-compiled kernels against emulation plans rather than CTI-conditioned hunting (see the README). Every deviation
+> from this plan is logged in [`SPEC_ISSUES.md`](SPEC_ISSUES.md), and the final changes are in
+> [`revision/changed_conclusions.md`](revision/changed_conclusions.md).
+
 # W2 Experiment Spec — CTI-Conditioned ATT&CK Transition Hunting
 
 **Paper:** W2, "CTI Transitions" (working title: *Reading the Adversary: LLM-Compiled Threat Intelligence as Transition Priors for Endpoint Hunting*)
