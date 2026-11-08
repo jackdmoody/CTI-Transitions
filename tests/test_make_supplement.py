@@ -23,7 +23,7 @@ def test_longtable_keeps_spec_header_and_rows():
 def test_numbering_matches_paper_references():
     order = [label for _, _, tables in MS.SECTIONS for _, label, _ in tables]
     s = {label: f"S{i}" for i, label in enumerate(order, 1)}
-    # the main paper cites these numbers (paper/w2_aics_draft_REVISED_v2.tex)
+    # fixed numbering (cited by earlier drafts; the final paper cites the supplement only by its repository link)
     assert [s["tab:s-evf-t2"], s["tab:s-evs-t5"]] == ["S2", "S7"]
     assert s["tab:s-h3-ev"] == "S8" and s["tab:s-varB-t2"] == "S9"
     assert s["tab:s-sigma"] == "S15" and s["tab:s-t5-all"] == "S18"
