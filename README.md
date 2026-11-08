@@ -1,12 +1,10 @@
-# CTI-Transitions (W2)
+# CTI-Transitions
 
 Code for *Beyond CTI Reporting: Evaluating LLM-Compiled Threat Intelligence as Adversary Behavior Models*
 (AICS @ AAAI-27). A language model compiles threat-intelligence reports into ATT&CK tactic-transition
 priors (Markov chains, Eq. 1 of the paper), which are scored against MITRE emulation-plan ground truth
 and in two case studies on public telemetry. The authoritative plan is `docs/W2_EXPERIMENT_SPEC.md`;
 every deviation and post hoc analysis is logged in `docs/SPEC_ISSUES.md`.
-
-Repository: https://github.com/jackdmoody/CTI-Transitions
 
 Only public data is used. Nothing under `data/`, `results/` or `audit/` is in git: telemetry, report
 text and model outputs are regenerated locally from the pinned sources below.
