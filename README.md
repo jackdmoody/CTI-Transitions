@@ -1,6 +1,6 @@
 # CTI-Transitions
 
-Code for *Beyond CTI Reporting: Evaluating LLM-Compiled Threat Intelligence as Adversary Behavior Models*
+Code for *Can LLMs Compile Cyber Threat Intelligence into Adversary Behavior Models? Evaluating Predictive Value and Quotation Fidelity*
 (Jack Moody and Iain Cruickshank; submitted to AICS @ AAAI-27).
 
 A language model reads cyber threat intelligence (CTI) reports on an actor and extracts the ATT&CK tactic
